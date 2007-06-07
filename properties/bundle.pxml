@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pxml>
+  <map>
+    <key>
+      <name>iw_bundle_identifier</name>
+      <type>java.lang.String</type>
+      <value>is.idega.idegaweb.msi</value>
+    </key>
+    <key>
+      <name>messagebox_smtp_mailserver</name>
+      <type>java.lang.String</type>
+      <value>mail.simnet.is</value>
+    </key>
+    <key>
+      <name>messagebox_from_mailaddress</name>
+      <type>java.lang.String</type>
+      <value>msi@msisport.is</value>
+    </key>
+    <key>
+      <name>messagebox_cc_address</name>
+      <type>java.lang.String</type>
+      <value>msi@msisport.is</value>
+    </key>
+    <key>
+      <name>send_emails</name>
+      <type>java.lang.String</type>
+      <value>false</value>
+    </key>
+    <key>
+      <name>merchant_pk</name>
+      <type>java.lang.String</type>
+      <value>1</value>
+    </key>
+    <key>
+      <name>staff_group_id</name>
+      <type>java.lang.String</type>
+      <value>-1</value>
+    </key>
+    <key>
+      <name>disable_payment_authorization_process</name>
+      <type>java.lang.String</type>
+      <value>false</value>
+    </key>
+  </map>
+</pxml>
+
