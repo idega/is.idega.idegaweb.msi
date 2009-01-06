@@ -1,5 +1,5 @@
 /*
- * $Id: IWBundleStarter.java,v 1.1 2007/06/07 22:54:35 palli Exp $
+ * $Id: IWBundleStarter.java,v 1.2 2009/01/06 04:06:48 valdas Exp $
  * Created on May 23, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -12,7 +12,6 @@ package is.idega.idegaweb.msi;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import is.idega.idegaweb.msi.presentation.RaceBlock;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import javax.ejb.CreateException;
@@ -28,14 +27,13 @@ import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWBundleStartable;
 import com.idega.idegaweb.IWMainApplication;
-import com.idega.idegaweb.include.GlobalIncludeManager;
 
 
 /**
- * Last modified: $Date: 2007/06/07 22:54:35 $ by $Author: palli $
+ * Last modified: $Date: 2009/01/06 04:06:48 $ by $Author: valdas $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IWBundleStarter implements IWBundleStartable {
 	
@@ -100,7 +98,7 @@ public class IWBundleStarter implements IWBundleStartable {
 	}
 
 	private void updateData() {
-		GlobalIncludeManager includeManager = GlobalIncludeManager.getInstance();
-		includeManager.addBundleStyleSheet(RaceBlock.IW_BUNDLE_IDENTIFIER, "/style/marathon.css");
+//		GlobalIncludeManager includeManager = GlobalIncludeManager.getInstance();
+//		includeManager.addBundleStyleSheet(RaceBlock.IW_BUNDLE_IDENTIFIER, "/style/marathon.css");
 	}
 }
