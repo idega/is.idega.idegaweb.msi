@@ -4,7 +4,6 @@
 package is.idega.idegaweb.msi.presentation;
 
 import is.idega.idegaweb.msi.business.RaceBusiness;
-import is.idega.idegaweb.msi.data.Participant;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.rmi.RemoteException;
@@ -25,7 +24,6 @@ import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.Block;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Table;
-import com.idega.presentation.remotescripting.RemoteScriptHandler;
 import com.idega.presentation.text.Link;
 import com.idega.presentation.text.Text;
 import com.idega.presentation.ui.CheckBox;
@@ -106,7 +104,6 @@ public class RunRegistration extends Block {
 	//fields step one
 	private DropdownMenu runDropdown = null;
 	private DropdownMenu distanceDropdown = null;
-	private RemoteScriptHandler rsh = null;
 	private TextInput nameField;
 	private DropdownMenu nationalityField;
 	private TextInput ssnISField;
@@ -414,7 +411,6 @@ public class RunRegistration extends Block {
 		t.mergeCells(column, row, t.getColumns(), row);
 		t.add(this.runDropdown,column,row);
 		t.add(this.distanceDropdown,column,row);
-		add(this.rsh);
 
 		t.setHeight(row++, 12);
 
