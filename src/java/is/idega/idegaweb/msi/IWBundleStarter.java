@@ -1,5 +1,5 @@
 /*
- * $Id: IWBundleStarter.java,v 1.2 2009/01/06 04:06:48 valdas Exp $
+ * $Id: IWBundleStarter.java,v 1.3 2009/05/21 12:49:35 laddi Exp $
  * Created on May 23, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -30,10 +30,10 @@ import com.idega.idegaweb.IWMainApplication;
 
 
 /**
- * Last modified: $Date: 2009/01/06 04:06:48 $ by $Author: valdas $
+ * Last modified: $Date: 2009/05/21 12:49:35 $ by $Author: laddi $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IWBundleStarter implements IWBundleStartable {
 	
@@ -43,46 +43,36 @@ public class IWBundleStarter implements IWBundleStartable {
 	public void start(IWBundle starterBundle) {
 		updateData();
 		addStandardViews(starterBundle.getApplication());
-		IWApplicationContext iwac = IWMainApplication.getDefaultIWApplicationContext();
-		String merchantPK = null;
-		ICApplicationBindingBusiness abb = null;
-		try {
-			abb= (ICApplicationBindingBusiness) IBOLookup.getServiceInstance(iwac, ICApplicationBindingBusiness.class);
-			merchantPK = abb.get(MSIConstants.PROPERTY_MERCHANT_PK);
+
+		String merchantPK = starterBundle.getApplication().getSettings().getProperty(MSIConstants.PROPERTY_MERCHANT_PK);
+		if (merchantPK == null) {
+			merchantPK = starterBundle.getProperty(MSIConstants.PROPERTY_MERCHANT_PK);
+		}
 		
+		try {
+			KortathjonustanMerchant merchant = null;
 			if (merchantPK == null) {
-				merchantPK = starterBundle.getProperty(MSIConstants.PROPERTY_MERCHANT_PK);
+				merchant = ((KortathjonustanMerchantHome) IDOLookup.getHome(KortathjonustanMerchant.class)).create();
+			}
+			else {
+				merchant = ((KortathjonustanMerchantHome) IDOLookup.getHome(KortathjonustanMerchant.class)).findByPrimaryKey(new Integer(merchantPK));
 			}
 			
-			try {
-				KortathjonustanMerchant merchant = null;
-				if (merchantPK == null) {
-					merchant = ((KortathjonustanMerchantHome) IDOLookup.getHome(KortathjonustanMerchant.class)).create();
-				}
-				else {
-					merchant = ((KortathjonustanMerchantHome) IDOLookup.getHome(KortathjonustanMerchant.class)).findByPrimaryKey(new Integer(merchantPK));
-				}
-				
-				merchant.setName("MSI.is");
-				merchant.store();
-				starterBundle.setProperty(MSIConstants.PROPERTY_MERCHANT_PK, merchant.getPrimaryKey().toString());
+			merchant.setName("MSI.is");
+			merchant.store();
+			starterBundle.setProperty(MSIConstants.PROPERTY_MERCHANT_PK, merchant.getPrimaryKey().toString());
 
-				abb.put(MSIConstants.PROPERTY_MERCHANT_PK, merchant.getPrimaryKey().toString());
-			}
-			catch (IDOLookupException ile) {
-				ile.printStackTrace();
-			}
-			catch (FinderException fe) {
-				fe.printStackTrace();
-			}
-			catch (CreateException ce) {
-				ce.printStackTrace();
-			}	
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			starterBundle.getApplication().getSettings().setProperty(MSIConstants.PROPERTY_MERCHANT_PK, merchant.getPrimaryKey().toString());
 		}
+		catch (IDOLookupException ile) {
+			ile.printStackTrace();
+		}
+		catch (FinderException fe) {
+			fe.printStackTrace();
+		}
+		catch (CreateException ce) {
+			ce.printStackTrace();
+		}	
 
 	}
 
