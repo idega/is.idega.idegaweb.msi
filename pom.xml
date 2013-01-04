@@ -4,26 +4,16 @@
   <parent>
   	<groupId>com.idega.block.egov</groupId>
   	<artifactId>com.idega.block.egov</artifactId>
-  	<version>4.1.3-SNAPSHOT</version>
+  	<version>5.0.0-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
   <groupId>com.idega.block.egov</groupId>
   <artifactId>is.idega.idegaweb.msi</artifactId>
-  <version>4.1.3-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <name>idegaWeb MSI</name>
   <inceptionYear>2007</inceptionYear>
   <description>MSI bundle</description>
   
-  <scm>
-    <!--
-    <connection>scm:cvs:ext:${user.name}@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</connection>
-    <developerConnection>scm:cvs:ext:${user.name}@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</developerConnection> 
-     -->
-    <connection>scm:cvs:ext:idegaweb@code.idega.com:/idega/cvs:com.idega.block.egov/is.idega.idegaweb.msi/</connection>
-    <developerConnection>scm:cvs:ext:idegaweb@code.idega.com:/idega/cvs:com.idega.block.egov/is.idega.idegaweb.msi/</developerConnection>
-    <tag>4.1.3-SNAPSHOT</tag>
-  </scm>
-
   <developers>
     <developer>
       <name>Pall Helgason</name>
