@@ -7,74 +7,34 @@ import com.idega.data.IDOEntity;
 
 public interface Participant extends IDOEntity {
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSeasonGroupID
 	 */
-	public int getRunID();
+	public int getSeasonGroupID();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunTypeGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSeasonGroup
 	 */
-	public int getRunTypeGroupID();
+	public Group getSeasonGroup();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunTypeGroup
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRaceGroupID
 	 */
-	public Group getRunTypeGroup();
+	public int getRaceGroupID();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunYearGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRaceGroup
 	 */
-	public int getRunYearGroupID();
+	public Group getRaceGroup();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunYearGroup
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getEventGroupID
 	 */
-	public Group getRunYearGroup();
+	public int getEventGroupID();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunDistanceGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRaceEvent
 	 */
-	public int getRunDistanceGroupID();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunDistanceGroup
-	 */
-	public RaceEvent getRunDistanceGroup();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunGroupGroupID
-	 */
-	public int getRunGroupGroupID();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunGroupGroup
-	 */
-	public Group getRunGroupGroup();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunTime
-	 */
-	public int getRunTime();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getChipTime
-	 */
-	public int getChipTime();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSplitTime1
-	 */
-	public int getSplitTime1();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSplitTime2
-	 */
-	public int getSplitTime2();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getChipOwnershipStatus
-	 */
-	public String getChipOwnershipStatus();
+	public RaceEvent getRaceEvent();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getUser
@@ -92,39 +52,19 @@ public interface Participant extends IDOEntity {
 	public String getChipNumber();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getChipBunchNumber
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRaceNumber
 	 */
-	public String getChipBunchNumber();
+	public String getRaceNumber();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getUserNationality
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRaceVehicle
 	 */
-	public String getUserNationality();
+	public RaceVehicleType getRaceVehicle();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getShirtSize
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSponsors
 	 */
-	public String getShirtSize();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRunGroupName
-	 */
-	public String getRunGroupName();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getBestTime
-	 */
-	public String getBestTime();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getGoalTime
-	 */
-	public String getGoalTime();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getParticipantNumber
-	 */
-	public int getParticipantNumber();
+	public String getSponsors();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getPayMethod
@@ -137,74 +77,39 @@ public interface Participant extends IDOEntity {
 	public String getPayedAmount();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getTransportOrdered
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRentChip
 	 */
-	public String getTransportOrdered();
+	public boolean getRentChip();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunTypeGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSeasonGroupID
 	 */
-	public void setRunTypeGroupID(int runTypeGroupID);
+	public void setSeasonGroupID(int seasonGroupID);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunTypeGroup
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSeasonGroup
 	 */
-	public void setRunTypeGroup(Group runTypeGroup);
+	public void setSeasonGroup(Group seasonGroup);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunYearGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRaceGroupID
 	 */
-	public void setRunYearGroupID(int runYearGroupID);
+	public void setRaceGroupID(int raceGroupID);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunYearGroup
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRaceGroup
 	 */
-	public void setRunYearGroup(Group runYearGroup);
+	public void setRaceGroup(Group raceGroup);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunDistanceGroupID
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setEventGroupID
 	 */
-	public void setRunDistanceGroupID(int runDisGroupID);
+	public void setEventGroupID(int eventGroupID);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunDistanceGroup
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setEventGroup
 	 */
-	public void setRunDistanceGroup(Group runDisGroup);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunGroupGroupID
-	 */
-	public void setRunGroupGroupID(int runGroupGroupID);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunGroupGroup
-	 */
-	public void setRunGroupGroup(Group runGroupGroup);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunTime
-	 */
-	public void setRunTime(int runTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setChipTime
-	 */
-	public void setChipTime(int chipTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSplitTime1
-	 */
-	public void setSplitTime1(int splitTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSplitTime2
-	 */
-	public void setSplitTime2(int splitTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setChipOwnershipStatus
-	 */
-	public void setChipOwnershipStatus(String ownershipStatus);
+	public void setEventGroup(Group eventGroup);
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setUserID
@@ -222,39 +127,19 @@ public interface Participant extends IDOEntity {
 	public void setChipNumber(String chipNumber);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setChipBunchNumber
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRaceNumber
 	 */
-	public void setChipBunchNumber(String chipBunchNumber);
+	public void setRaceNumber(String raceNumber);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setUserNationality
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRaceVehicle
 	 */
-	public void setUserNationality(String nationality);
+	public void setRaceVehicle(RaceVehicleType vehicle);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setShirtSize
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSponsors
 	 */
-	public void setShirtSize(String tShirtSize);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRunGroupName
-	 */
-	public void setRunGroupName(String runGrName);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setBestTime
-	 */
-	public void setBestTime(String bestTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setGoalTime
-	 */
-	public void setGoalTime(String goalTime);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setParticipantNumber
-	 */
-	public void setParticipantNumber(int participantNumber);
+	public void setSponsors(String sponsors);
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setPayMethod
@@ -267,32 +152,7 @@ public interface Participant extends IDOEntity {
 	public void setPayedAmount(String amount);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setTransportOrdered
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRentChip
 	 */
-	public void setTransportOrdered(String transportOrdered);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setCharityId
-	 */
-	public void setCharityId(String charityId);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getCharityId
-	 */
-	public String getCharityId();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getParticipatesInCharity
-	 */
-	public boolean getParticipatesInCharity();
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setMaySponsorContact
-	 */
-	public void setMaySponsorContact(boolean mayContact);
-
-	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getMaySponsorContact
-	 */
-	public boolean getMaySponsorContact();
+	public void setRentChip(boolean rentChip);
 }

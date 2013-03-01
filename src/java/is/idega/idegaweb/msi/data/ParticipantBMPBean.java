@@ -5,23 +5,16 @@ package is.idega.idegaweb.msi.data;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import javax.ejb.FinderException;
 
 import com.idega.data.GenericEntity;
-import com.idega.data.IDOException;
-import com.idega.data.IDOLookupException;
-import com.idega.data.IDOQuery;
 import com.idega.data.query.Column;
-import com.idega.data.query.CountColumn;
 import com.idega.data.query.MatchCriteria;
-import com.idega.data.query.MaxColumn;
 import com.idega.data.query.SelectQuery;
 import com.idega.data.query.Table;
 import com.idega.data.query.WildCardColumn;
 import com.idega.user.data.Group;
-import com.idega.user.data.GroupHome;
 import com.idega.user.data.User;
 
 /**
@@ -33,6 +26,22 @@ import com.idega.user.data.User;
  */
 public class ParticipantBMPBean extends GenericEntity implements Participant {
 
+	private static final String ENTITY_NAME = "msi_participant";
+	
+	private static final String COLUMN_SEASON = "grp_season";
+	private static final String COLUMN_RACE = "grp_race";
+	private static final String COLUMN_EVENT = "grp_event";
+	private static final String COLUMN_USER = "ic_user_id";
+	
+	private static final String COLUMN_CHIP_NUMBER = "chip_number";
+	private static final String COLUMN_RACE_NUMBER = "race_number";
+	private static final String COLUMN_RACE_VEHICLE = "race_vehicle_id";
+	private static final String COLUMN_SPONSORS = "sponsors";
+	private static final String COLUMN_PAY_METHOD = "pay_method";
+	private static final String COLUMN_AMOUNT_PAYED = "amount_payed";
+	
+	private static final String COLUMN_RENT_CHIP = "rent_chip";
+	
 	public ParticipantBMPBean() {
 		super();
 	}
@@ -44,165 +53,51 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	public void initializeAttributes() {
 		addAttribute(getIDColumnName());
 
-		addManyToOneRelationship(getColumnNameRunTypeGroupID(), "Run Type", Group.class);
-		addManyToOneRelationship(getColumnNameRunYearGroupID(), "Run Year", Group.class);
-		addManyToOneRelationship(getColumnNameRunDistanceGroupID(), "Run Distance", Group.class);
-		addManyToOneRelationship(getColumnNameRunGroupGroupID(), "Run Group", Group.class);
-		addManyToOneRelationship(getColumnNameUserID(), "User ID", User.class);
+		addManyToOneRelationship(COLUMN_SEASON, "Season", Group.class);
+		addManyToOneRelationship(COLUMN_RACE, "Race", Group.class);
+		addManyToOneRelationship(COLUMN_EVENT, "Event", Group.class);
+		addManyToOneRelationship(COLUMN_USER, "User ID", User.class);
 		
-		addAttribute(getColumnNameRunTime(), "Run Time", true, true, Integer.class);
-		addAttribute(getColumnNameChipTime(), "Chip Time", true, true, Integer.class);
-		addAttribute(getColumnNameChipNumber(), "Chip Number", true, true, String.class);
-		addAttribute(getColumnNameChipBunchNumber(), "Chip bunch Number", true, true, String.class);
-		addAttribute(getColumnNameChipOwnershipStatus(), "Chip ownership status", true, true, String.class);
-		addAttribute(getColumnNameUserNationality(), "User Nationality", true, true, String.class);
-		addAttribute(getColumnNameTShirtSize(), "TShirt Size", true, true, String.class);
-		addAttribute(getColumnNameRunGroupName(), "Run Group Name", true, true, String.class);
-		addAttribute(getColumnNameBestTime(), "Best Time", true, true, String.class);
-		addAttribute(getColumnNameGoalTime(), "Goal Time", true, true, String.class);
-		addAttribute(getColumnNameParticipantNumber(), "Participant number", true, true, Integer.class);
-		addAttribute(getColumnNamePayMethod(), "Pay method", true, true, String.class);
-		addAttribute(getColumnNameAmountPayed(), "Amount payed", true, true, String.class);
-		addAttribute(getColumnNameTransportOrdered(), "Transport ordered", true, true, String.class);
-		
+		addAttribute(COLUMN_CHIP_NUMBER, "Chip Number", true, true, String.class);
+		addManyToOneRelationship(COLUMN_RACE_VEHICLE, RaceVehicleType.class);
+		addAttribute(COLUMN_RACE_NUMBER, "Race vehicle", true, true, String.class);
+		addAttribute(COLUMN_SPONSORS, "Sponsors", true, true, String.class);
+		addAttribute(COLUMN_PAY_METHOD, "Pay method", true, true, String.class);
+		addAttribute(COLUMN_AMOUNT_PAYED, "Amount payed", true, true, String.class);
+		addAttribute(COLUMN_RENT_CHIP, "Rent chip", Boolean.class);
 	}
 
 	public static String getEntityTableName() {
-		return "run";
-	}
-
-	public static String getColumnNameRunID() {
-		return "run_id";
-	}
-
-	public static String getColumnNameRunTypeGroupID() {
-		return com.idega.user.data.GroupBMPBean.getColumnNameGroupID() + "_run";
-	}
-
-	public static String getColumnNameRunYearGroupID() {
-		return com.idega.user.data.GroupBMPBean.getColumnNameGroupID() + "_year";
-	}
-
-	public static String getColumnNameRunDistanceGroupID() {
-		return com.idega.user.data.GroupBMPBean.getColumnNameGroupID() + "_distance";
-	}
-
-	public static String getColumnNameRunGroupGroupID() {
-		return com.idega.user.data.GroupBMPBean.getColumnNameGroupID() + "_group";
-	}
-
-	public static String getColumnNameRunTime() {
-		return "run_time";
-	}
-
-	public static String getColumnNameChipTime() {
-		return "chip_time";
-	}
-
-	public static String getColumnNameSplitTime1() {
-		return "split_time_1";
-	}
-
-	public static String getColumnNameSplitTime2() {
-		return "split_time_2";
-	}
-
-	public static String getColumnNameChipNumber() {
-		return "run_chip_number";
-	}
-	
-	public static String getColumnNameChipBunchNumber() {
-		return "run_chip_bunch_number";
-	}
-	
-	public static String getColumnNameChipOwnershipStatus() {
-		return "run_chip_ownership_status";
-	}
-
-	public static String getColumnNameUserNationality() {
-		return "user_nationality";
-	}
-
-	public static String getColumnNameTShirtSize() {
-		return "run_tShirt_size";
-	}
-
-	public static String getColumnNameRunGroupName() {
-		return "run_group_name";
-	}
-
-	public static String getColumnNameBestTime() {
-		return "run_best_time";
-	}
-
-	public static String getColumnNameGoalTime() {
-		return "run_goal_time";
-	}
-
-	public static String getColumnNameUserID() {
-		return com.idega.user.data.UserBMPBean.getColumnNameUserID();
-	}
-
-	public static String getColumnNameParticipantNumber() {
-		return "participant_number";
-	}
-	
-	public static String getColumnNamePayMethod() {
-		return "pay_method";
-	}
-	
-	public static String getColumnNameAmountPayed() {
-		return "payed_amount";
-	}
-
-	public static String getColumnNameTransportOrdered() {
-		return "transport_ordered";
-	}
-
-	public static String getColumnNameCharityId() {
-		return "charity_organizational_id";
-	}
-
-	public static String getColumnNameMaySponsorContact() {
-		return "may_sponsor_contact";
-	}
-	
-	public String getIDColumnName() {
-		return getColumnNameRunID();
+		return ENTITY_NAME;
 	}
 
 	public String getEntityName() {
 		return getEntityTableName();
 	}
 
-	public int getRunID() {
-		return getIntColumnValue(getColumnNameRunID());
-	}
-
 	//GET
-	public int getRunTypeGroupID() {
-		return getIntColumnValue(getColumnNameRunTypeGroupID());
+	public int getSeasonGroupID() {
+		return getIntColumnValue(COLUMN_SEASON);
 	}
 	
-	public Group getRunTypeGroup() {
-		return (Group) getColumnValue(getColumnNameRunTypeGroupID());
+	public Group getSeasonGroup() {
+		return (Group) getColumnValue(COLUMN_SEASON);
 	}
 
-	public int getRunYearGroupID() {
-		return getIntColumnValue(getColumnNameRunYearGroupID());
+	public int getRaceGroupID() {
+		return getIntColumnValue(COLUMN_RACE);
 	}
 
-	public Group getRunYearGroup() {
-		return (Group) getColumnValue(getColumnNameRunYearGroupID());
+	public Group getRaceGroup() {
+		return (Group) getColumnValue(COLUMN_RACE);
 	}
 
-	public int getRunDistanceGroupID() {
-		return getIntColumnValue(getColumnNameRunDistanceGroupID());
+	public int getEventGroupID() {
+		return getIntColumnValue(COLUMN_EVENT);
 	}
 
-	public RaceEvent getRunDistanceGroup() {
-		
-		int distanceGroupId = getIntColumnValue(getColumnNameRunDistanceGroupID());
+	public RaceEvent getRaceEvent() {
+		int distanceGroupId = getIntColumnValue(COLUMN_EVENT);
 		RaceEventHome dHome;
 		try {
 			dHome = (RaceEventHome) getIDOHome(RaceEvent.class);
@@ -210,216 +105,103 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		
-	}
-
-	public int getRunGroupGroupID() {
-		return getIntColumnValue(getColumnNameRunGroupGroupID());
-	}
-
-	public Group getRunGroupGroup() {
-		return (Group) getColumnValue(getColumnNameRunGroupGroupID());
-	}
-
-	public int getRunTime() {
-		return getIntColumnValue(getColumnNameRunTime());
-	}
-
-	public int getChipTime() {
-		return getIntColumnValue(getColumnNameChipTime());
-	}
-	
-	public int getSplitTime1() {
-		return getIntColumnValue(getColumnNameSplitTime1());
-	}
-	
-	public int getSplitTime2() {
-		return getIntColumnValue(getColumnNameSplitTime2());
-	}
-	
-	public String getChipOwnershipStatus() {
-		return getStringColumnValue(getColumnNameChipOwnershipStatus());
 	}
 
 	public User getUser() {
-		return (User) getColumnValue(getColumnNameUserID());
+		return (User) getColumnValue(COLUMN_USER);
 	}
 
 	public int getUserID() {
-		return getIntColumnValue(getColumnNameUserID());
+		return getIntColumnValue(COLUMN_USER);
 	}
 
 	public String getChipNumber() {
-		return getStringColumnValue(getColumnNameChipNumber());
+		return getStringColumnValue(COLUMN_CHIP_NUMBER);
 	}
 	
-	public String getChipBunchNumber() {
-		return getStringColumnValue(getColumnNameChipBunchNumber());
+	public String getRaceNumber() {
+		return getStringColumnValue(COLUMN_RACE_NUMBER);
 	}
 
-	public String getUserNationality() {
-		return getStringColumnValue(getColumnNameUserNationality());
+	public RaceVehicleType getRaceVehicle() {
+		return (RaceVehicleType) getColumnValue(COLUMN_RACE_VEHICLE);
 	}
 
-	public String getShirtSize() {
-		return getStringColumnValue(getColumnNameTShirtSize());
+	public String getSponsors() {
+		return getStringColumnValue(COLUMN_SPONSORS);
 	}
 
-	public String getRunGroupName() {
-		return getStringColumnValue(getColumnNameRunGroupName());
-	}
-
-	public String getBestTime() {
-		return getStringColumnValue(getColumnNameBestTime());
-	}
-
-	public String getGoalTime() {
-		return getStringColumnValue(getColumnNameGoalTime());
-	}
-
-	public int getParticipantNumber() {
-		return getIntColumnValue(getColumnNameParticipantNumber());
-	}
-	
 	public String getPayMethod() {
-		return getStringColumnValue(getColumnNamePayMethod());
+		return getStringColumnValue(COLUMN_PAY_METHOD);
 	}
 	
 	public String getPayedAmount() {
-		return getStringColumnValue(getColumnNameAmountPayed());
+		return getStringColumnValue(COLUMN_AMOUNT_PAYED);
 	}
-
-	public String getTransportOrdered() {
-		return getStringColumnValue(getColumnNameTransportOrdered());
+	
+	public boolean getRentChip() {
+		return getBooleanColumnValue(COLUMN_RENT_CHIP);
 	}
 
 	//SET
-	public void setRunTypeGroupID(int runTypeGroupID) {
-		setColumn(getColumnNameRunTypeGroupID(), runTypeGroupID);
+	public void setSeasonGroupID(int seasonGroupID) {
+		setColumn(COLUMN_SEASON, seasonGroupID);
 	}
 
-	public void setRunTypeGroup(Group runTypeGroup) {
-		setColumn(getColumnNameRunTypeGroupID(), runTypeGroup);
+	public void setSeasonGroup(Group seasonGroup) {
+		setColumn(COLUMN_SEASON, seasonGroup);
 	}
 
-	public void setRunYearGroupID(int runYearGroupID) {
-		setColumn(getColumnNameRunYearGroupID(), runYearGroupID);
+	public void setRaceGroupID(int raceGroupID) {
+		setColumn(COLUMN_RACE, raceGroupID);
 	}
 
-	public void setRunYearGroup(Group runYearGroup) {
-		setColumn(getColumnNameRunYearGroupID(), runYearGroup);
+	public void setRaceGroup(Group raceGroup) {
+		setColumn(COLUMN_RACE, raceGroup);
 	}
 
-	public void setRunDistanceGroupID(int runDisGroupID) {
-		setColumn(getColumnNameRunDistanceGroupID(), runDisGroupID);
+	public void setEventGroupID(int eventGroupID) {
+		setColumn(COLUMN_EVENT, eventGroupID);
 	}
 
-	public void setRunDistanceGroup(Group runDisGroup) {
-		setColumn(getColumnNameRunDistanceGroupID(), runDisGroup);
-	}
-
-	public void setRunGroupGroupID(int runGroupGroupID) {
-		setColumn(getColumnNameRunGroupGroupID(), runGroupGroupID);
-	}
-
-	public void setRunGroupGroup(Group runGroupGroup) {
-		setColumn(getColumnNameRunGroupGroupID(), runGroupGroup);
-	}
-
-	public void setRunTime(int runTime) {
-		setColumn(getColumnNameRunTime(), runTime);
-	}
-
-	public void setChipTime(int chipTime) {
-		setColumn(getColumnNameChipTime(), chipTime);
-	}
-	
-	public void setSplitTime1(int splitTime) {
-		setColumn(getColumnNameSplitTime1(), splitTime);
-	}
-	
-	public void setSplitTime2(int splitTime) {
-		setColumn(getColumnNameSplitTime2(), splitTime);
-	}
-	
-	public void setChipOwnershipStatus(String ownershipStatus) {
-		setColumn(getColumnNameChipOwnershipStatus(), ownershipStatus);
+	public void setEventGroup(Group eventGroup) {
+		setColumn(COLUMN_EVENT, eventGroup);
 	}
 
 	public void setUserID(int userID) {
-		setColumn(getColumnNameUserID(), userID);
+		setColumn(COLUMN_USER, userID);
 	}
 
 	public void setUser(User user) {
-		setColumn(getColumnNameUserID(), user);
+		setColumn(COLUMN_USER, user);
 	}
 
 	public void setChipNumber(String chipNumber) {
-		setColumn(getColumnNameChipNumber(), chipNumber);
+		setColumn(COLUMN_CHIP_NUMBER, chipNumber);
 	}
 	
-	public void setChipBunchNumber(String chipBunchNumber) {
-		setColumn(getColumnNameChipBunchNumber(), chipBunchNumber);
+	public void setRaceNumber(String raceNumber) {
+		setColumn(COLUMN_RACE_NUMBER, raceNumber);
 	}
 
-	public void setUserNationality(String nationality) {
-		setColumn(getColumnNameUserNationality(), nationality);
+	public void setRaceVehicle(RaceVehicleType vehicle) {
+		setColumn(COLUMN_RACE_VEHICLE, vehicle);
 	}
 
-	public void setShirtSize(String tShirtSize) {
-		setColumn(getColumnNameTShirtSize(), tShirtSize);
+	public void setSponsors(String sponsors) {
+		setColumn(COLUMN_SPONSORS, sponsors);
 	}
 
-	public void setRunGroupName(String runGrName) {
-		setColumn(getColumnNameRunGroupName(), runGrName);
-	}
-
-	public void setBestTime(String bestTime) {
-		setColumn(getColumnNameBestTime(), bestTime);
-	}
-
-	public void setGoalTime(String goalTime) {
-		setColumn(getColumnNameGoalTime(), goalTime);
-	}
-	
-	public void setParticipantNumber(int participantNumber) {
-		setColumn(getColumnNameParticipantNumber(), participantNumber);
-	}
-	
 	public void setPayMethod(String payMethod) {
-		setColumn(getColumnNamePayMethod(), payMethod);
+		setColumn(COLUMN_PAY_METHOD, payMethod);
 	}
 	
 	public void setPayedAmount(String amount) {
-		setColumn(getColumnNameAmountPayed(),amount);
+		setColumn(COLUMN_AMOUNT_PAYED, amount);
 	}
 	
-	public void setTransportOrdered(String transportOrdered) {
-		setColumn(getColumnNameTransportOrdered(),transportOrdered);
-	}
-
-	public void setCharityId(String charityId) {
-		setColumn(getColumnNameCharityId(),charityId);
-	}
-	
-	public String getCharityId() {
-		return getStringColumnValue(getColumnNameCharityId());
-	}
-	
-	public boolean getParticipatesInCharity(){
-		String charityId = getCharityId();
-		if(charityId!=null){
-			return true;
-		}
-		return false;
-	}
-	
-	public void setMaySponsorContact(boolean mayContact) {
-		setColumn(getColumnNameMaySponsorContact(),mayContact);
-	}
-	
-	public boolean getMaySponsorContact() {
-		return getBooleanColumnValue(getColumnNameMaySponsorContact());
+	public void setRentChip(boolean rentChip) {
+		setColumn(COLUMN_RENT_CHIP, rentChip);
 	}
 	
 	public Collection ejbFindAll() throws FinderException {
@@ -431,7 +213,19 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return idoFindPKsBySQL(query.toString());
 	}
 	
-	public int ejbHomeGetNextAvailableParticipantNumber(Object distancePK, int min, int max) throws IDOException {
+	public Collection ejbFindAllByRace(Group race) throws FinderException {
+		Table table = new Table(this);
+		
+		SelectQuery query = new SelectQuery(table);
+		query.addColumn(new Column(getIDColumnName()));
+		query.addCriteria(new MatchCriteria(table, COLUMN_RACE, MatchCriteria.EQUALS, race));
+		query.addOrder(table, COLUMN_EVENT, true);
+		
+		return idoFindPKsBySQL(query.toString());
+	}
+
+	
+/*	public int ejbHomeGetNextAvailableParticipantNumber(Object distancePK, int min, int max) throws IDOException {
 		Table table = new Table(this);
 		
 		SelectQuery query = new SelectQuery(table);
@@ -564,5 +358,5 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		}
 		
 		return ejbFindAllByRunGroupIdAndYearGroupId(runId,yearId.intValue());
-	}
+	}*/
 }

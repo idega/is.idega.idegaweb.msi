@@ -6,7 +6,6 @@ import javax.ejb.FinderException;
 import com.idega.data.IDOFactory;
 
 public class SeasonHomeImpl extends IDOFactory implements SeasonHome {
-	@Override
 	public Class getEntityInterfaceClass() {
 		return Season.class;
 	}

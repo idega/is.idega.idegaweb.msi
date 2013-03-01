@@ -1,5 +1,5 @@
 /*
- * $Id: ConverterUtility.java,v 1.1 2007/06/07 22:54:35 palli Exp $
+ * $Id: ConverterUtility.java,v 1.1 2007/06/11 12:14:20 palli Exp $
  * Created on May 22, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -21,10 +21,11 @@ import javax.ejb.FinderException;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.user.data.Group;
+import com.idega.user.data.GroupHome;
 
 
 /**
- * Last modified: $Date: 2007/06/07 22:54:35 $ by $Author: palli $
+ * Last modified: $Date: 2007/06/11 12:14:20 $ by $Author: palli $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
  * @version $Revision: 1.1 $
@@ -51,6 +52,20 @@ public class ConverterUtility {
 		try {
 			RaceHome home = (RaceHome) IDOLookup.getHome(Race.class);
 			return (Race) home.findByPrimaryKey(groupPK);
+		}
+		catch (IDOLookupException ile) {
+			throw new FinderException(ile.getMessage());
+		}
+	}
+
+	public Group convertRaceToGroup(Race race) throws FinderException {
+		return convertRaceToGroup(race.getPrimaryKey());
+	}
+	
+	public Group convertRaceToGroup(Object racePK) throws FinderException {
+		try {
+			GroupHome home = (GroupHome) IDOLookup.getHome(Group.class);
+			return (Group) home.findByPrimaryKey(racePK);
 		}
 		catch (IDOLookupException ile) {
 			throw new FinderException(ile.getMessage());
@@ -84,4 +99,19 @@ public class ConverterUtility {
 			throw new FinderException(ile.getMessage());
 		}
 	}
+	
+	public Group convertSeasonToGroup(Season season) throws FinderException {
+		return convertSeasonToGroup(season.getPrimaryKey());
+	}
+	
+	public Group convertSeasonToGroup(Object seasonPK) throws FinderException {
+		try {
+			GroupHome home = (GroupHome) IDOLookup.getHome(Group.class);
+			return (Group) home.findByPrimaryKey(seasonPK);
+		}
+		catch (IDOLookupException ile) {
+			throw new FinderException(ile.getMessage());
+		}
+	}
+
 }

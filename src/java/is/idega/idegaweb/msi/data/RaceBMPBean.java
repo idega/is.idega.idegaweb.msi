@@ -1,5 +1,5 @@
 /*
- * $Id: RaceBMPBean.java,v 1.1 2007/06/07 22:54:34 palli Exp $
+ * $Id: RaceBMPBean.java,v 1.4 2008/05/21 09:04:17 palli Exp $
  * Created on May 22, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -11,26 +11,34 @@ package is.idega.idegaweb.msi.data;
 
 import java.sql.Timestamp;
 
+import javax.ejb.FinderException;
+
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.user.data.Group;
 import com.idega.user.data.GroupBMPBean;
 import com.idega.util.IWTimestamp;
 
 
 /**
- * Last modified: $Date: 2007/06/07 22:54:34 $ by $Author: palli $
+ * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.4 $
  */
 public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 	private static final String METADATA_RACE_DATE = "run_date";
 	
 	private static final String METADATA_LAST_REGISTRATION_DATE = "last_registration_date";
-	
-	private static final String METADATA_PRICE = "price";
+
+	private static final String METADATA_LAST_REGISTRATION_DATE_PRICE1 = "last_registration_date_price1";
 	
 	private static final String METADATA_CHIP_RENT = "chip_rent";
+	
+	private static final String METADATA_RACE_CATEGORY = "race_category";
 
+	private static final String METADATA_RACE_TYPE = "race_type";
+	
 	//getters
 	public Timestamp getRaceDate() {
 		String date = getMetaData(METADATA_RACE_DATE);
@@ -49,15 +57,14 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 		}
 		return null;
 	}
-	
-	public float getPrice() {
-		String price = getMetaData(METADATA_PRICE);
 
-		if (price != null) {
-			return Float.parseFloat(price);
+	public Timestamp getLastRegistrationDatePrice1() {
+		String date = getMetaData(METADATA_LAST_REGISTRATION_DATE_PRICE1);
+		if (date != null) {
+			IWTimestamp stamp = new IWTimestamp(date);
+			return stamp.getTimestamp();
 		}
-	
-		return 0;
+		return null;
 	}
 
 	public float getChipRent() {
@@ -69,7 +76,38 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 	
 		return 0;
 	}
+	
+	public RaceCategory getRaceCategory() {
+		String raceCategoryID = getMetaData(METADATA_RACE_CATEGORY);
+		if (raceCategoryID != null) {
+			try {
+				RaceCategory category = ((RaceCategoryHome) IDOLookup.getHome(RaceCategory.class)).findByPrimaryKey(new Integer(raceCategoryID));
+				return category;
+			} catch (IDOLookupException e) {
+			} catch (NumberFormatException e) {
+			} catch (FinderException e) {
+			}
+		}
+			
+		return null;
+	}
 
+	public RaceType getRaceType() {
+		String raceTypeID = getMetaData(METADATA_RACE_TYPE);
+		if (raceTypeID != null) {
+			try {
+				RaceType type = ((RaceTypeHome) IDOLookup.getHome(RaceType.class)).findByPrimaryKey(new Integer(raceTypeID));
+				return type;
+			} catch (IDOLookupException e) {
+			} catch (NumberFormatException e) {
+			} catch (FinderException e) {
+			}
+		}
+			
+		return null;
+	}
+
+	
 	//setters
 	public void setRaceDate(Timestamp date) {
 		IWTimestamp stamp = new IWTimestamp(date);
@@ -82,12 +120,35 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 		setMetaData(METADATA_LAST_REGISTRATION_DATE, stamp.toSQLString(),
 				"java.sql.Timestamp");
 	}
-	
-	public void setPrice(float price) {
-		setMetaData(METADATA_PRICE, String.valueOf(price), "java.lang.Float");
+
+	public void setLastRegistrationDatePrice1(Timestamp date) {
+		IWTimestamp stamp = new IWTimestamp(date);
+		setMetaData(METADATA_LAST_REGISTRATION_DATE_PRICE1, stamp.toSQLString(),
+				"java.sql.Timestamp");
 	}
-	
+
 	public void setChipRent(float rent) {
 		setMetaData(METADATA_CHIP_RENT, String.valueOf(rent), "java.lang.Float");
 	}
+	
+	public void setRaceCategory(RaceCategory raceCategory) {
+		if (raceCategory != null) {
+			setRaceCategory(raceCategory.getPrimaryKey().toString());
+		}
+	}
+	
+	public void setRaceCategory(String raceCategoryID) {
+		setMetaData(METADATA_RACE_CATEGORY, raceCategoryID, "java.lang.String");
+	}
+	
+	public void setRaceType(RaceType raceType) {
+		if (raceType != null) {
+			setRaceType(raceType.getPrimaryKey().toString());
+		}
+	}
+	
+	public void setRaceType(String raceTypeID) {
+		setMetaData(METADATA_RACE_TYPE, raceTypeID, "java.lang.String");
+	}
+
 }
