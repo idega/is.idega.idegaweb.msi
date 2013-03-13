@@ -139,7 +139,7 @@ public class SeasonEditor extends RaceBlock {
 	public void save(IWContext iwc) throws java.rmi.RemoteException, CreateException, FinderException {
 		String seasonName = iwc.getParameter(PARAMETER_SEASON);
 		Group parent = getGroupBiz(iwc).getGroupByGroupID(1430);
-		Season season = ConverterUtility.getInstance().convertGroupToSeason(getGroupBiz(iwc).createGroup(seasonName, "", MSIConstants.GROUP_TYPE_SEASON, -1, -1, true, parent));
+		Season season = ConverterUtility.getInstance().convertGroupToSeason(getGroupBiz(iwc).createGroup(seasonName, "", MSIConstants.GROUP_TYPE_SEASON, -1, -1, false, parent));
 		
 		if (season != null) {
 			season.setSeasonBeginDate(new IWTimestamp(iwc.getParameter(PARAMETER_SEASON_START)).getTimestamp());

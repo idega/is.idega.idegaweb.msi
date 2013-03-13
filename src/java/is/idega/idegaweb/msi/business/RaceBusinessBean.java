@@ -3,27 +3,32 @@
  */
 package is.idega.idegaweb.msi.business;
 
-import is.idega.block.family.business.FamilyLogic;
-import is.idega.block.family.business.NoParentFound;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.EventHome;
 import is.idega.idegaweb.msi.data.Participant;
 import is.idega.idegaweb.msi.data.ParticipantHome;
 import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceCategoryHome;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceTypeHome;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
+import is.idega.idegaweb.msi.data.RaceVehicleType;
+import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
 import is.idega.idegaweb.msi.data.Season;
 import is.idega.idegaweb.msi.data.SeasonHome;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.rmi.RemoteException;
-import java.sql.Date;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -38,33 +43,26 @@ import com.idega.block.creditcard.business.CreditCardClient;
 import com.idega.block.creditcard.data.CreditCardMerchant;
 import com.idega.block.creditcard.data.KortathjonustanMerchant;
 import com.idega.block.creditcard.data.KortathjonustanMerchantHome;
+import com.idega.block.trade.data.CreditCardInformation;
+import com.idega.block.trade.data.CreditCardInformationHome;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.business.IBORuntimeException;
 import com.idega.business.IBOServiceBean;
 import com.idega.core.contact.data.Email;
-import com.idega.core.location.data.Address;
-import com.idega.core.location.data.AddressHome;
 import com.idega.core.location.data.Country;
 import com.idega.core.location.data.CountryHome;
-import com.idega.core.location.data.PostalCode;
-import com.idega.core.location.data.PostalCodeHome;
-import com.idega.data.IDOAddRelationshipException;
 import com.idega.data.IDOCreateException;
-import com.idega.data.IDOException;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
-import com.idega.data.IDOStoreException;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWResourceBundle;
-import com.idega.idegaweb.UnavailableIWContext;
+import com.idega.presentation.ui.DropdownMenu;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.UserBusiness;
-import com.idega.user.data.Gender;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
 import com.idega.util.IWTimestamp;
-import com.idega.util.text.Name;
 
 /**
  * Description: Business bean (service) for run... <br>
@@ -92,22 +90,200 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	private static String DEFAULT_MESSAGEBOX_FROM_ADDRESS = "messagebox@idega.com";
 	private static String DEFAULT_CC_ADDRESS = "hjordis@ibr.is";
 
+	public static final String PROPERTY_INFO_PK = "cc_info_pk";
+
 	public Race createRace(String seasonID, String raceName, String raceDate,
-			String lastRegistration, String price, String chipRent) {
+			String lastRegistration, String lastRegistrationPrice1, String type, String category) {
 		Race race = null;
 
-		
-		
+		try {
+			Group season = getGroupBiz().getGroupByGroupID(
+					Integer.parseInt(seasonID));
+			Group gRace = getGroupBiz().createGroupUnder(raceName, raceName,
+					MSIConstants.GROUP_TYPE_RACE, season);
+			race = ConverterUtility.getInstance().convertGroupToRace(gRace);
+			race.setRaceDate(new IWTimestamp(raceDate).getTimestamp());
+			race.setLastRegistrationDate(new IWTimestamp(lastRegistration)
+					.getTimestamp());
+			race.setLastRegistrationDatePrice1(new IWTimestamp(lastRegistrationPrice1)
+			.getTimestamp());
+			race.setRaceType(type);
+			race.setRaceCategory(category);
+			//race.setChipRent(Float.parseFloat(chipRent));
+			race.store();
+		} catch (IBOLookupException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (FinderException e) {
+			e.printStackTrace();
+		} catch (CreateException e) {
+			e.printStackTrace();
+		}
+
 		return race;
 	}
 
-	public void updateRace(Race race, String raceDate,
-			String lastRegistration, String price, String chipRent) {
+	public void updateRace(Race race, String raceDate, String lastRegistration, String lastRegistrationPrice1, String type, String category) {
+
+		race.setRaceDate(new IWTimestamp(raceDate).getTimestamp());
+		race.setLastRegistrationDate(new IWTimestamp(lastRegistration)
+				.getTimestamp());
+		race.setLastRegistrationDatePrice1(new IWTimestamp(lastRegistrationPrice1).getTimestamp());
+		//race.setChipRent(Float.parseFloat(chipRent));
+		race.setRaceType(type);
+		race.setRaceCategory(category);
+		race.store();
 	}
 
-	
-	public boolean addEventsToRace(Race race, String events[]) {
+	public void updateRaceNumber(RaceNumber raceNumber, String userSSN) {
+		RaceUserSettings settings = null;
+		if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
+			try {
+				settings = getRaceUserSettingsHome().findBySnocrossRaceNumber(raceNumber);
+				settings.setRaceNumberSnocross(null);
+				settings.store();
+			} catch (Exception e) {
+			}
+		} else if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
+			try {
+				settings = getRaceUserSettingsHome().findByMXRaceNumber(raceNumber);
+				settings.setRaceNumberMX(null);
+				settings.store();
+			} catch (Exception e) {
+			}						
+		}
+
+		if (userSSN == null || "".equals(userSSN)) {
+			if (raceNumber.getApplicationDate() != null && settings != null) {
+				try {
+					Email mail = getUserBiz().getUserMail(settings.getUser());
+					sendMessage(mail.getEmailAddress(), this.getBundle().getLocalizedString("number_mail_rejection_subject", "Application rejected"), this.getBundle().getLocalizedString("number_mail_rejection_body", "Your application for a race number has been rejected rejected"));
+				} catch (IBOLookupException e) {
+				} catch (RemoteException e) {
+				}
+			}
+			
+			raceNumber.setApplicationDate(null);
+			raceNumber.setApprovedDate(null);
+			raceNumber.setIsApproved(false);
+			raceNumber.setIsInUse(false);
+			raceNumber.store();
+		} else {
+			try {
+				User user = this.getUserBiz().getUserHome().findByPersonalID(userSSN);
+
+				try {
+					try {
+					settings = getRaceUserSettingsHome().findByUser(user);
+					} 
+					catch (FinderException e) {
+						settings = null;
+					}
+					
+					if (settings == null) {
+						settings = getRaceUserSettingsHome().create();
+						settings.setUser(user);
+					}
+					
+					if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
+						settings.setRaceNumberSnocross(raceNumber);
+					} else if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
+						settings.setRaceNumberMX(raceNumber);
+					}
+					settings.store();
+				} catch (Exception e) {
+				}
+				
+				raceNumber.setApprovedDate(IWTimestamp.getTimestampRightNow());
+				raceNumber.setIsApproved(true);
+				raceNumber.setIsInUse(true);
+				raceNumber.store();
+			} catch (IBOLookupException e) {
+			} catch (RemoteException e) {
+			} catch (FinderException e) {
+			}
+		}
+	}
+
+	public boolean addEventsToRace(Race race, String events[], Map price,
+			Map price2) throws IBOLookupException, RemoteException,
+			FinderException {
+		if (events != null) {
+			Group gRace = null;
+			int eventCount = events.length;
+			try {
+				gRace = getGroupBiz().getGroupByGroupID(
+						(((Integer) race.getPrimaryKey()).intValue()));
+				if (gRace != null) {
+					Map raceEvents = getEventsForRace(race);
+					for (int i = 0; i < eventCount; i++) {
+						String id = events[i];
+						RaceEvent raceEvent = null;
+						if (raceEvents.containsKey(id)) {
+							raceEvent = (RaceEvent) raceEvents.get(id);
+						} else {
+							Event event = getEventHome().findByPrimaryKey(id);
+							Group gRaceEvent = getGroupBiz().createGroupUnder(
+									event.getName(), event.getName(),
+									MSIConstants.GROUP_TYPE_RACE_EVENT, gRace);
+							raceEvent = ConverterUtility.getInstance()
+									.convertGroupToRaceEvent(gRaceEvent);
+							raceEvent.setEventID(id);
+						}
+						raceEvent.setPrice(getPrice(price, id));
+						raceEvent.setPrice2(getPrice(price2, id));
+						raceEvent.store();
+					}
+				}
+			} catch (EJBException e) {
+				e.printStackTrace();
+			} catch (CreateException e) {
+				e.printStackTrace();
+			}
+		}
+
 		return true;
+	}
+
+	private float getPrice(Map price, String key) {
+		if (price.containsKey(key)) {
+			String value = (String) price.get(key);
+			if (value != null && !"".equals(value)) {
+				try {
+					return Float.parseFloat(value);
+				} catch (NumberFormatException e) {
+					return 0.0f;
+				}
+			}
+		}
+
+		return 0.0f;
+	}
+
+	public Map getEventsForRace(Race race) throws FinderException,
+			IBOLookupException, RemoteException {
+		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
+
+		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
+		Collection events = getGroupBiz().getChildGroups(gRace, types, true);
+		if (events != null) {
+			Iterator it = events.iterator();
+			Map eventIDList = new HashMap();
+
+			while (it.hasNext()) {
+				Group gEvent = (Group) it.next();
+				RaceEvent event = ConverterUtility.getInstance()
+						.convertGroupToRaceEvent(gEvent);
+				eventIDList.put(event.getEventID(), event);
+			}
+
+			return eventIDList;
+		}
+
+		return null;
 	}
 
 	public boolean isRegisteredInRun(int runID, int userID) {
@@ -124,46 +300,6 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return false;
 	}
 
-	public boolean isRegisteredInRun(String year, Group run, User user) {
-		try {
-			Group runYear = null;
-			String[] types = { MSIConstants.GROUP_TYPE_SEASON };
-			Collection years = getGroupBiz().getChildGroups(run, types, true);
-			Iterator iter = years.iterator();
-			while (iter.hasNext()) {
-				Group yearGroup = (Group) iter.next();
-				if (yearGroup.getName().equals(year)) {
-					runYear = yearGroup;
-					break;
-				}
-			}
-
-			if (runYear == null) {
-				return false;
-			}
-
-			((ParticipantHome) IDOLookup.getHome(Participant.class))
-					.findByUserAndRun(user, run, runYear);
-			return true;
-		} catch (FinderException fe) {
-			return false;
-		} catch (RemoteException ile) {
-			throw new IBORuntimeException(ile);
-		}
-	}
-
-	public boolean doesGroupExist(Object distancePK, String groupName) {
-		try {
-			return ((ParticipantHome) IDOLookup.getHome(Participant.class))
-					.getCountByDistanceAndGroupName(distancePK, groupName) > 0;
-		} catch (IDOException ie) {
-			ie.printStackTrace();
-			return false;
-		} catch (IDOLookupException ile) {
-			throw new IBORuntimeException(ile);
-		}
-	}
-
 	public Collection getEvents() {
 		try {
 			return ((EventHome) IDOLookup.getHome(Event.class)).findAll();
@@ -176,22 +312,47 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	public Collection getRaceTypes() {
+		try {
+			return ((RaceTypeHome) IDOLookup.getHome(RaceType.class)).findAll();
+		} catch (IDOLookupException e) {
+			e.printStackTrace();
+		} catch (FinderException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public Collection getRaceCategories() {
+		try {
+			return ((RaceCategoryHome) IDOLookup.getHome(RaceCategory.class)).findAll();
+		} catch (IDOLookupException e) {
+			e.printStackTrace();
+		} catch (FinderException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	
 	public boolean createEvent(String name) {
 		try {
 			Event event = ((EventHome) IDOLookup.getHome(Event.class)).create();
 			event.setName(name);
 			event.store();
-			
+
 			return true;
 		} catch (IDOLookupException e) {
 			e.printStackTrace();
 		} catch (CreateException e) {
 			e.printStackTrace();
 		}
-		
+
 		return false;
 	}
-	
+
 	public boolean isRegisteredInRun(int runID, String personalID) {
 		try {
 			User user = getUserBiz().getUserHome().findByPersonalID(personalID);
@@ -205,193 +366,68 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return false;
 	}
 
-	/**
-	 * saves information on the run for the specific user puts user in the right
-	 * group
-	 */
-	public void saveRun(int userID, String run, String distance, String year,
-			String nationality, String tshirt, String chipOwnershipStatus,
-			String chipNumber, String groupName, String bestTime,
-			String goalTime, Locale locale) {
-		Group groupRun = null;
-		Group disGroup = null;
-		int ageGenderGroupID = -1;
-		User user = null;
-		try {
-			groupRun = getGroupBiz().getGroupByGroupID(Integer.parseInt(run));
-		} catch (IBOLookupException e) {
-			e.printStackTrace();
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (UnavailableIWContext e) {
-			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
-		}
-		String distanceType = null;
-		try {
-			user = getUserBiz().getUser(userID);
-			if (distance != null && !distance.equals("")) {
-				int disGroupID = Integer.parseInt(distance);
 
-				try {
-					disGroup = getGroupBiz().getGroupByGroupID(disGroupID);
-					distanceType = disGroup.getName();
-				} catch (UnavailableIWContext e1) {
-					e1.printStackTrace();
-				} catch (FinderException e1) {
-					e1.printStackTrace();
-				}
-			}
-			ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-			Participant r = runHome.create();
-			r.setUserID(userID);
-			r.setRunTypeGroupID(Integer.parseInt(run));
-			r.setRunDistanceGroupID(Integer.parseInt(distance));
-			r.setRunYearGroupID(Integer.parseInt(year));
-			if (ageGenderGroupID != -1) {
-				r.setRunGroupGroupID(ageGenderGroupID);
-			}
-			r.setShirtSize(tshirt);
-			r.setChipOwnershipStatus(chipOwnershipStatus);
-			r.setChipNumber(chipNumber);
-			r.setRunGroupName(groupName);
-			r.setUserNationality(nationality);
-			if (bestTime != null && !bestTime.equals("")) {
-				r.setBestTime(bestTime);
-			}
-			if (goalTime != null && !goalTime.equals("")) {
-				r.setGoalTime(goalTime);
-			}
-			r.store();
-
-			Email email = getUserBiz().getUserMail(user);
-			if (groupRun != null && user != null && email != null
-					&& email.getEmailAddress() != null) {
-				IWResourceBundle iwrb = getIWApplicationContext()
-						.getIWMainApplication().getBundle(IW_BUNDLE_IDENTIFIER)
-						.getResourceBundle(locale);
-				Object[] args = {
-						user.getName(),
-						iwrb.getLocalizedString(groupRun.getName(), groupRun
-								.getName()),
-						iwrb.getLocalizedString(disGroup.getName(), disGroup
-								.getName()),
-						iwrb.getLocalizedString(tshirt, tshirt) };
-				String subject = iwrb.getLocalizedString(
-						"registration_received_subject_mail",
-						"Your registration has been received.");
-				String body = MessageFormat.format(iwrb.getLocalizedString(
-						"registration_received_body_mail",
-						"Your registration has been received."), args);
-				sendMessage(email.getEmailAddress(), subject, body);
-			}
-		} catch (RemoteException rme) {
-		} catch (CreateException cre) {
-		}
-	}
-
-	public Collection saveParticipants(Collection runners, String email,
-			String hiddenCardNumber, double amount, IWTimestamp date,
-			Locale locale) throws IDOCreateException {
-		Collection participants = new ArrayList();
+	public Participant saveParticipant(RaceParticipantInfo raceParticipantInfo,
+			String email, String hiddenCardNumber, double amount,
+			IWTimestamp date, Locale locale) throws IDOCreateException {
+		Participant retParticipant = null;
 
 		UserTransaction trans = getSessionContext().getUserTransaction();
 		try {
 			trans.begin();
-			Iterator iter = runners.iterator();
-			while (iter.hasNext()) {
-				Runner runner = (Runner) iter.next();
-				User user = runner.getUser();
-				if (user == null) {
+
+			User user = raceParticipantInfo.getUser();
+
+			RaceEvent event = raceParticipantInfo.getEvent();
+			event.addGroup(user);
+			Race race = raceParticipantInfo.getRace();
+
+			try {
+				ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
+				Participant participant = runHome.create();
+				participant.setUser(user);
+				participant.setRaceGroup(ConverterUtility.getInstance().convertRaceToGroup(race));
+				participant.setEventGroupID(((Integer)event.getPrimaryKey()).intValue());
+				if (raceParticipantInfo.getAmount() > 0) {
+					participant.setPayedAmount(String
+							.valueOf(raceParticipantInfo.getAmount()));
 				}
 
-				Group yearGroup = (Group) runner.getDistance().getParentNode();
-				Group run = runner.getRun();
-				Group distance = runner.getDistance();
+				participant.setChipNumber(raceParticipantInfo.getChipNumber());
+				participant.setRaceNumber(raceParticipantInfo.getRaceNumber());
+				participant.setRaceVehicle(raceParticipantInfo.getRaceVehicle());
+				participant.setSponsors(raceParticipantInfo.getSponsors());
+				participant.setRentChip(raceParticipantInfo.getRentChip());
+				participant.store();
+				retParticipant = participant;
 
-				try {
-					ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-					Participant participant = runHome.create();
-					participant.setUser(user);
-					participant.setRunTypeGroup(run);
-					participant.setRunDistanceGroup(distance);
-					participant.setRunYearGroup(yearGroup);
-					participant.setMaySponsorContact(runner
-							.isMaySponsorContactRunner());
-					if (runner.getAmount() > 0) {
-						participant.setPayedAmount(String.valueOf(runner
-								.getAmount()));
-					}
+				getUserBiz().updateUserHomePhone(user,
+						raceParticipantInfo.getHomePhone());
+				getUserBiz().updateUserMobilePhone(user,
+						raceParticipantInfo.getMobilePhone());
+				getUserBiz().updateUserMail(user,
+						raceParticipantInfo.getEmail());
 
-					participant.setShirtSize(runner.getShirtSize());
-					if (runner.isOwnChip()) {
-						participant
-								.setChipOwnershipStatus(MSIConstants.CHIP_OWN);
-					} else if (runner.isRentChip()) {
-						participant
-								.setChipOwnershipStatus(MSIConstants.CHIP_RENT);
-					} else if (runner.isBuyChip()) {
-						participant
-								.setChipOwnershipStatus(MSIConstants.CHIP_BUY);
-					}
-					participant.setChipNumber(runner.getChipNumber());
-					participant.setUserNationality(runner.getNationality()
-							.getName());
-					participant.setTransportOrdered(String.valueOf(runner
-							.isTransportOrdered()));
-					participant.store();
-					participants.add(participant);
-
-					getUserBiz().updateUserHomePhone(user,
-							runner.getHomePhone());
-					getUserBiz().updateUserMobilePhone(user,
-							runner.getMobilePhone());
-					getUserBiz().updateUserMail(user, runner.getEmail());
-
-					if (runner.getEmail() != null) {
-						IWResourceBundle iwrb = getIWApplicationContext()
-								.getIWMainApplication().getBundle(
-										MSIConstants.IW_BUNDLE_IDENTIFIER)
-								.getResourceBundle(locale);
-						String distanceString = iwrb.getLocalizedString(
-								distance.getName(), distance.getName());
-						if (runner.isTransportOrdered()) {
-							distanceString = distanceString
-									+ " ("
-									+ iwrb.getLocalizedString(
-											"run_reg.with_bus_trip",
-											"with bus trip") + ")";
-						}
-						Object[] args = {
-								user.getName(),
-								iwrb.getLocalizedString(run.getName(), run
-										.getName()),
-								distanceString,
-								iwrb.getLocalizedString("shirt_size."
-										+ runner.getShirtSize(), runner
-										.getShirtSize()),
-								String.valueOf(participant
-										.getParticipantNumber()) };
-						String subject = iwrb.getLocalizedString(
-								"registration_received_subject_mail",
-								"Your registration has been received.");
-						String body = MessageFormat
-								.format(
-										iwrb
-												.getLocalizedString(
-														"registration_received_body_mail",
-														"Your registration has been received."),
-										args);
-						sendMessage(runner.getEmail(), subject, body);
-					}
-				} catch (CreateException ce) {
-					ce.printStackTrace();
-				} catch (RemoteException re) {
-					throw new IBORuntimeException(re);
+				if (raceParticipantInfo.getEmail() != null) {
+					IWResourceBundle iwrb = getIWApplicationContext()
+							.getIWMainApplication().getBundle(
+									MSIConstants.IW_BUNDLE_IDENTIFIER)
+							.getResourceBundle(locale);
+					Object[] args = {
+							user.getName(),
+							race.getName(), event.getEventID() };
+					String subject = iwrb.getLocalizedString(
+							"registration_received_subject_mail",
+							"Your registration has been received.");
+					String body = MessageFormat.format(iwrb.getLocalizedString(
+							"registration_received_body_mail",
+							"Your registration has been received."), args);
+					sendMessage(raceParticipantInfo.getEmail(), subject, body);
 				}
+			} catch (CreateException ce) {
+				ce.printStackTrace();
+			} catch (RemoteException re) {
+				throw new IBORuntimeException(re);
 			}
 
 			if (email != null) {
@@ -406,7 +442,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 								IWTimestamp.SHORT) };
 				String subject = iwrb.getLocalizedString(
 						"receipt_subject_mail",
-						"Your receipt for registration on Marathon.is");
+						"Your receipt for registration on msisport.is");
 				String body = MessageFormat.format(iwrb.getLocalizedString(
 						"receipt_body_mail",
 						"Your registration has been received."), args);
@@ -423,29 +459,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			throw new IDOCreateException(ex);
 		}
 
-		return participants;
-	}
-
-	public void addParticipantsToGroup(String[] participants,
-			String[] bestTimes, String[] estimatedTimes, String groupName) {
-		try {
-			ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-
-			for (int i = 0; i < participants.length; i++) {
-				try {
-					Participant participant = runHome
-							.findByPrimaryKey(new Integer(participants[i]));
-					participant.setBestTime(bestTimes[i]);
-					participant.setGoalTime(estimatedTimes[i]);
-					participant.setRunGroupName(groupName);
-					participant.store();
-				} catch (FinderException fe) {
-					fe.printStackTrace();
-				}
-			}
-		} catch (RemoteException re) {
-			throw new IBORuntimeException(re);
-		}
+		return retParticipant;
 	}
 
 	public void finishPayment(String properties)
@@ -482,32 +496,24 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
-	public float getPriceForRunner(Runner runner, Locale locale,
-			float chipDiscount, float chipPrice) {
-		if (runner.getUser() != null) {
-			int groupID = Integer.parseInt(getIWApplicationContext()
-					.getIWMainApplication().getBundle(IW_BUNDLE_IDENTIFIER)
-					.getProperty(MSIConstants.PROPERTY_STAFF_GROUP_ID, "-1"));
-			if (groupID != -1) {
-				try {
-					if (getUserBiz().isMemberOfGroup(groupID, runner.getUser())) {
-						return 0;
-					}
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-			}
+	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
+		IWTimestamp now = IWTimestamp.RightNow();
+		float racePrice = 0.0f;
+		
+		IWTimestamp lastReg = new IWTimestamp(raceParticipantInfo.getRace().getLastRegistrationDatePrice1());
+		lastReg.addDays(1);
+		
+		if (now.isLaterThan(lastReg)) {
+			racePrice += raceParticipantInfo.getEvent().getPrice2();
+		} else {
+			racePrice += raceParticipantInfo.getEvent().getPrice();			
 		}
-
-		float runnerPrice = 0.0f;// runner.getDistance().getPrice(locale);
-
-		if (runner.isOwnChip() || runner.isBuyChip()) {
-			runnerPrice = runnerPrice - chipDiscount;
-			if (runner.isBuyChip()) {
-				runnerPrice += chipPrice;
-			}
-		}
-		return runnerPrice;
+		
+		/*if (raceParticipantInfo.getRentChip()) {
+			racePrice += raceParticipantInfo.getRace().getChipRent();
+		}*/
+		
+		return racePrice;
 	}
 
 	public Collection getCreditCardImages() {
@@ -524,66 +530,62 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	private CreditCardMerchant getCreditCardMerchant() throws FinderException {
-		String merchantPK = getIWApplicationContext().getIWMainApplication()
-				.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER).getProperty(
-						MSIConstants.PROPERTY_MERCHANT_PK);
-		if (merchantPK != null) {
+		String infoPK = getIWApplicationContext().getIWMainApplication()
+				.getBundle(IW_BUNDLE_IDENTIFIER).getProperty(PROPERTY_INFO_PK);
+		if (infoPK != null) {
 			try {
-				return ((KortathjonustanMerchantHome) IDOLookup
-						.getHome(KortathjonustanMerchant.class))
-						.findByPrimaryKey(new Integer(merchantPK));
-			} catch (IDOLookupException ile) {
-				throw new IBORuntimeException(ile);
+				CreditCardInformationHome ccInfoHome = (CreditCardInformationHome) IDOLookup
+						.getHome(CreditCardInformation.class);
+				CreditCardInformation ccInfo = ccInfoHome
+						.findByPrimaryKey(new Integer(infoPK));
+				CreditCardMerchant merchant = getCreditCardBusiness()
+						.getCreditCardMerchant(ccInfo);
+				return merchant;
+			} catch (IDOLookupException e) {
+				throw new IBORuntimeException(e);
 			}
-		}
-		return null;
-	}
-
-	public void savePayment(int userID, int distanceID, String payMethod,
-			String amount) {
-		try {
-			ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-			Participant run = runHome.findByUserIDandDistanceID(userID,
-					distanceID);
-			if (run != null) {
-				run.setPayMethod(payMethod);
-				run.setPayedAmount(amount);
-				run.store();
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void savePaymentByUserID(int userID, String payMethod, String amount) {
-		try {
-			try {
-				ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-				Collection runObjs = runHome.findByUserID(userID);
-				if (runObjs != null) {
-					Iterator runIt = runObjs.iterator();
-					while (runIt.hasNext()) {
-						Participant run = (Participant) runIt.next();
-						if (run != null) {
-							run.setPayMethod(payMethod);
-							run.setPayedAmount(amount);
-							run.store();
-						}
-					}
-
+		} else {
+			String merchantPK = getIWApplicationContext()
+					.getIWMainApplication().getBundle(IW_BUNDLE_IDENTIFIER)
+					.getProperty(MSIConstants.PROPERTY_MERCHANT_PK);
+			if (merchantPK != null) {
+				try {
+					return ((KortathjonustanMerchantHome) IDOLookup
+							.getHome(KortathjonustanMerchant.class))
+							.findByPrimaryKey(new Integer(merchantPK));
+				} catch (IDOLookupException ile) {
+					throw new IBORuntimeException(ile);
 				}
-			} catch (IDOStoreException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (FinderException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
 			}
+			return null;
+		}
+	}
+
+	public DropdownMenu getAvailableCardTypes(IWResourceBundle iwrb) {
+		try {
+			CreditCardMerchant merchant = getCreditCardMerchant();
+			if (merchant != null) {
+				return getCreditCardBusiness().getCreditCardTypes(
+						getCreditCardBusiness().getCreditCardClient(merchant),
+						iwrb, "CARD_TYPE");
+			}
+		} catch (FinderException fe) {
+			fe.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return new DropdownMenu();
+	}
+
+	private EventHome getEventHome() {
+		EventHome eventHome = null;
+		try {
+			eventHome = (EventHome) getIDOHome(Event.class);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
+
+		return eventHome;
 	}
 
 	public Season getSeasonByGroupId(Integer groupId) {
@@ -661,6 +663,35 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 	}
 
+	public Collection getMXRaceNumbers() {
+		Collection numbers = null;
+		String type = MSIConstants.RACE_TYPE_MX_AND_ENDURO;
+		try {
+			RaceType typeEntry = ((RaceTypeHome) getIDOHome(RaceType.class)).findByRaceType(type);
+			RaceNumberHome home = (RaceNumberHome) getIDOHome(RaceNumber.class);
+			numbers = home.findAllNotInUseByType(typeEntry);
+		} catch (Exception e) {
+			e.printStackTrace();
+			numbers = null;
+		}
+		return numbers;
+	}
+
+	public Collection getSnocrossRaceNumbers() {
+		Collection numbers = null;
+		String type = MSIConstants.RACE_TYPE_SNOCROSS;
+		try {
+			RaceType typeEntry = ((RaceTypeHome) getIDOHome(RaceType.class)).findByRaceType(type);
+			RaceNumberHome home = (RaceNumberHome) getIDOHome(RaceNumber.class);
+			numbers = home.findAllNotInUseByType(typeEntry);
+		} catch (Exception e) {
+			e.printStackTrace();
+			numbers = null;
+		}
+		return numbers;
+	}
+
+	
 	/**
 	 * Gets all countries. This method is for example used when displaying a
 	 * dropdown menu of all countries
@@ -728,5 +759,73 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			e1.printStackTrace();
 		}
 		return participant;
+	}
+	
+	public ParticipantHome getParticipantHome() {
+		try {
+			return (ParticipantHome) getIDOHome(Participant.class);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public RaceUserSettingsHome getRaceUserSettingsHome() {
+		try {
+			return (RaceUserSettingsHome) getIDOHome(RaceUserSettings.class);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	public RaceTypeHome getRaceTypeHome() {
+		try {
+			return (RaceTypeHome) getIDOHome(RaceType.class);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	public RaceNumberHome getRaceNumberHome() {
+		try {
+			return (RaceNumberHome) getIDOHome(RaceNumber.class);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	public RaceVehicleTypeHome getRaceVehicleTypeHome() {
+		try {
+			return (RaceVehicleTypeHome) getIDOHome(RaceVehicleType.class);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+
+	public RaceUserSettings getRaceUserSettings(User user) {
+		if (user == null) {
+			return null;
+		}
+		RaceUserSettings settings = null;
+		RaceUserSettingsHome home = getRaceUserSettingsHome();
+		if (home != null) {
+			try {
+				settings = home.findByUser(user);
+			} catch (FinderException e) {
+			}
+		}
+		
+		return settings;
 	}
 }

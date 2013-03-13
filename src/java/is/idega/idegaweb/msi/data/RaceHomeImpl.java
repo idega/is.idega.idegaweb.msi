@@ -6,7 +6,6 @@ import javax.ejb.FinderException;
 import com.idega.data.IDOFactory;
 
 public class RaceHomeImpl extends IDOFactory implements RaceHome {
-	@Override
 	public Class getEntityInterfaceClass() {
 		return Race.class;
 	}

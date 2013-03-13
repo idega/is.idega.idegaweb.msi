@@ -1,5 +1,5 @@
 /*
- * $Id: SeasonBMPBean.java,v 1.1 2007/06/07 22:54:32 palli Exp $
+ * $Id: SeasonBMPBean.java,v 1.1 2007/06/11 12:14:19 palli Exp $
  * Created on May 22, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -16,7 +16,7 @@ import com.idega.user.data.GroupBMPBean;
 import com.idega.util.IWTimestamp;
 
 /**
- * Last modified: $Date: 2007/06/07 22:54:32 $ by $Author: palli $
+ * Last modified: $Date: 2007/06/11 12:14:19 $ by $Author: palli $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
  * @version $Revision: 1.1 $

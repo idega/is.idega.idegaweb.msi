@@ -7,11 +7,10 @@
 package is.idega.idegaweb.msi.presentation;
 
 import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.RaceEvent;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.text.NumberFormat;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Locale;
 
 import com.idega.idegaweb.IWResourceBundle;
@@ -53,7 +52,7 @@ public class RegistrationReceivedPrintable extends Window {
 		table.setWidth(Table.HUNDRED_PERCENT);
 		int row = 1;
 		
-		Collection runners = (Collection) iwc.getSessionAttribute(Registration.SESSION_ATTRIBUTE_PARTICIPANTS);
+		Participant participant = (Participant) iwc.getSessionAttribute(Registration.SESSION_ATTRIBUTE_PARTICIPANT);
 		double amount = ((Double) iwc.getSessionAttribute(Registration.SESSION_ATTRIBUTE_AMOUNT)).doubleValue();
 		String cardNumber = (String) iwc.getSessionAttribute(Registration.SESSION_ATTRIBUTE_CARD_NUMBER);
 		IWTimestamp stamp = (IWTimestamp) iwc.getSessionAttribute(Registration.SESSION_ATTRIBUTE_PAYMENT_DATE);
@@ -64,36 +63,19 @@ public class RegistrationReceivedPrintable extends Window {
 		table.add(getText(iwrb.getLocalizedString("run_reg.payment received", "We have received payment for the following:")), 1, row++);
 		table.setHeight(row++, 8);
 
-		Table runnerTable = new Table(5, runners.size() + 3);
+		Table runnerTable = new Table(3, 4);
 		runnerTable.setWidth(Table.HUNDRED_PERCENT);
 		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.runner_name", "Runner name")), 1, 1);
-		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.run", "Run")), 2, 1);
-		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.distance", "Distance")), 3, 1);
-		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.race_number", "Race number")), 4, 1);
-		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.shirt_size", "Shirt size")), 5, 1);
+		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.race", "Race")), 2, 1);
+		runnerTable.add(getHeader(iwrb.getLocalizedString("run_reg.event", "Event")), 3, 1);
 		table.add(runnerTable, 1, row++);
 		int runRow = 2;
-		int transportToBuy = 0;
-		Iterator iter = runners.iterator();
-		while (iter.hasNext()) {
-			Participant participant = (Participant) iter.next();
-			Group run = participant.getRunTypeGroup();
-			Group distance = participant.getRunDistanceGroup();
-			
-			runnerTable.add(getText(participant.getUser().getName()), 1, runRow);
-			runnerTable.add(getText(iwrb.getLocalizedString(run.getName(), run.getName())), 2, runRow);
-			runnerTable.add(getText(iwrb.getLocalizedString(distance.getName(), distance.getName())), 3, runRow);
-			runnerTable.add(getText(String.valueOf(participant.getParticipantNumber())), 4, runRow);
-			runnerTable.add(getText(iwrb.getLocalizedString("shirt_size." + participant.getShirtSize(), participant.getShirtSize())), 5, runRow++);
-			if (participant.getTransportOrdered().equalsIgnoreCase(Boolean.TRUE.toString())) {
-				transportToBuy++;
-			}
-		}
-		if (transportToBuy > 0) {
-			runRow++;
-			runnerTable.mergeCells(1, runRow, 5, runRow);
-			runnerTable.add(getText(transportToBuy + " x " + iwrb.getLocalizedString("run_reg.transport_to_race_starting_point", "Bus trip to race starting point")), 1, runRow);
-		}
+		Group race = participant.getRaceGroup();
+		RaceEvent event = participant.getRaceEvent();
+		
+		runnerTable.add(getText(participant.getUser().getName()), 1, runRow);
+		runnerTable.add(getText(race.getName()), 2, runRow);
+		runnerTable.add(getText(event.getEventID()), 3, runRow++);
 		
 		Table creditCardTable = new Table(2, 3);
 		creditCardTable.add(getHeader(iwrb.getLocalizedString("run_reg.payment_received_timestamp", "Payment received") + ":"), 1, 1);
@@ -106,17 +88,13 @@ public class RegistrationReceivedPrintable extends Window {
 		table.add(creditCardTable, 1, row++);
 		
 		table.setHeight(row++, 16);
-		table.add(getHeader(iwrb.getLocalizedString("run_reg.delivery_of_race_material_headline", "Race material and T-shirt/sweatshirt")), 1, row++);
-		table.add(getText(iwrb.getLocalizedString("run_reg.delivery_of_race_material_body", "Participants can collect their race number and the t-shirt/sweatshirt here.")), 1, row++);
-
-		table.setHeight(row++, 16);
 		table.add(getHeader(iwrb.getLocalizedString("run_reg.receipt_info_headline", "Receipt - Please Print It Out")), 1, row++);
-		table.add(getText(iwrb.getLocalizedString("run_reg.receipt_info_headline_body", "This document is your receipt, please print this out and bring it with you when you get your race number and T-shirt/sweatshirt.")), 1, row++);
+		table.add(getText(iwrb.getLocalizedString("run_reg.receipt_info_headline_body", "This document is your receipt, please print this out.")), 1, row++);
 
 		table.setHeight(row++, 16);
 		table.add(getText(iwrb.getLocalizedString("run_reg.best_regards", "Best regards,")), 1, row++);
-		table.add(getText(iwrb.getLocalizedString("run_reg.reykjavik_marathon", "Reykjavik Marathon")), 1, row++);
-		table.add(getText("www.marathon.is"), 1, row++);
+		table.add(getText(iwrb.getLocalizedString("run_reg.msi", "MSI")), 1, row++);
+		table.add(getText("www.msisport.is"), 1, row++);
 		
 		table.setHeight(row++, 16);
 		t.add(table, 1, 1);

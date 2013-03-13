@@ -17,14 +17,24 @@ public interface Race extends IDOEntity, Group {
 	public Timestamp getLastRegistrationDate();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#getPrice
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#getLastRegistrationDatePrice1
 	 */
-	public float getPrice();
+	public Timestamp getLastRegistrationDatePrice1();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#getChipRent
 	 */
 	public float getChipRent();
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#getRaceCategory
+	 */
+	public RaceCategory getRaceCategory();
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#getRaceType
+	 */
+	public RaceType getRaceType();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceDate
@@ -37,12 +47,32 @@ public interface Race extends IDOEntity, Group {
 	public void setLastRegistrationDate(Timestamp date);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setPrice
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setLastRegistrationDatePrice1
 	 */
-	public void setPrice(float price);
+	public void setLastRegistrationDatePrice1(Timestamp date);
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setChipRent
 	 */
 	public void setChipRent(float rent);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceCategory
+	 */
+	public void setRaceCategory(RaceCategory raceCategory);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceCategory
+	 */
+	public void setRaceCategory(String raceCategoryID);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceType
+	 */
+	public void setRaceType(RaceType raceType);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceType
+	 */
+	public void setRaceType(String raceTypeID);
 }

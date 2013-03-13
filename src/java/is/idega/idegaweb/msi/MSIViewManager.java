@@ -2,6 +2,8 @@ package is.idega.idegaweb.msi;
 
 import is.idega.idegaweb.msi.presentation.EventEditor;
 import is.idega.idegaweb.msi.presentation.RaceEditor;
+import is.idega.idegaweb.msi.presentation.RaceNumberEditor;
+import is.idega.idegaweb.msi.presentation.RaceReport;
 import is.idega.idegaweb.msi.presentation.SeasonEditor;
 
 import java.util.ArrayList;
@@ -58,13 +60,13 @@ public class MSIViewManager {
 		setupNode
 				.setName("#{localizedStrings['is.idega.idegaweb.msi']['Setup']}");
 
-		WorkspaceClassViewNode seasons = new WorkspaceClassViewNode("runs",
+		WorkspaceClassViewNode seasons = new WorkspaceClassViewNode("seasons",
 				setupNode);
 		seasons
 				.setName("#{localizedStrings['is.idega.idegaweb.msi']['msi_seasons']}");
 		seasons.setComponentClass(SeasonEditor.class);
 
-		WorkspaceClassViewNode races = new WorkspaceClassViewNode("runYears",
+		WorkspaceClassViewNode races = new WorkspaceClassViewNode("races",
 				setupNode);
 		races
 				.setName("#{localizedStrings['is.idega.idegaweb.msi']['msi_season_races']}");
@@ -75,6 +77,18 @@ public class MSIViewManager {
 		events
 				.setName("#{localizedStrings['is.idega.idegaweb.msi']['msi_events']}");
 		events.setComponentClass(EventEditor.class);
+
+		WorkspaceClassViewNode report = new WorkspaceClassViewNode("report",
+				setupNode);
+		report
+				.setName("#{localizedStrings['is.idega.idegaweb.msi']['msi_report']}");
+		report.setComponentClass(RaceReport.class);
+
+		WorkspaceClassViewNode raceNumbers = new WorkspaceClassViewNode("raceNumbers",
+				setupNode);
+		raceNumbers
+				.setName("#{localizedStrings['is.idega.idegaweb.msi']['msi_raceNumbers']}");
+		raceNumbers.setComponentClass(RaceNumberEditor.class);
 
 		return msiNode;
 	}

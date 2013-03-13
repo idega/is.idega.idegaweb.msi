@@ -7,22 +7,23 @@ import javax.ejb.FinderException;
 import com.idega.data.IDOEntity;
 import com.idega.data.IDOFactory;
 
-public class EventHomeImpl extends IDOFactory implements EventHome {
+public class RaceCategoryHomeImpl extends IDOFactory implements
+		RaceCategoryHome {
 	public Class getEntityInterfaceClass() {
-		return Event.class;
+		return RaceCategory.class;
 	}
 
-	public Event create() throws CreateException {
-		return (Event) super.createIDO();
+	public RaceCategory create() throws CreateException {
+		return (RaceCategory) super.createIDO();
 	}
 
-	public Event findByPrimaryKey(Object pk) throws FinderException {
-		return (Event) super.findByPrimaryKeyIDO(pk);
+	public RaceCategory findByPrimaryKey(Object pk) throws FinderException {
+		return (RaceCategory) super.findByPrimaryKeyIDO(pk);
 	}
 
 	public Collection findAll() throws FinderException {
 		IDOEntity entity = this.idoCheckOutPooledEntity();
-		Collection ids = ((EventBMPBean) entity).ejbFindAll();
+		Collection ids = ((RaceCategoryBMPBean) entity).ejbFindAll();
 		this.idoCheckInPooledEntity(entity);
 		return this.getEntityCollectionForPrimaryKeys(ids);
 	}

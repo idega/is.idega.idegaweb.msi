@@ -101,4 +101,12 @@ public class MSIConstants {
 	public static final int RYSDD_GROUPS_COMP = 3;
 
 	public static final String PROPERTY_SEND_EMAILS = "send_emails";
+	
+	public static final String RACE_TYPE_MX_AND_ENDURO = "MX og Enduro";
+	public static final String RACE_TYPE_SNOCROSS = "Snocross";
+	
+	public static final String VEHICLE_TYPES[] = {"GasGas", "Husaberg", "Kawasaki", "KTM", "Honda", "Suzuki", "TM", "Yamaha"};
+	
+	public static final String ICELANDIC_CHAMPIONSHIP = "race_category.icelandic_championship";
+	
 }

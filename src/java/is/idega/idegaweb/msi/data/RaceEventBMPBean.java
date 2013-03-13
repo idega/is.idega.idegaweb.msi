@@ -1,5 +1,5 @@
 /*
- * $Id: RaceEventBMPBean.java,v 1.1 2007/06/07 22:54:33 palli Exp $
+ * $Id: RaceEventBMPBean.java,v 1.1 2007/06/11 12:14:19 palli Exp $
  * Created on May 22, 2005
  *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
@@ -14,7 +14,7 @@ import com.idega.user.data.GroupBMPBean;
 
 
 /**
- * Last modified: $Date: 2007/06/07 22:54:33 $ by $Author: palli $
+ * Last modified: $Date: 2007/06/11 12:14:19 $ by $Author: palli $
  * 
  * @author <a href="mailto:laddi@idega.com">laddi</a>
  * @version $Revision: 1.1 $
@@ -22,22 +22,48 @@ import com.idega.user.data.GroupBMPBean;
 public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 	private static final String METADATA_EVENT_ID = "event_id";
+	
+	private static final String METADATA_PRICE = "price";
 
-	public int getEventID() {
+	private static final String METADATA_PRICE2 = "price2";
+	
+	//getters
+	public String getEventID() {
 		String id = getMetaData(METADATA_EVENT_ID);
 
-		if (id != null) {
-			return Integer.parseInt(id);
+		return id;
+	}
+	
+	public float getPrice() {
+		String price = getMetaData(METADATA_PRICE);
+
+		if (price != null) {
+			return Float.parseFloat(price);
 		}
 	
 		return 0;
 	}
+
+	public float getPrice2() {
+		String price = getMetaData(METADATA_PRICE2);
+
+		if (price != null) {
+			return Float.parseFloat(price);
+		}
 	
-	public void setEventID(int id) {
-		setMetaData(METADATA_EVENT_ID, String.valueOf(id), "java.lang.Integer");
+		return 0;
+	}
+
+	//setters
+	public void setEventID(String id) {
+		setMetaData(METADATA_EVENT_ID, id, "java.lang.String");
+	}
+
+	public void setPrice(float price) {
+		setMetaData(METADATA_PRICE, String.valueOf(price), "java.lang.Float");
 	}
 	
-	public void setEventID(Integer id) {
-		setMetaData(METADATA_EVENT_ID, id.toString(), "java.lang.Integer");
+	public void setPrice2(float price) {
+		setMetaData(METADATA_PRICE2, String.valueOf(price), "java.lang.Float");
 	}
 }
