@@ -1,11 +1,11 @@
 package is.idega.idegaweb.msi.data;
 
 
-import com.idega.user.data.Group;
-import java.util.Collection;
 import javax.ejb.CreateException;
 import com.idega.data.IDOHome;
 import javax.ejb.FinderException;
+import java.util.Collection;
+import com.idega.user.data.Group;
 
 public interface ParticipantHome extends IDOHome {
 	public Participant create() throws CreateException;

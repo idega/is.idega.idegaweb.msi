@@ -1,31 +1,31 @@
 package is.idega.idegaweb.msi.business;
 
 
-import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
-import com.idega.presentation.ui.DropdownMenu;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.ParticipantHome;
-import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
-import com.idega.business.IBOService;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.RaceNumberHome;
-import com.idega.core.location.data.Country;
-import com.idega.idegaweb.IWResourceBundle;
 import java.util.Map;
-import com.idega.block.creditcard.business.CreditCardAuthorizationException;
-import is.idega.idegaweb.msi.data.RaceTypeHome;
-import com.idega.user.data.User;
-import com.idega.data.IDOCreateException;
 import java.rmi.RemoteException;
-import java.util.Locale;
-import is.idega.idegaweb.msi.data.Participant;
-import java.util.Collection;
+import com.idega.data.IDOCreateException;
 import com.idega.util.IWTimestamp;
-import javax.ejb.FinderException;
-import com.idega.user.business.UserBusiness;
+import java.util.Locale;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Participant;
+import com.idega.core.location.data.Country;
+import java.util.Collection;
+import com.idega.presentation.ui.DropdownMenu;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
 import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceTypeHome;
+import com.idega.business.IBOService;
+import com.idega.block.creditcard.business.CreditCardAuthorizationException;
+import is.idega.idegaweb.msi.data.ParticipantHome;
 import com.idega.business.IBOLookupException;
+import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
+import com.idega.user.business.UserBusiness;
+import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
+import com.idega.user.data.User;
+import javax.ejb.FinderException;
+import is.idega.idegaweb.msi.data.Race;
+import com.idega.idegaweb.IWResourceBundle;
 
 public interface RaceBusiness extends IBOService {
 	/**
@@ -52,8 +52,8 @@ public interface RaceBusiness extends IBOService {
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#addEventsToRace
 	 */
 	public boolean addEventsToRace(Race race, String[] events, Map price,
-			Map price2) throws IBOLookupException, RemoteException,
-			FinderException, RemoteException;
+			Map price2, Map teamCount) throws IBOLookupException,
+			RemoteException, FinderException, RemoteException;
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getEventsForRace

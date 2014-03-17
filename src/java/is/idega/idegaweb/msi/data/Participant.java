@@ -1,9 +1,10 @@
 package is.idega.idegaweb.msi.data;
 
 
-import com.idega.user.data.Group;
-import com.idega.user.data.User;
 import com.idega.data.IDOEntity;
+import com.idega.user.data.User;
+import java.sql.Timestamp;
+import com.idega.user.data.Group;
 
 public interface Participant extends IDOEntity {
 	/**
@@ -77,9 +78,24 @@ public interface Participant extends IDOEntity {
 	public String getPayedAmount();
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getRentChip
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getComment
 	 */
-	public boolean getRentChip();
+	public String getComment();
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getPartner1
+	 */
+	public String getPartner1();
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getPartner2
+	 */
+	public String getPartner2();
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getCreatedDate
+	 */
+	public Timestamp getCreatedDate();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSeasonGroupID
@@ -152,7 +168,22 @@ public interface Participant extends IDOEntity {
 	public void setPayedAmount(String amount);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setRentChip
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setComment
 	 */
-	public void setRentChip(boolean rentChip);
+	public void setComment(String comment);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setPartner1
+	 */
+	public void setPartner1(String partner1);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setPartner2
+	 */
+	public void setPartner2(String partner2);
+
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setCreatedDate
+	 */
+	public void setCreatedDate(Timestamp created);
 }

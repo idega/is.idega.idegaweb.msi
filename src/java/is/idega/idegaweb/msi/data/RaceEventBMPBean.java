@@ -27,6 +27,12 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 	private static final String METADATA_PRICE2 = "price2";
 	
+	//private static final String METADATA_HAS_CHIP = "has_chip";
+
+	//private static final String METADATA_CHIP_PRICE = "chip_price";
+	
+	private static final String METADATA_TEAM_COUNT = "team_count";
+
 	//getters
 	public String getEventID() {
 		String id = getMetaData(METADATA_EVENT_ID);
@@ -54,6 +60,40 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		return 0;
 	}
 
+/*	public boolean getHasChip() {
+		String hasChip = getMetaData(METADATA_HAS_CHIP);
+		
+		if (hasChip != null) {
+			return Boolean.parseBoolean(hasChip);
+		}
+		
+		return false;
+	}
+	
+	public float getChipPrice() {
+		String price = getMetaData(METADATA_CHIP_PRICE);
+
+		if (price != null) {
+			return Float.parseFloat(price);
+		}
+	
+		return 0;		
+	}*/
+	
+	public int getTeamCount() {
+		String teamCount= getMetaData(METADATA_TEAM_COUNT);
+		
+		if (teamCount != null && !"".equals(teamCount.trim())) {
+			try {
+				return Integer.parseInt(teamCount);
+			} catch (NumberFormatException e) {
+				return 1;
+			}
+		}
+		
+		return 1;
+	}
+	
 	//setters
 	public void setEventID(String id) {
 		setMetaData(METADATA_EVENT_ID, id, "java.lang.String");
@@ -65,5 +105,18 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	
 	public void setPrice2(float price) {
 		setMetaData(METADATA_PRICE2, String.valueOf(price), "java.lang.Float");
+	}
+	
+/*	public void setHasChip(boolean hasChip) {
+		setMetaData(METADATA_HAS_CHIP, Boolean.valueOf(hasChip).toString(), "java.lang.Boolean");
+	}
+
+	
+	public void setChipPrice(float price) {
+		setMetaData(METADATA_CHIP_PRICE, String.valueOf(price), "java.lang.Float");
+	}*/
+
+	public void setTeamCount(int teamCount) {
+		setMetaData(METADATA_TEAM_COUNT, String.valueOf(teamCount), "java.lang.Integer");
 	}
 }

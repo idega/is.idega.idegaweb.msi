@@ -46,12 +46,14 @@ public class RaceEditor extends RaceBlock {
 	protected static final String PARAMETER_RACE_DATE = "prm_race_date";
 	protected static final String PARAMETER_LAST_REGISTRATION_DATE = "prm_last_registration_date";
 	protected static final String PARAMETER_LAST_REGISTRATION_DATE_PRICE1 = "prm_last_registration_date_price1";
-//	protected static final String PARAMETER_CHIP_RENT = "prm_chip_rent";
 	protected static final String PARAMETER_RACE_EVENTS = "prm_race_event";
 	protected static final String PARAMETER_RACE_EVENTS_PRICE = "prm_race_event_price";
 	protected static final String PARAMETER_RACE_EVENTS_PRICE2 = "prm_race_event_price2";
+	protected static final String PARAMETER_RACE_EVENTS_CHIP = "prm_race_event_chip";
+	protected static final String PARAMETER_RACE_EVENTS_CHIP_PRICE = "prm_race_event_chip_price";
 	protected static final String PARAMETER_RACE_CATEGORY = "prm_race_category";
 	protected static final String PARAMETER_RACE_TYPE = "prm_race_type";
+	protected static final String PARAMETER_RACE_TEAM_COUNT = "prm_race_team_count";
 	
 	private static final int ACTION_VIEW = 1;
 	private static final int ACTION_EDIT = 2;
@@ -159,7 +161,6 @@ public class RaceEditor extends RaceBlock {
 		}
 				
 		group = table.createBodyRowGroup();
-		int iRow = 1;
 		
 		if (races != null) {
 			Iterator iter = races.iterator();
@@ -212,7 +213,6 @@ public class RaceEditor extends RaceBlock {
 				catch (Exception ex) {
 					ex.printStackTrace();
 				}
-				iRow++;
 			}
 		}
 		form.add(table);
@@ -233,8 +233,6 @@ public class RaceEditor extends RaceBlock {
 		DateInput raceDate = new DateInput(PARAMETER_RACE_DATE);
 		DateInput lastRegistrationDate = new DateInput(PARAMETER_LAST_REGISTRATION_DATE);
 		DateInput lastRegistrationDatePrice1 = new DateInput(PARAMETER_LAST_REGISTRATION_DATE_PRICE1);
-//		TextInput rent = new TextInput(PARAMETER_CHIP_RENT);
-//		rent.setAsFloat(localize("not_a_valid_float", "Not a valid number"));
 
 		Collection raceTypes = this.getRaceBusiness(iwc).getRaceTypes();
 		Iterator it = raceTypes.iterator();
@@ -254,7 +252,7 @@ public class RaceEditor extends RaceBlock {
 			RaceCategory category = (RaceCategory) it.next();
 			categoryDropDown.addMenuElement(category.getPrimaryKey().toString(), localize(category.getCategoryKey(),category.getCategoryKey()));
 		}
-		
+				
 		Layer layer = new Layer(Layer.DIV);
 		layer.setStyleClass(STYLENAME_FORM_ELEMENT);
 		Label label = new Label(localize("race_editor.race", "Race"), race);
@@ -304,18 +302,13 @@ public class RaceEditor extends RaceBlock {
 		form.add(layer);
 		form.add(new Break());
 
-		/*layer = new Layer(Layer.DIV);
-		layer.setStyleClass(STYLENAME_FORM_ELEMENT);
-		label = new Label(localize("race_editor.chip_rent", "Chip rent"), rent);
-		layer.add(label);
-		layer.add(rent);
-		form.add(layer);
-		form.add(new Break());*/
-
-		
 		SubmitButton save = null;
 		Map prices = null;
 		Map prices2 = null;
+		//Map chips = null;
+		//Map chipPrices = null;
+		Map eventTeamCount = null;
+		
 		Map eventIDList = null;
 		
 		if (raceID != null) {
@@ -343,9 +336,11 @@ public class RaceEditor extends RaceBlock {
 				typeDropDown.setSelectedElement(selectedRace.getRaceType().getPrimaryKey().toString());
 			}
 			
-			//rent.setValue(Float.toString(selectedRace.getChipRent()));
 			prices = getPricesMapForRace(iwc, selectedRace);
 			prices2 = getPrices2MapForRace(iwc, selectedRace);
+			//chips = getChipsMapForRace(iwc, selectedRace);
+			//chipPrices = getChipPricesMapForRace(iwc, selectedRace);
+			eventTeamCount = getEventTeamCountMapForRace(iwc, selectedRace);
 			eventIDList = getRaceBusiness(iwc).getEventsForRace(selectedRace);
 		} else {
 			save = (SubmitButton) getButton(new SubmitButton(localize("save", "Save"), PARAMETER_ACTION, String.valueOf(ACTION_SAVE_NEW)));
@@ -362,7 +357,15 @@ public class RaceEditor extends RaceBlock {
 				price.setAsFloat(localize("not_a_valid_float", "Not a valid number"));
 				TextInput price2 = new TextInput(PARAMETER_RACE_EVENTS_PRICE2 + "_" + event.getName());
 				price2.setAsFloat(localize("not_a_valid_float", "Not a valid number"));
-				
+				/*CheckBox hasChip = new CheckBox(PARAMETER_RACE_EVENTS_CHIP + "_" + event.getName(), event.getName());
+				TextInput chipPrice = new TextInput(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + event.getName());
+				chipPrice.setAsFloat(localize("not_a_valid_float", "Not a valid number"));*/
+				DropdownMenu teamCount = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_TEAM_COUNT + "_" + event.getName()));
+				teamCount.addMenuElement(1, "1");
+				teamCount.addMenuElement(2, "2");
+				teamCount.addMenuElement(3, "3");
+				teamCount.setSelectedElement(1);
+
 				if (prices != null) {
 					Float eventPrice = (Float) prices.get(event.getName());
 					if (eventPrice != null) {
@@ -375,11 +378,38 @@ public class RaceEditor extends RaceBlock {
 						price2.setValue(eventPrice.toString());
 					}
 				}
+
+/*				if (chips != null) {
+					Boolean eventChip = (Boolean) chips.get(event.getName());
+					if (eventChip == null) {
+						hasChip.setChecked(false);
+					} else {
+						if (eventChip.booleanValue()) {  //NULLPOINTER!!!!
+							hasChip.setChecked(true);
+						} else {
+							hasChip.setChecked(false);						
+						}
+					}
+				}
+
+				if (chipPrices != null) {
+					Float eventChipPrice = (Float) chipPrices.get(event.getName());
+					if (eventChipPrice != null) {
+						chipPrice.setValue(eventChipPrice.toString());
+					}
+				}*/
+
 				
 				check.setToEnableWhenChecked(price);
 				check.setToEnableWhenChecked(price2);
+				//check.setToEnableWhenChecked(hasChip);
+				//check.setToEnableWhenChecked(chipPrice);
+				check.setToEnableWhenChecked(teamCount);
 				check.setToDisableWhenUnchecked(price);
 				check.setToDisableWhenUnchecked(price2);
+				//check.setToDisableWhenUnchecked(hasChip);
+				//check.setToDisableWhenUnchecked(chipPrice);
+				check.setToDisableWhenUnchecked(teamCount);
 				
 				if (eventIDList != null) {
 					if (eventIDList.containsKey(event.getName())) {
@@ -389,6 +419,9 @@ public class RaceEditor extends RaceBlock {
 					} else {
 						price.setDisabled(true);
 						price2.setDisabled(true);
+						//hasChip.setDisabled(true);
+						//chipPrice.setDisabled(true);
+						teamCount.setDisabled(true);
 					}
 				}
 				
@@ -399,6 +432,9 @@ public class RaceEditor extends RaceBlock {
 				layer.add(label);
 				layer.add(price);
 				layer.add(price2);
+				//layer.add(hasChip);
+				//layer.add(chipPrice);
+				layer.add(teamCount);
 				form.add(layer);
 				form.add(new Break());
 			}
@@ -456,13 +492,80 @@ public class RaceEditor extends RaceBlock {
 		return null;
 	}
 
+/*	private Map getChipsMapForRace(IWContext iwc, Race race) throws FinderException, RemoteException {
+		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
+		
+		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
+		Collection events = getGroupBusiness(iwc).getChildGroups(gRace, types, true);
+		if (events != null) {
+			Iterator it = events.iterator();
+			Map map = new HashMap();
+			
+			while (it.hasNext()) {
+				Group gEvent = (Group) it.next();
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
+				map.put(event.getEventID(), new Boolean(event.getHasChip()));
+			}
+			
+			return map;
+		}
+
+		
+		return null;
+	}
+
+	private Map getChipPricesMapForRace(IWContext iwc, Race race) throws FinderException, RemoteException {
+		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
+		
+		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
+		Collection events = getGroupBusiness(iwc).getChildGroups(gRace, types, true);
+		if (events != null) {
+			Iterator it = events.iterator();
+			Map map = new HashMap();
+			
+			while (it.hasNext()) {
+				Group gEvent = (Group) it.next();
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
+				map.put(event.getEventID(), new Float(event.getChipPrice()));
+			}
+			
+			return map;
+		}
+
+		
+		return null;
+	}*/
+
+	private Map getEventTeamCountMapForRace(IWContext iwc, Race race) throws FinderException, RemoteException {
+		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
+		
+		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
+		Collection events = getGroupBusiness(iwc).getChildGroups(gRace, types, true);
+		if (events != null) {
+			Iterator it = events.iterator();
+			Map map = new HashMap();
+			
+			while (it.hasNext()) {
+				Group gEvent = (Group) it.next();
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
+				map.put(event.getEventID(), new Float(event.getPrice2()));
+			}
+			
+			return map;
+		}
+
+		
+		return null;
+	}
+
+	
+	
 	public void saveNew(IWContext iwc) throws java.rmi.RemoteException, FinderException {
 		String seasonID = iwc.getParameter(PARAMETER_SEASON_PK);
 		String name = iwc.getParameter(PARAMETER_RACE_NAME);
 		String raceDate = iwc.getParameter(PARAMETER_RACE_DATE);
 		String lastRegistration = iwc.getParameter(PARAMETER_LAST_REGISTRATION_DATE);
 		String lastRegistrationPrice1 = iwc.getParameter(PARAMETER_LAST_REGISTRATION_DATE_PRICE1);
-		//String rent = iwc.getParameter(PARAMETER_CHIP_RENT);
 		String type = iwc.getParameter(PARAMETER_RACE_TYPE);
 		String category = iwc.getParameter(PARAMETER_RACE_CATEGORY);
 
@@ -470,17 +573,26 @@ public class RaceEditor extends RaceBlock {
 		String events[] = iwc.getParameterValues(PARAMETER_RACE_EVENTS);
 		Map prices = null;
 		Map prices2 = null;
+		//Map chips = null;
+		//Map chipPrices = null;
+		Map teamCount = null;
 		if (events != null && events.length > 0) {
 			prices = new HashMap();
 			prices2 = new HashMap();
+			//chips = new HashMap();
+			//chipPrices = new HashMap();
+			teamCount = new HashMap();
 			for (int i = 0; i < events.length; i++) {
 				prices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE + "_" + events[i]));
 				prices2.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE2 + "_" + events[i]));
+				//chips.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP + "_" + events[i]));
+				//chipPrices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + events[i]));
+				teamCount.put(events[i], iwc.getParameter(PARAMETER_RACE_TEAM_COUNT + "_" + events[i]));
 			}
 		}
 		
 		Race race = getRaceBusiness(iwc).createRace(seasonID, name, raceDate, lastRegistration, lastRegistrationPrice1, type, category);
-		getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2);		
+		getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount);		
 	}
 	
 	private void saveEdit(IWContext iwc) throws java.rmi.RemoteException, FinderException {
@@ -498,24 +610,29 @@ public class RaceEditor extends RaceBlock {
 			String raceDate = iwc.getParameter(PARAMETER_RACE_DATE);
 			String lastRegistration = iwc.getParameter(PARAMETER_LAST_REGISTRATION_DATE);
 			String lastRegistrationPrice1 = iwc.getParameter(PARAMETER_LAST_REGISTRATION_DATE_PRICE1);
-			//String rent = iwc.getParameter(PARAMETER_CHIP_RENT);
 			String type = iwc.getParameter(PARAMETER_RACE_TYPE);
 			String category = iwc.getParameter(PARAMETER_RACE_CATEGORY);
 			
 			String events[] = iwc.getParameterValues(PARAMETER_RACE_EVENTS);
 			Map prices = null;
 			Map prices2 = null;
+			//Map chips = null;
+			//Map chipPrices = null;
+			Map teamCount = null;
 			if (events != null && events.length > 0) {
 				prices = new HashMap();
 				prices2 = new HashMap();
 				for (int i = 0; i < events.length; i++) {
 					prices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE + "_" + events[i]));
 					prices2.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE2 + "_" + events[i]));
+					//chips.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP + "_" + events[i]));
+					//chipPrices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + events[i]));
+					teamCount.put(events[i], iwc.getParameter(PARAMETER_RACE_TEAM_COUNT + "_" + events[i]));
 				}
 			}
 			
 			getRaceBusiness(iwc).updateRace(race, raceDate, lastRegistration, lastRegistrationPrice1, type, category);
-			getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2);		
+			getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount);		
 			
 			race.store();
 		}
