@@ -250,6 +250,10 @@ public class RaceOverview extends RaceBlock {
 					}					
 				}
 				
+				if (iwc.isSuperAdmin()) {
+					showlink = true;
+				}
+				
 				if (this.registrationPage != null && showlink) {
 					Link link = new Link(getBundle(iwc).getImage("shared/register.gif", getResourceBundle().getLocalizedString("race_overview.register", "Register")));
 					link.setStyleClass("register");

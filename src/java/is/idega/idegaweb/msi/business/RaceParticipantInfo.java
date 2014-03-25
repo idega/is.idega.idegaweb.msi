@@ -50,7 +50,11 @@ public class RaceParticipantInfo {
 	private String model;
 	private String team;
 	private String bodyNumber;
+
+	private String comment;
 	
+	private String partner1;
+	private String partner2;
 
 	public User getUser() {
 		return this.user;
@@ -212,5 +216,29 @@ public class RaceParticipantInfo {
 	
 	public void setBodyNumber(String bodyNumber) {
 		this.bodyNumber = bodyNumber;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public String getPartner1() {
+		return partner1;
+	}
+
+	public void setPartner1(String partner1) {
+		this.partner1 = partner1;
+	}
+
+	public String getPartner2() {
+		return partner2;
+	}
+
+	public void setPartner2(String partner2) {
+		this.partner2 = partner2;
 	}
 }

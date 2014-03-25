@@ -1,9 +1,9 @@
 package is.idega.idegaweb.msi.data;
 
 
+import com.idega.data.IDOFactory;
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import com.idega.data.IDOFactory;
 
 public class RaceEventHomeImpl extends IDOFactory implements RaceEventHome {
 	public Class getEntityInterfaceClass() {

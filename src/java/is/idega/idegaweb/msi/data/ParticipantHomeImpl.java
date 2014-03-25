@@ -1,12 +1,12 @@
 package is.idega.idegaweb.msi.data;
 
 
-import com.idega.user.data.Group;
-import java.util.Collection;
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import com.idega.data.IDOEntity;
 import com.idega.data.IDOFactory;
+import javax.ejb.CreateException;
+import com.idega.data.IDOEntity;
+import javax.ejb.FinderException;
+import java.util.Collection;
+import com.idega.user.data.Group;
 
 public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 	public Class getEntityInterfaceClass() {

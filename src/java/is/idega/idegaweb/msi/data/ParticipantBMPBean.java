@@ -4,6 +4,7 @@
 package is.idega.idegaweb.msi.data;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Collection;
 
 import javax.ejb.FinderException;
@@ -40,7 +41,14 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	private static final String COLUMN_PAY_METHOD = "pay_method";
 	private static final String COLUMN_AMOUNT_PAYED = "amount_payed";
 	
-	private static final String COLUMN_RENT_CHIP = "rent_chip";
+	//private static final String COLUMN_RENT_CHIP = "rent_chip";
+	
+	private static final String COLUMN_COMMENT = "comment";
+	
+	private static final String COLUMN_PARTNER1 = "partner1";
+	private static final String COLUMN_PARTNER2 = "partner2";
+	
+	private static final String COLUMN_CREATED = "created_date";
 	
 	public ParticipantBMPBean() {
 		super();
@@ -64,7 +72,13 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		addAttribute(COLUMN_SPONSORS, "Sponsors", true, true, String.class);
 		addAttribute(COLUMN_PAY_METHOD, "Pay method", true, true, String.class);
 		addAttribute(COLUMN_AMOUNT_PAYED, "Amount payed", true, true, String.class);
-		addAttribute(COLUMN_RENT_CHIP, "Rent chip", Boolean.class);
+		//addAttribute(COLUMN_RENT_CHIP, "Rent chip", Boolean.class);
+		addAttribute(COLUMN_COMMENT, "Comment", String.class, 1000);
+		
+		addAttribute(COLUMN_PARTNER1, "Partner 1", String.class);
+		addAttribute(COLUMN_PARTNER2, "Partner 2", String.class);
+		
+		addAttribute(COLUMN_CREATED, "Created date", Timestamp.class);
 	}
 
 	public static String getEntityTableName() {
@@ -139,10 +153,26 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return getStringColumnValue(COLUMN_AMOUNT_PAYED);
 	}
 	
-	public boolean getRentChip() {
+/*	public boolean getRentChip() {
 		return getBooleanColumnValue(COLUMN_RENT_CHIP);
+	}*/
+
+	public String getComment() {
+		return getStringColumnValue(COLUMN_COMMENT);
+	}
+	
+	public String getPartner1() {
+		return getStringColumnValue(COLUMN_PARTNER1);
 	}
 
+	public String getPartner2() {
+		return getStringColumnValue(COLUMN_PARTNER2);
+	}
+
+	public Timestamp getCreatedDate() {
+		return getTimestampColumnValue(COLUMN_CREATED);
+	}
+	
 	//SET
 	public void setSeasonGroupID(int seasonGroupID) {
 		setColumn(COLUMN_SEASON, seasonGroupID);
@@ -200,8 +230,24 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		setColumn(COLUMN_AMOUNT_PAYED, amount);
 	}
 	
-	public void setRentChip(boolean rentChip) {
+	/*public void setRentChip(boolean rentChip) {
 		setColumn(COLUMN_RENT_CHIP, rentChip);
+	}*/
+	
+	public void setComment(String comment) {
+		setColumn(COLUMN_COMMENT, comment);
+	}
+	
+	public void setPartner1(String partner1) {
+		setColumn(COLUMN_PARTNER1, partner1);
+	}
+
+	public void setPartner2(String partner2) {
+		setColumn(COLUMN_PARTNER2, partner2);
+	}
+
+	public void setCreatedDate(Timestamp created) {
+		setColumn(COLUMN_CREATED, created);
 	}
 	
 	public Collection ejbFindAll() throws FinderException {
@@ -223,140 +269,4 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		
 		return idoFindPKsBySQL(query.toString());
 	}
-
-	
-/*	public int ejbHomeGetNextAvailableParticipantNumber(Object distancePK, int min, int max) throws IDOException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new MaxColumn(getColumnNameParticipantNumber()));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunDistanceGroupID(), MatchCriteria.EQUALS, distancePK));
-		query.addCriteria(new MatchCriteria(table, getColumnNameParticipantNumber(), MatchCriteria.GREATEREQUAL, min));
-		query.addCriteria(new MatchCriteria(table, getColumnNameParticipantNumber(), MatchCriteria.LESSEQUAL, max));
-		
-		return idoGetNumberOfRecords(query.toString());
-	}
-	
-	public int ejbHomeGetNumberOfParticipantsByDistance(Object distancePK, int min, int max) throws IDOException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new CountColumn(getColumnNameParticipantNumber()));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunDistanceGroupID(), MatchCriteria.EQUALS, distancePK));
-		query.addCriteria(new MatchCriteria(table, getColumnNameParticipantNumber(), MatchCriteria.GREATEREQUAL, min));
-		query.addCriteria(new MatchCriteria(table, getColumnNameParticipantNumber(), MatchCriteria.LESSEQUAL, max));
-		
-		return idoGetNumberOfRecords(query.toString());
-	}
-	
-	public int ejbHomeGetCountByDistanceAndNumber(Object distancePK, int number) throws IDOException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new CountColumn(getColumnNameParticipantNumber()));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunDistanceGroupID(), MatchCriteria.EQUALS, distancePK));
-		query.addCriteria(new MatchCriteria(table, getColumnNameParticipantNumber(), MatchCriteria.EQUALS, number));
-		
-		return idoGetNumberOfRecords(query.toString());
-	}
-	
-	public int ejbHomeGetCountByDistanceAndGroupName(Object distancePK, String groupName) throws IDOException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new WildCardColumn(table));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunDistanceGroupID(), MatchCriteria.EQUALS, distancePK));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunGroupName(), MatchCriteria.EQUALS, groupName));
-		
-		return idoGetNumberOfRecords(query);
-	}
-	
-	public Collection ejbFindAllByDistanceAndGroup(Group distance, Group runGroup) throws FinderException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new Column(getIDColumnName()));
-		query.addCriteria(new MatchCriteria(table, getColumnNameRunDistanceGroupID(), MatchCriteria.EQUALS, distance));
-		if (runGroup != null) {
-			query.addCriteria(new MatchCriteria(table, getColumnNameRunGroupGroupID(), MatchCriteria.EQUALS, runGroup));
-		}
-		query.addOrder(table, getColumnNameRunTime(), true);
-		
-		return idoFindPKsBySQL(query.toString());
-	}
-	
-	public Integer ejbFindByUserIDandDistanceID(int userID, int distanceID) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhereEquals(getColumnNameUserID(),userID);
-		query.appendAndEquals(getColumnNameRunDistanceGroupID(),distanceID);
-		return (Integer) super.idoFindOnePKByQuery(query);
-	}
-	
-	public Integer ejbFindByDistanceAndParticpantNumber(Object distancePK, int participantNumber) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhereEquals(getColumnNameRunDistanceGroupID(), distancePK);
-		query.appendAndEquals(getColumnNameParticipantNumber(), participantNumber);
-		return (Integer) super.idoFindOnePKByQuery(query);
-	}
-	
-	public Integer ejbFindByUserAndRun(User user, Group run, Group year) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhereEquals(getColumnNameUserID(),user);
-		query.appendAndEquals(getColumnNameRunTypeGroupID(),run);
-		query.appendAndEquals(getColumnNameRunYearGroupID(),year);
-		return (Integer) super.idoFindOnePKByQuery(query);
-	}
-	
-	public Collection ejbFindByUserAndParentGroup(int userID, int runGroupID, int yearGroupID, int distanceGroupID) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhereEquals(getColumnNameUserID(),userID);
-		query.appendAndEquals(getColumnNameRunTypeGroupID(),runGroupID);
-//		query.appendAndEquals(getColumnNameRunYearGroupID(),yearGroupID);
-		query.appendAndEquals(getColumnNameRunDistanceGroupID(),distanceGroupID);
-		return super.idoFindPKsByQuery(query);
-	
-	}
-	public Collection ejbFindByUserID(int userID) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhereEquals(getColumnNameUserID(),userID);
-		return super.idoFindPKsByQuery(query);
-	}
-	
-	public Collection ejbFindAllWithoutChipNumber(int distanceIDtoIgnore) throws FinderException {
-		IDOQuery query = idoQueryGetSelect();
-		query.appendWhere().append("("+getColumnNameChipNumber()).appendIsNull().appendOr().append(getColumnNameChipNumber()).append("= '')");
-		if (distanceIDtoIgnore != -1) {
-			query.appendAnd().append(getColumnNameRunDistanceGroupID()).appendNOTEqual().append(distanceIDtoIgnore);
-		}
-		return super.idoFindPKsByQuery(query);		
-	}
-	
-	public Collection ejbFindAllByRunGroupIdAndYearGroupId(int runId, int yearId) throws FinderException{
-		IDOQuery query = idoQueryGetSelect();
-		//query.appendWhereEquals(getColumnNameUserID(),user);
-		query.appendWhereEquals(getColumnNameRunTypeGroupID(),runId);
-		query.appendAndEquals(getColumnNameRunYearGroupID(),yearId);
-		return super.idoFindPKsByQuery(query);
-	}
-	
-	public Collection ejbFindAllByRunGroupIdAndYear(int runId, int year) throws FinderException{
-		
-		GroupHome groupHome;
-		try {
-			groupHome = (GroupHome) getIDOHome(Group.class);
-		} catch (IDOLookupException e) {
-			throw new RuntimeException(e);
-		}
-		Group runGroup = groupHome.findByPrimaryKey(new Integer(runId));
-		Collection childrenGroups = runGroup.getChildren();
-		Integer yearId = new Integer(-1);
-		for (Iterator iter = childrenGroups.iterator(); iter.hasNext();) {
-			Group childGroup = (Group) iter.next();
-			if(childGroup.getName().equals(Integer.toString(year))){
-				yearId = (Integer) childGroup.getPrimaryKey();
-			}
-		}
-		
-		return ejbFindAllByRunGroupIdAndYearGroupId(runId,yearId.intValue());
-	}*/
 }

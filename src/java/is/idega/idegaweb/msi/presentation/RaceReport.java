@@ -52,10 +52,11 @@ public class RaceReport extends RaceBlock {
 		seasonDropDown.setToSubmit();
 		
 		Collection races = null;
+		Season selectedSeason = null;
 		if (iwc.isParameterSet(PARAMETER_SEASON_PK)) {
 			String seasonID = iwc.getParameter(PARAMETER_SEASON_PK);
 			seasonDropDown.setSelectedElement(seasonID);
-			Season selectedSeason = getRaceBusiness(iwc).getSeasonByGroupId(Integer.valueOf(seasonID));
+			selectedSeason = getRaceBusiness(iwc).getSeasonByGroupId(Integer.valueOf(seasonID));
 		    String[] types = {MSIConstants.GROUP_TYPE_RACE};
 			races = ConverterUtility.getInstance().convertSeasonToGroup(selectedSeason).getChildGroups(types, true); 
 		}
@@ -87,7 +88,16 @@ public class RaceReport extends RaceBlock {
 		}
 				
 		group = table.createBodyRowGroup();
-		int iRow = 1;
+		row = group.createRow();
+		cell = row.createCell();
+		cell.add(new Text(localize("race_editor.all_races", "All races")));
+		cell = row.createCell();
+		cell.add(new Text(""));
+		cell = row.createCell();
+		cell.add(new Text(""));
+		cell = row.createCell();
+		cell.add(new Text(""));
+		row.createCell().add(getXLSLink(null, selectedSeason));
 		
 		if (races != null) {
 			Iterator iter = races.iterator();
@@ -105,12 +115,11 @@ public class RaceReport extends RaceBlock {
 					cell.add(new Text(new IWTimestamp(race.getLastRegistrationDate()).getDateString("dd.MM.yyyy")));
 					cell = row.createCell();
 					cell.add(new Text(Float.toString(race.getChipRent())));
-					row.createCell().add(getXLSLink(race));
+					row.createCell().add(getXLSLink(race, null));
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
 				}
-				iRow++;
 			}
 		}
 		form.add(table);
@@ -118,11 +127,16 @@ public class RaceReport extends RaceBlock {
 		add(form);
 	}
 	
-	protected Link getXLSLink(Race race) throws RemoteException {
+	protected Link getXLSLink(Race race, Season selectedSeason) throws RemoteException {
 		DownloadLink link = new DownloadLink(this.getResourceBundle().getImage("xls.gif"));
 		link.setTarget(Link.TARGET_NEW_WINDOW);
 		link.setMediaWriterClass(RaceReportWriter.class);
-		link.addParameter(RaceReportWriter.PARAMETER_RACE_ID, race.getPrimaryKey().toString());
+		if (race != null) {
+			link.addParameter(RaceReportWriter.PARAMETER_RACE_ID, race.getPrimaryKey().toString());
+		}
+		if (selectedSeason != null) {
+			link.addParameter(RaceReportWriter.PARAMETER_SEASON_ID, selectedSeason.getPrimaryKey().toString());			
+		}
 
 		return link;
 	}

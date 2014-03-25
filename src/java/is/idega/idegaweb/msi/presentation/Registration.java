@@ -83,6 +83,10 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_AMOUNT = "prm_amount";
 	private static final String PARAMETER_CARD_HOLDER_EMAIL = "prm_card_holder_email";
 	private static final String PARAMETER_REFERENCE_NUMBER = "prm_reference_number";
+	
+	private static final String PARAMETER_COMMENT = "prm_comment";
+	private static final String PARAMETER_PARTNER1 = "prm_partner1";
+	private static final String PARAMETER_PARTNER2 = "prm_partner2";
 
 	private static final int ACTION_STEP_PERSONALDETAILS = 1;
 	private static final int ACTION_STEP_DISCLAIMER = 2;
@@ -385,6 +389,35 @@ public class Registration extends RaceBlock {
 		choiceTable.add(sponsorsField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 		
+		/*TextArea commentField = (TextArea) getStyledInterface(new TextArea(
+				PARAMETER_COMMENT));
+		commentField.setWidth(Table.HUNDRED_PERCENT);
+		commentField.setMaximumCharacters(1000);*/
+		TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
+		if (this.raceParticipantInfo.getPartner1() != null) {
+			partner1Field.setContent(this.raceParticipantInfo.getPartner1());
+		}
+
+		TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
+		if (this.raceParticipantInfo.getPartner2() != null) {
+			partner2Field.setContent(this.raceParticipantInfo.getPartner2());
+		}
+
+		choiceTable.mergeCells(1, iRow, 4, iRow);
+		choiceTable.add(getHeader(localize("race_reg.comment",
+				"Comment")), 1, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.partner1",
+				"Partner1")), 1, iRow);
+		choiceTable.mergeCells(2, iRow, 4, iRow);
+		choiceTable.add(partner1Field, 1, iRow++);
+		choiceTable.setHeight(iRow++, 3);
+
+		choiceTable.add(getHeader(localize("race_reg.partner2",
+				"Partner2")), 1, iRow);
+		choiceTable.mergeCells(2, iRow, 4, iRow);
+		choiceTable.add(partner2Field, 1, iRow++);
+		choiceTable.setHeight(iRow++, 3);
+
 		boolean canRegister = canRegister(iwc);
 		
 		if (canRegister) {
@@ -406,6 +439,10 @@ public class Registration extends RaceBlock {
 	}
 
 	private boolean canRegister(IWContext iwc) {
+		if (iwc.isSuperAdmin()) {
+			return true;
+		}
+		
 		if (this.raceParticipantInfo.getRace().getRaceCategory().getCategoryKey().equals(MSIConstants.ICELANDIC_CHAMPIONSHIP)) {
 			if (this.raceParticipantInfo.getRaceNumber() == null) {
 				return false;
@@ -463,8 +500,6 @@ public class Registration extends RaceBlock {
 
 		SubmitButton previous = (SubmitButton) getButton(new SubmitButton(
 				localize("previous", "Previous")));
-		//previous.setValueOnClick(PARAMETER_ACTION, String
-		//		.valueOf(ACTION_STEP_CHIP));
 		previous.setValueOnClick(PARAMETER_ACTION, String
 				.valueOf(ACTION_STEP_PERSONALDETAILS));
 
@@ -901,6 +936,18 @@ public class Registration extends RaceBlock {
 			raceParticipantInfo.setAgree(true);
 		}
 				
+		if (iwc.isParameterSet(PARAMETER_COMMENT)) {
+			raceParticipantInfo.setComment(iwc.getParameter(PARAMETER_COMMENT));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
+			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
+			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
+		}
+
 		saveRaceParticipantInfo(iwc, raceParticipantInfo);
 	}
 
@@ -947,6 +994,20 @@ public class Registration extends RaceBlock {
 		
 		collectValues(iwc);
 
+		if (action == ACTION_STEP_DISCLAIMER) {
+			if (this.raceParticipantInfo.getEvent().getTeamCount() > 1) {
+				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
+					action = ACTION_STEP_PERSONALDETAILS;
+				}
+				
+				if (this.raceParticipantInfo.getEvent().getTeamCount() > 2) {
+					if (this.raceParticipantInfo.getPartner2() == null || "".equals(this.raceParticipantInfo.getPartner2().trim())) {
+						action = ACTION_STEP_PERSONALDETAILS;
+					}	
+				}				
+			}
+		}
+		
 		return action;
 	}
 	

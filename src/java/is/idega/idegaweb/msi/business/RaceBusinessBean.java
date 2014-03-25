@@ -209,7 +209,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	public boolean addEventsToRace(Race race, String events[], Map price,
-			Map price2) throws IBOLookupException, RemoteException,
+			Map price2, Map teamCount) throws IBOLookupException, RemoteException,
 			FinderException {
 		if (events != null) {
 			Group gRace = null;
@@ -235,6 +235,9 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 						}
 						raceEvent.setPrice(getPrice(price, id));
 						raceEvent.setPrice2(getPrice(price2, id));
+						//raceEvent.setHasChip(getChipCheck(chips, id));
+						//raceEvent.setChipPrice(getPrice(chipPrice, id));
+						raceEvent.setTeamCount(getTeamCount(teamCount, id));
 						raceEvent.store();
 					}
 				}
@@ -261,6 +264,37 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 
 		return 0.0f;
+	}
+
+	private int getTeamCount(Map teamCount, String key) {
+		if (teamCount.containsKey(key)) {
+			String value = (String) teamCount.get(key);
+			if (value != null && !"".equals(value)) {
+				try {
+					return Integer.parseInt(value);
+				} catch (NumberFormatException e) {
+					return 0;
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	
+	private boolean getChipCheck(Map chips, String key) {
+		if (chips.containsKey(key)) {
+			String value = (String) chips.get(key);
+			if (value != null && !"".equals(value)) {
+				try {
+					return Boolean.parseBoolean(value);
+				} catch (NumberFormatException e) {
+					return false;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public Map getEventsForRace(Race race) throws FinderException,
@@ -397,7 +431,15 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				participant.setRaceNumber(raceParticipantInfo.getRaceNumber());
 				participant.setRaceVehicle(raceParticipantInfo.getRaceVehicle());
 				participant.setSponsors(raceParticipantInfo.getSponsors());
-				participant.setRentChip(raceParticipantInfo.getRentChip());
+				//participant.setRentChip(raceParticipantInfo.getRentChip());
+				participant.setComment(raceParticipantInfo.getComment());
+				if (participant.getRaceEvent().getTeamCount() > 1) {
+					participant.setPartner1(raceParticipantInfo.getPartner1());
+					if (participant.getRaceEvent().getTeamCount() > 2) {
+						participant.setPartner2(raceParticipantInfo.getPartner2());
+					}
+				}
+				participant.setCreatedDate(date.getTimestamp());
 				participant.store();
 				retParticipant = participant;
 
