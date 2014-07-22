@@ -9,10 +9,17 @@
  */
 package is.idega.idegaweb.msi;
 
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.listeners.GenerateNumbersListener;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -23,10 +30,14 @@ import com.idega.business.IBOLookup;
 import com.idega.core.business.ICApplicationBindingBusiness;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
+import com.idega.data.SimpleQuerier;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWBundleStartable;
 import com.idega.idegaweb.IWMainApplication;
+import com.idega.idegaweb.IWMainApplicationSettings;
+import com.idega.util.EventTimer;
+import com.idega.util.ListUtil;
 
 
 /**
@@ -83,6 +94,8 @@ public class IWBundleStarter implements IWBundleStartable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		fixRaceNumbers(starterBundle);
+		addListeners(starterBundle);
 
 	}
 
@@ -92,11 +105,63 @@ public class IWBundleStarter implements IWBundleStartable {
 	public void stop(IWBundle starterBundle) {
 	}
 
+	private Logger getLogger(){
+		return Logger.getLogger(IWBundleStarter.class.getName());
+	}
 	protected void addStandardViews(IWMainApplication iwma){
 		MSIViewManager manager = MSIViewManager.getInstance(iwma);
 		manager.getMSIViewNode();
 	}
 
+	private void addListeners(IWBundle starterBundle){
+		EventTimer timer = new EventTimer(EventTimer.THREAD_SLEEP_24_HOURS, MSIConstants.NUMBERS_GENAROTOR_LISTENER_EVENT);
+		GenerateNumbersListener listener = new GenerateNumbersListener();
+		timer.addActionListener(listener);
+		timer.start();
+	}
+	
+	private void fixRaceNumbers(IWBundle starterBundle){
+		try{
+			IWMainApplication iwma = starterBundle.getApplication();
+			IWMainApplicationSettings settings = iwma.getSettings();
+			if(settings.getBoolean("race_numbers_in_use_fixed", false)){
+				return;
+			}
+			SimpleQuerier.executeUpdate("ALTER TABLE msi_race_number CHANGE COLUMN MSI_RACE_NUMBER_ID MSI_RACE_NUMBER_ID INT(11) NOT NULL AUTO_INCREMENT;", false);
+			RaceNumberHome home = (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
+			int start = 0;
+			int max = 100;
+			for(Collection numbers = home.getMxInUseWithoutUser(start, max);!ListUtil.isEmpty(numbers);
+					start = start + max,
+					numbers = home.getMxInUseWithoutUser(start, max)){
+				for(Iterator iter = numbers.iterator();iter.hasNext();){
+					RaceNumber raceNumber = (RaceNumber) iter.next();
+					raceNumber.setApplicationDate(null);
+					raceNumber.setApprovedDate(null);
+					raceNumber.setIsInUse(false);
+					raceNumber.setIsApproved(false);
+					raceNumber.store();
+				}
+			}
+			start = 0;
+			for(Collection numbers = home.getSnocrossInUseWithoutUser(start, max);!ListUtil.isEmpty(numbers);
+					start = start + max,
+					numbers = home.getSnocrossInUseWithoutUser(start, max)){
+				for(Iterator iter = numbers.iterator();iter.hasNext();){
+					RaceNumber raceNumber = (RaceNumber) iter.next();
+					raceNumber.setApplicationDate(null);
+					raceNumber.setApprovedDate(null);
+					raceNumber.setIsInUse(false);
+					raceNumber.setIsApproved(false);
+					raceNumber.store();
+				}
+			}
+			settings.setProperty("race_numbers_in_use_fixed", Boolean.TRUE.toString());
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed fixing numbers", e);
+		}
+	}
+	
 	private void updateData() {
 	}
 }

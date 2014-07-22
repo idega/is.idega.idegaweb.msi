@@ -458,6 +458,7 @@ public class UserSettings extends RaceBlock {
 		label = new Label();
 		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_EMAIL, DEFAULT_EMAIL));
 		formItem.add(label);
+		formItem.setStyleAttribute("word-wrap:break-word;");
 		if (mail != null && mail.getEmailAddress() != null) {
 			formItem.add(new Span(new Text(mail.getEmailAddress())));
 		} 

@@ -19,9 +19,9 @@ public class RaceUserSettingsBMPBean extends GenericEntity implements
 	
 	private static final String COLUMN_HOME_PAGE = "home_page";
 
-	private static final String COLUMN_RACE_NUMBER_MX = "race_number_mx";
+	public static final String COLUMN_RACE_NUMBER_MX = "race_number_mx";
 
-	private static final String COLUMN_RACE_NUMBER_SNOCROSS = "race_number_snocross";
+	public static final String COLUMN_RACE_NUMBER_SNOCROSS = "race_number_snocross";
 
 	private static final String COLUMN_VEHICLE_TYPE = "vehicle_type_id_new";
 

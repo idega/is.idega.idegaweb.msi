@@ -11,8 +11,9 @@ package is.idega.idegaweb.msi.util;
  * @author birna
  */
 public class MSIConstants {
-
+	
 	public final static String IW_BUNDLE_IDENTIFIER = "is.idega.idegaweb.msi";
+	public final static String NUMBERS_GENAROTOR_LISTENER_EVENT = "number-generator-listener-event";
 	public static final String PROPERTY_MERCHANT_PK = "merchant_pk";
 	public static final String PROPERTY_STAFF_GROUP_ID = "staff_group_id";
 
