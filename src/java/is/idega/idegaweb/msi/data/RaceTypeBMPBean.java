@@ -17,7 +17,7 @@ import com.idega.data.query.WildCardColumn;
 public class RaceTypeBMPBean extends GenericEntity implements RaceType {
 
 	private static final String ENTITY_NAME = "msi_race_type";
-	private static final String COLUMN_RACE_TYPE = "race_type";
+	public static final String COLUMN_RACE_TYPE = "race_type";
 	public String getEntityName() {
 		return ENTITY_NAME;
 	}

@@ -1,5 +1,7 @@
 package is.idega.idegaweb.msi.data;
 
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Iterator;
@@ -7,8 +9,12 @@ import java.util.Iterator;
 import javax.ejb.FinderException;
 
 import com.idega.data.GenericEntity;
+import com.idega.data.IDOException;
 import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
+import com.idega.data.IDORelationshipException;
 import com.idega.data.query.Column;
+import com.idega.data.query.CountColumn;
 import com.idega.data.query.MatchCriteria;
 import com.idega.data.query.SelectQuery;
 import com.idega.data.query.Table;
@@ -128,6 +134,54 @@ public class RaceNumberBMPBean extends GenericEntity implements RaceNumber {
 		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_TYPE), MatchCriteria.EQUALS, raceType));
 					
 		return idoFindPKsBySQL(query.toString());
+	}
+	
+	public int countAllNotInUseByType(RaceType raceType) throws IDOException{
+		Table table = new Table(this);
+		
+		SelectQuery query = new SelectQuery(table);
+		query.addColumn(new CountColumn("*"));
+		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_IN_USE), MatchCriteria.EQUALS, false));
+		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_TYPE), MatchCriteria.EQUALS, raceType));
+					
+		return idoGetNumberOfRecords(query);
+	}
+	public Object getMaxNumberByType(RaceType raceType) throws FinderException{
+		Table table = new Table(this);
+		
+		SelectQuery query = new SelectQuery(table);
+		query.addColumn(new WildCardColumn());
+		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_TYPE), MatchCriteria.EQUALS, raceType));
+		query.addOrder(table, COLUMN_RACE_NUMBER, false);
+		return idoFindOnePKByQuery(query);
+	}
+	public Collection getMxInUseWithoutUser(int start, int max) throws IDOLookupException, FinderException, IDORelationshipException{
+		Table table = new Table(this);
+		Table raceSettings = new Table(RaceUserSettings.class);
+		Table raceType = new Table(RaceType.class);
+		
+		SelectQuery query = new SelectQuery(table);
+		query.addColumn(new WildCardColumn());
+		query.addLeftJoin(table, getIDColumnName(),raceSettings, RaceUserSettingsBMPBean.COLUMN_RACE_NUMBER_MX);
+		query.addJoin(table, raceType);
+		query.addCriteria(new MatchCriteria(new Column(raceSettings, RaceUserSettingsBMPBean.COLUMN_RACE_NUMBER_MX), MatchCriteria.IS, MatchCriteria.NULL));
+		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_IN_USE), MatchCriteria.EQUALS, true));
+		query.addCriteria(new MatchCriteria(new Column(raceType, RaceTypeBMPBean.COLUMN_RACE_TYPE), MatchCriteria.EQUALS, MSIConstants.RACE_TYPE_MX_AND_ENDURO));
+		return idoFindPKsByQuery(query, max, start);
+	}
+	public Collection getSnocrossInUseWithoutUser(int start, int max) throws IDOLookupException, FinderException, IDORelationshipException{
+		Table table = new Table(this);
+		Table raceSettings = new Table(RaceUserSettings.class);
+		Table raceType = new Table(RaceType.class);
+		
+		SelectQuery query = new SelectQuery(table);
+		query.addColumn(new WildCardColumn());
+		query.addLeftJoin(table, getIDColumnName(),raceSettings, RaceUserSettingsBMPBean.COLUMN_RACE_NUMBER_SNOCROSS);
+		query.addJoin(table, raceType);
+		query.addCriteria(new MatchCriteria(new Column(raceSettings, RaceUserSettingsBMPBean.COLUMN_RACE_NUMBER_SNOCROSS), MatchCriteria.IS, MatchCriteria.NULL));
+		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_IN_USE), MatchCriteria.EQUALS, true));
+		query.addCriteria(new MatchCriteria(new Column(raceType, RaceTypeBMPBean.COLUMN_RACE_TYPE), MatchCriteria.EQUALS, MSIConstants.RACE_TYPE_SNOCROSS));
+		return idoFindPKsByQuery(query, max, start);
 	}
 
 	public Collection ejbFindAllByType(RaceType raceType) throws FinderException {
