@@ -1,5 +1,6 @@
 package is.idega.idegaweb.msi.presentation;
 
+import is.idega.idegaweb.msi.bean.TimeTransmitterRentProperties;
 import is.idega.idegaweb.msi.business.ConverterUtility;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.Race;
@@ -36,6 +37,7 @@ import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
 import com.idega.user.data.Group;
 import com.idega.util.IWTimestamp;
+import com.idega.util.StringUtil;
 
 public class RaceEditor extends RaceBlock {
 	
@@ -49,6 +51,8 @@ public class RaceEditor extends RaceBlock {
 	protected static final String PARAMETER_RACE_EVENTS = "prm_race_event";
 	protected static final String PARAMETER_RACE_EVENTS_PRICE = "prm_race_event_price";
 	protected static final String PARAMETER_RACE_EVENTS_PRICE2 = "prm_race_event_price2";
+	protected static final String PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE = "prm_race_event_tt_price";
+	protected static final String PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE_ON = "prm_race_event_tt_price_on";
 	protected static final String PARAMETER_RACE_EVENTS_CHIP = "prm_race_event_chip";
 	protected static final String PARAMETER_RACE_EVENTS_CHIP_PRICE = "prm_race_event_chip_price";
 	protected static final String PARAMETER_RACE_CATEGORY = "prm_race_category";
@@ -305,6 +309,7 @@ public class RaceEditor extends RaceBlock {
 		SubmitButton save = null;
 		Map prices = null;
 		Map prices2 = null;
+		Map timeTransmitterPrices = null;
 		//Map chips = null;
 		//Map chipPrices = null;
 		Map eventTeamCount = null;
@@ -338,6 +343,7 @@ public class RaceEditor extends RaceBlock {
 			
 			prices = getPricesMapForRace(iwc, selectedRace);
 			prices2 = getPrices2MapForRace(iwc, selectedRace);
+			timeTransmitterPrices = getTimeTransmitterPricesForRace(iwc, selectedRace);
 			//chips = getChipsMapForRace(iwc, selectedRace);
 			//chipPrices = getChipPricesMapForRace(iwc, selectedRace);
 			eventTeamCount = getEventTeamCountMapForRace(iwc, selectedRace);
@@ -347,16 +353,21 @@ public class RaceEditor extends RaceBlock {
 		}
 
 		Collection events = getRaceBusiness(iwc).getEvents();
-		
+		String notAValidNumberError = localize("not_a_valid_float", "Not a valid number");
 		if (events != null) {
 			it = events.iterator();
 			while (it.hasNext()) {
 				Event event = (Event) it.next();
 				CheckBox check = new CheckBox(PARAMETER_RACE_EVENTS, event.getName());
 				TextInput price = new TextInput(PARAMETER_RACE_EVENTS_PRICE + "_" + event.getName());
-				price.setAsFloat(localize("not_a_valid_float", "Not a valid number"));
+				price.setAsFloat(notAValidNumberError);
 				TextInput price2 = new TextInput(PARAMETER_RACE_EVENTS_PRICE2 + "_" + event.getName());
-				price2.setAsFloat(localize("not_a_valid_float", "Not a valid number"));
+				price2.setAsFloat(notAValidNumberError);
+				TextInput timeTransmitterPrice = new TextInput(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE + "_" + event.getName());
+				timeTransmitterPrice.setAsFloat(notAValidNumberError);
+				
+				CheckBox timeTransmitterPriceOn = new CheckBox(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE_ON + "_" + event.getName(),"on");
+				
 				/*CheckBox hasChip = new CheckBox(PARAMETER_RACE_EVENTS_CHIP + "_" + event.getName(), event.getName());
 				TextInput chipPrice = new TextInput(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + event.getName());
 				chipPrice.setAsFloat(localize("not_a_valid_float", "Not a valid number"));*/
@@ -376,6 +387,13 @@ public class RaceEditor extends RaceBlock {
 					Float eventPrice = (Float) prices2.get(event.getName());
 					if (eventPrice != null) {
 						price2.setValue(eventPrice.toString());
+					}
+				}
+				if (timeTransmitterPrices != null) {
+					TimeTransmitterRentProperties properties = (TimeTransmitterRentProperties) timeTransmitterPrices.get(event.getName());
+					if (properties != null) {
+						timeTransmitterPrice.setValue(properties.getPrice());
+						timeTransmitterPriceOn.setChecked(properties.isRentOn());
 					}
 				}
 
@@ -435,6 +453,8 @@ public class RaceEditor extends RaceBlock {
 				//layer.add(hasChip);
 				//layer.add(chipPrice);
 				layer.add(teamCount);
+				layer.add(timeTransmitterPriceOn);
+				layer.add(timeTransmitterPrice);
 				form.add(layer);
 				form.add(new Break());
 			}
@@ -483,6 +503,30 @@ public class RaceEditor extends RaceBlock {
 				Group gEvent = (Group) it.next();
 				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
 				map.put(event.getEventID(), new Float(event.getPrice2()));
+			}
+			
+			return map;
+		}
+
+		
+		return null;
+	}
+	private Map getTimeTransmitterPricesForRace(IWContext iwc, Race race) throws FinderException, RemoteException {
+		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
+		
+		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
+		Collection events = getGroupBusiness(iwc).getChildGroups(gRace, types, true);
+		if (events != null) {
+			Iterator it = events.iterator();
+			Map map = new HashMap();
+			
+			while (it.hasNext()) {
+				Group gEvent = (Group) it.next();
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
+				TimeTransmitterRentProperties properties = new TimeTransmitterRentProperties();
+				properties.setPrice(String.valueOf(event.getTimeTransmitterPrice()));
+				properties.setRentOn(event.isTimeTransmitterPriceOn());
+				map.put(event.getEventID(), properties);
 			}
 			
 			return map;
@@ -573,12 +617,14 @@ public class RaceEditor extends RaceBlock {
 		String events[] = iwc.getParameterValues(PARAMETER_RACE_EVENTS);
 		Map prices = null;
 		Map prices2 = null;
+		Map timeTransmitterPrices = null;
 		//Map chips = null;
 		//Map chipPrices = null;
 		Map teamCount = null;
 		if (events != null && events.length > 0) {
 			prices = new HashMap();
 			prices2 = new HashMap();
+			timeTransmitterPrices = new HashMap(); 
 			//chips = new HashMap();
 			//chipPrices = new HashMap();
 			teamCount = new HashMap();
@@ -588,11 +634,16 @@ public class RaceEditor extends RaceBlock {
 				//chips.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP + "_" + events[i]));
 				//chipPrices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + events[i]));
 				teamCount.put(events[i], iwc.getParameter(PARAMETER_RACE_TEAM_COUNT + "_" + events[i]));
+				TimeTransmitterRentProperties timeTransmitterRentProperties = new TimeTransmitterRentProperties();
+				String pricetString = iwc.getParameter(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE + "_" + events[i]);
+				timeTransmitterRentProperties.setPrice(StringUtil.isEmpty(pricetString) ? "0" : pricetString);
+				timeTransmitterRentProperties.setRentOn("on".equals(iwc.getParameter(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE_ON + "_" + events[i])));
+				timeTransmitterPrices.put(events[i], timeTransmitterRentProperties);
 			}
 		}
 		
 		Race race = getRaceBusiness(iwc).createRace(seasonID, name, raceDate, lastRegistration, lastRegistrationPrice1, type, category);
-		getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount);		
+		getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount,timeTransmitterPrices);		
 	}
 	
 	private void saveEdit(IWContext iwc) throws java.rmi.RemoteException, FinderException {
@@ -616,23 +667,31 @@ public class RaceEditor extends RaceBlock {
 			String events[] = iwc.getParameterValues(PARAMETER_RACE_EVENTS);
 			Map prices = null;
 			Map prices2 = null;
+			Map timeTransmitterPrices = null;
 			//Map chips = null;
 			//Map chipPrices = null;
 			Map teamCount = null;
 			if (events != null && events.length > 0) {
 				prices = new HashMap();
 				prices2 = new HashMap();
+				teamCount = new HashMap();
+				timeTransmitterPrices = new HashMap(); 
 				for (int i = 0; i < events.length; i++) {
 					prices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE + "_" + events[i]));
 					prices2.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE2 + "_" + events[i]));
 					//chips.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP + "_" + events[i]));
 					//chipPrices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_CHIP_PRICE + "_" + events[i]));
 					teamCount.put(events[i], iwc.getParameter(PARAMETER_RACE_TEAM_COUNT + "_" + events[i]));
+					TimeTransmitterRentProperties timeTransmitterRentProperties = new TimeTransmitterRentProperties();
+					String pricetString = iwc.getParameter(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE + "_" + events[i]);
+					timeTransmitterRentProperties.setPrice(StringUtil.isEmpty(pricetString) ? "0" : pricetString);
+					timeTransmitterRentProperties.setRentOn("on".equals(iwc.getParameter(PARAMETER_RACE_EVENTS_TIME_TRANSMITTER_PRICE_ON + "_" + events[i])));
+					timeTransmitterPrices.put(events[i], timeTransmitterRentProperties);
 				}
 			}
 			
 			getRaceBusiness(iwc).updateRace(race, raceDate, lastRegistration, lastRegistrationPrice1, type, category);
-			getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount);		
+			getRaceBusiness(iwc).addEventsToRace(race, events, prices, prices2, teamCount,timeTransmitterPrices);		
 			
 			race.store();
 		}

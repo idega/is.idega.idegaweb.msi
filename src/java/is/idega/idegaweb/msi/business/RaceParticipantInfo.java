@@ -56,6 +56,16 @@ public class RaceParticipantInfo {
 	private String partner1;
 	private String partner2;
 
+	private boolean rentTimeTransmitter;
+	
+	public boolean isRentTimeTransmitter() {
+		return rentTimeTransmitter;
+	}
+
+	public void setRentTimeTransmitter(boolean rentTimeTransmitter) {
+		this.rentTimeTransmitter = rentTimeTransmitter;
+	}
+
 	public User getUser() {
 		return this.user;
 	}

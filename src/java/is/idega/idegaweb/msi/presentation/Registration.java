@@ -19,22 +19,28 @@ import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 
 import com.idega.block.creditcard.business.CreditCardAuthorizationException;
+import com.idega.block.web2.business.Web2Business;
+import com.idega.business.IBOLookup;
 import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
 import com.idega.data.IDOCreateException;
 import com.idega.idegaweb.IWBundle;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Image;
+import com.idega.presentation.Layer;
 import com.idega.presentation.Table;
 import com.idega.presentation.text.Link;
 import com.idega.presentation.text.Text;
@@ -42,6 +48,7 @@ import com.idega.presentation.ui.CheckBox;
 import com.idega.presentation.ui.DropdownMenu;
 import com.idega.presentation.ui.Form;
 import com.idega.presentation.ui.HiddenInput;
+import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
@@ -49,7 +56,10 @@ import com.idega.user.business.NoEmailFoundException;
 import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.CoreConstants;
+import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
+import com.idega.util.PresentationUtil;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -87,6 +97,7 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_COMMENT = "prm_comment";
 	private static final String PARAMETER_PARTNER1 = "prm_partner1";
 	private static final String PARAMETER_PARTNER2 = "prm_partner2";
+	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
 	private static final int ACTION_STEP_PERSONALDETAILS = 1;
 	private static final int ACTION_STEP_DISCLAIMER = 2;
@@ -156,12 +167,26 @@ public class Registration extends RaceBlock {
 		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance","Please select distance"));
 		Map events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
 		Iterator it = events.keySet().iterator();
+		boolean existsRentedTimeTransmitters = false;
+		StringBuilder existingTimetransmitterObject = new StringBuilder("{");
 		while (it.hasNext()) {
 			Object key = it.next();
 			RaceEvent event = (RaceEvent) events.get(key);
-			eventsDropdown.addOption(new SelectOption(event.getEventID(), event.getPrimaryKey().toString()));
+			String pk = event.getPrimaryKey().toString();
+			eventsDropdown.addOption(new SelectOption(event.getEventID(), pk));
+			if(!event.isTimeTransmitterPriceOn()){
+				continue;
+			}
+			existsRentedTimeTransmitters = true;
+			float ttPrice = event.getTimeTransmitterPrice();
+			existingTimetransmitterObject.append(pk).append(":").append(ttPrice).append(",");
 		}
-
+		if(existsRentedTimeTransmitters){
+			//remove last comma
+			existingTimetransmitterObject.deleteCharAt(existingTimetransmitterObject.length() - 1).append("}");
+		}else{
+			existingTimetransmitterObject.append("}");
+		}
 		Text redStar = getHeader("*");
 		redStar.setFontColor("#ff0000");
 
@@ -178,6 +203,42 @@ public class Registration extends RaceBlock {
 		choiceTable.add(eventsDropdown, 3, iRow++);
 
 		choiceTable.setHeight(iRow++, 12);
+		if(existsRentedTimeTransmitters){
+			Layer useTT = new Layer();
+			choiceTable.add(useTT,3, iRow++);
+			CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
+			Label isRentTimeTransmitterLabel = new Label(localize("race_reg.rent_time_transmitter", "Rent time transmitter"), isRentTimeTransmitter);
+			useTT.add(isRentTimeTransmitterLabel);
+			useTT.add(isRentTimeTransmitter);
+			Layer priceText = new Layer("label");
+			useTT.add(priceText);
+			priceText.add(localize("race_reg.price", "Price") + CoreConstants.SPACE);
+			Layer priceValue = new Layer("span");
+			priceText.add(priceValue);
+			priceValue.setStyleClass("tt-price");
+			priceText.add(" ISK");
+			
+			IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+			IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
+			ArrayList scripts = new ArrayList();
+			scripts.add(CoreUtil.getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
+			try {
+				Web2Business web2 = (Web2Business) IBOLookup.getServiceInstance(iwc, Web2Business.class);
+				scripts.add(web2.getBundleURIToJQueryLib());
+			} catch (Exception e) {
+				getLogger().log(Level.WARNING, "Failed getting script files", e);
+			}
+			scripts.add(iwb.getVirtualPathWithFileNameString("javascript/race-registration.js"));
+			PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
+			
+			Layer script = new Layer("script");
+			useTT.add(script);
+			StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
+				.append("RaceRegistrationHelper.ttPricesActions(")
+				.append(existingTimetransmitterObject).append(");")
+			.append("})");
+			script.add(actions.toString());
+		}
 
 		Text nameField = (Text) getText("");
 		nameField.setWidth(Table.HUNDRED_PERCENT);
@@ -388,6 +449,7 @@ public class Registration extends RaceBlock {
 		choiceTable.add(teamField, 1, iRow);
 		choiceTable.add(sponsorsField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
+		
 		
 		/*TextArea commentField = (TextArea) getStyledInterface(new TextArea(
 				PARAMETER_COMMENT));
@@ -749,9 +811,8 @@ public class Registration extends RaceBlock {
 			IWTimestamp paymentStamp = new IWTimestamp();
 
 			IWBundle iwb = getBundle(iwc);
-			boolean disablePaymentProcess = "true".equalsIgnoreCase(iwb
-					.getProperty("disable_payment_authorization_process",
-							"false"));
+			boolean disablePaymentProcess = "true".equalsIgnoreCase(
+					iwb.getProperty("disable_payment_authorization_process","false"));
 			if (doPayment && disablePaymentProcess) {
 				doPayment = false;
 			}
@@ -769,7 +830,7 @@ public class Registration extends RaceBlock {
 				expiresYear = iwc.getParameter(PARAMETER_EXPIRES_YEAR);
 				ccVerifyNumber = iwc.getParameter(PARAMETER_CCV);
 				email = iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
-				amount = Double.parseDouble(iwc.getParameter(PARAMETER_AMOUNT));
+				amount = getRaceBusiness(iwc).getPriceForRunner(this.raceParticipantInfo);//Double.parseDouble(iwc.getParameter(PARAMETER_AMOUNT));
 				referenceNumber = iwc.getParameter(PARAMETER_REFERENCE_NUMBER);
 			}
 
@@ -920,6 +981,11 @@ public class Registration extends RaceBlock {
 		if (iwc.isParameterSet(PARAMETER_EVENT)) {
 			raceParticipantInfo.setEvent(ConverterUtility.getInstance()
 					.convertGroupToRaceEvent(new Integer(iwc.getParameter(PARAMETER_EVENT))));
+			if(iwc.isParameterSet(PARAMETER_RENT_TIMETRANSMITTER)){
+				raceParticipantInfo.setRentTimeTransmitter(true);
+			}else{
+				raceParticipantInfo.setRentTimeTransmitter(false);
+			}
 		}
 
 		if (iwc.isParameterSet(PARAMETER_EMAIL)) {
@@ -947,6 +1013,7 @@ public class Registration extends RaceBlock {
 		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
 			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
 		}
+		
 
 		saveRaceParticipantInfo(iwc, raceParticipantInfo);
 	}

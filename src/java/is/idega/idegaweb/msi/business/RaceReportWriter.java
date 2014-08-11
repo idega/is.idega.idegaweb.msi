@@ -143,6 +143,10 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 						this.buffer = writeXLS(raceEvents, iwc);
 						setAsDownload(iwc, "race_report.xls",
 								this.buffer.length());
+					}else{
+						this.buffer = writeXLSNothingFound();
+						setAsDownload(iwc, "race_report.xls",
+								this.buffer.length());
 					}
 				}
 
@@ -399,6 +403,8 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 			// wb.createSheet(StringHandler.shortenToLength(this.schoolName,
 			// 30));
 
+			String yesString = iwrb.getLocalizedString("yes", "Yes");
+			String noString = iwrb.getLocalizedString("no", "No");
 			Iterator it = raceEvents.keySet().iterator();
 			while (it.hasNext()) {
 				Object key = it.next();
@@ -542,7 +548,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 					cell = row.createCell((short) column++);
 					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue("");
+					cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
 
 					cell = row.createCell((short) column++);
 					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
@@ -604,6 +610,20 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 			wb.write(mos);
 		}
+		buffer.setMimeType("application/x-msexcel");
+		return buffer;
+	}
+	
+	public MemoryFileBuffer writeXLSNothingFound()
+	throws Exception {
+		MemoryFileBuffer buffer = new MemoryFileBuffer();
+		MemoryOutputStream mos = new MemoryOutputStream(buffer);
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet();
+		HSSFRow row = sheet.createRow(0);
+		HSSFCell cell = row.createCell((short)0);
+		cell.setCellValue(this.iwrb.getLocalizedString("race_report.nothing_found", "Nothing found"));
+		wb.write(mos);
 		buffer.setMimeType("application/x-msexcel");
 		return buffer;
 	}

@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="src" path="/com.idega.core"/>
+	<classpathentry kind="src" path="/com.idega.block.web2.0"/>
 	<classpathentry kind="src" path="/com.idega.workspace"/>
 	<classpathentry kind="src" path="/com.idega.block.creditcard"/>
 	<classpathentry kind="src" path="/com.idega.block.trade"/>

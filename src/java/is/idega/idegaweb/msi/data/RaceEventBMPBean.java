@@ -9,6 +9,8 @@
  */
 package is.idega.idegaweb.msi.data;
 
+import java.util.logging.Level;
+
 import com.idega.user.data.Group;
 import com.idega.user.data.GroupBMPBean;
 
@@ -26,6 +28,9 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	private static final String METADATA_PRICE = "price";
 
 	private static final String METADATA_PRICE2 = "price2";
+	
+	public static final String METADATA_TIME_TRANSMITER_PRICE = "TIME_TRANSMITTER_PRICE";
+	public static final String METADATA_TIME_TRANSMITER_PRICE_ON = "TIME_TRANSMITTER_PRICE_ON";
 	
 	//private static final String METADATA_HAS_CHIP = "has_chip";
 
@@ -58,6 +63,35 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		}
 	
 		return 0;
+	}
+	public float getTimeTransmitterPrice() {
+		try{
+			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE);
+			if (price != null) {
+				return Float.parseFloat(price);
+			}
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting time transmitter price", e);
+		}
+	
+		return 0;
+	}
+	public void setTimeTransmitterPrice(float price) {
+		setMetaData(METADATA_TIME_TRANSMITER_PRICE, String.valueOf(price), "java.lang.Float");
+	}
+	
+	public boolean isTimeTransmitterPriceOn() {
+		try{
+			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE_ON);
+			return "Y".equals(price);
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting time transmitter price on", e);
+		}
+	
+		return false;
+	}
+	public void setTimeTransmitterPriceOn(boolean price) {
+		setMetaData(METADATA_TIME_TRANSMITER_PRICE_ON, price ? "Y" : "N", "java.lang.String");
 	}
 
 /*	public boolean getHasChip() {
