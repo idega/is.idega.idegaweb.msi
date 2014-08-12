@@ -322,7 +322,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue("");
+				cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
@@ -354,7 +354,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
+				cell.setCellValue("");
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
