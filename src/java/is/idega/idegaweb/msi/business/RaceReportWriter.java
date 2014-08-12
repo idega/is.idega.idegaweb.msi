@@ -246,6 +246,8 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 			RaceUserSettings settings;
 			Race race;
 
+			String yesString = iwrb.getLocalizedString("yes", "Yes");
+			String noString = iwrb.getLocalizedString("no", "No");
 			Iterator iter = participants.iterator();
 			while (iter.hasNext()) {
 				column = 0;
@@ -352,7 +354,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue("");
+				cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
 
 				cell = row.createCell((short) column++);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
