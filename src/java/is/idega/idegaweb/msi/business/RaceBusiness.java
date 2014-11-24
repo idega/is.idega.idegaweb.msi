@@ -14,6 +14,7 @@ import is.idega.idegaweb.msi.data.Season;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -121,6 +122,7 @@ public interface RaceBusiness extends IBOService {
 			double amount, String currency, String referenceNumber)
 			throws CreditCardAuthorizationException, RemoteException;
 
+	public float getEventPriceForRunner(RaceParticipantInfo raceParticipantInfo);
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getPriceForRunner
 	 */
@@ -222,4 +224,8 @@ public interface RaceBusiness extends IBOService {
 	 */
 	public RaceUserSettings getRaceUserSettings(User user)
 			throws RemoteException;
+	
+	public List enableEvents(List ids);
+	
+	public List disableEvents(List ids);
 }

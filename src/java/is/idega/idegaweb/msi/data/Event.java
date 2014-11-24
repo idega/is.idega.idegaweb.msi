@@ -18,4 +18,8 @@ public interface Event extends IDOEntity {
 	 * @see is.idega.idegaweb.msi.data.EventBMPBean#setName
 	 */
 	public void setName(String name);
+	
+	public boolean isValid();
+	
+	public void setValid(boolean valid);
 }

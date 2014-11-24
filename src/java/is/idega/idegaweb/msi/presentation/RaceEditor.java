@@ -352,6 +352,17 @@ public class RaceEditor extends RaceBlock {
 			save = (SubmitButton) getButton(new SubmitButton(localize("save", "Save"), PARAMETER_ACTION, String.valueOf(ACTION_SAVE_NEW)));
 		}
 
+		Table2 eventsTable = new Table2();
+		TableRow tr = eventsTable.createHeaderRowGroup().createRow();
+//		Headers
+		tr.createHeaderCell();
+		tr.createHeaderCell();
+		tr.createHeaderCell().add(getText(localize("reace_editor.registration", "Registration")));
+		tr.createHeaderCell().add(getText(localize("reace_editor.subsequent_registration", "Subsequent registration")));
+		tr.createHeaderCell().add(getText(localize("reace_editor.team_count", "Team count")));
+		tr.createHeaderCell().add(getText(localize("reace_editor.time_transmitter_rent_enabled", "Time transmitter rent enabled")));
+		tr.createHeaderCell().add(getText(localize("reace_editor.time_transmitter_price", "Time transmitter price")));
+		form.add(eventsTable);
 		Collection events = getRaceBusiness(iwc).getEvents();
 		String notAValidNumberError = localize("not_a_valid_float", "Not a valid number");
 		if (events != null) {
@@ -420,43 +431,40 @@ public class RaceEditor extends RaceBlock {
 				
 				check.setToEnableWhenChecked(price);
 				check.setToEnableWhenChecked(price2);
-				//check.setToEnableWhenChecked(hasChip);
-				//check.setToEnableWhenChecked(chipPrice);
 				check.setToEnableWhenChecked(teamCount);
+				check.setToEnableWhenChecked(timeTransmitterPriceOn);
+				check.setToEnableWhenChecked(timeTransmitterPrice);
+				
 				check.setToDisableWhenUnchecked(price);
 				check.setToDisableWhenUnchecked(price2);
-				//check.setToDisableWhenUnchecked(hasChip);
-				//check.setToDisableWhenUnchecked(chipPrice);
 				check.setToDisableWhenUnchecked(teamCount);
+				check.setToDisableWhenUnchecked(timeTransmitterPriceOn);
+				check.setToDisableWhenUnchecked(timeTransmitterPrice);
 				
 				if (eventIDList != null) {
 					if (eventIDList.containsKey(event.getName())) {
 						check.setChecked(true);
-						check.setDisabled(true);
 						form.add(new HiddenInput(PARAMETER_RACE_EVENTS, event.getName()));
 					} else {
 						price.setDisabled(true);
 						price2.setDisabled(true);
-						//hasChip.setDisabled(true);
-						//chipPrice.setDisabled(true);
 						teamCount.setDisabled(true);
+						timeTransmitterPriceOn.setDisabled(true);
+						timeTransmitterPrice.setDisabled(true);
 					}
 				}
 				
-				layer = new Layer(Layer.DIV);
-				layer.setStyleClass(STYLENAME_FORM_ELEMENT);
+				tr = eventsTable.createRow();
 				label = new Label(event.getName(), check);
-				layer.add(check);
-				layer.add(label);
-				layer.add(price);
-				layer.add(price2);
+				tr.createCell().add(check);
+				tr.createCell().add(label);
+				tr.createCell().add(price);
+				tr.createCell().add(price2);
 				//layer.add(hasChip);
 				//layer.add(chipPrice);
-				layer.add(teamCount);
-				layer.add(timeTransmitterPriceOn);
-				layer.add(timeTransmitterPrice);
-				form.add(layer);
-				form.add(new Break());
+				tr.createCell().add(teamCount);
+				tr.createCell().add(timeTransmitterPriceOn);
+				tr.createCell().add(timeTransmitterPrice);
 			}
 		}
 

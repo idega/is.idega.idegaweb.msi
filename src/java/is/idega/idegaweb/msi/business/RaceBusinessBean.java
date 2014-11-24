@@ -28,8 +28,10 @@ import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -363,7 +365,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			e.printStackTrace();
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	public Collection getRaceTypes() {
@@ -559,7 +561,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
-	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
+	public float getEventPriceForRunner(RaceParticipantInfo raceParticipantInfo){
 		IWTimestamp now = IWTimestamp.RightNow();
 		float racePrice = 0.0f;
 		
@@ -571,17 +573,17 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		} else {
 			racePrice += raceParticipantInfo.getEvent().getPrice();			
 		}
+		
+		return racePrice;
+	}
+	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
+		float racePrice = getEventPriceForRunner(raceParticipantInfo);
 		if(raceParticipantInfo.isRentTimeTransmitter()){
 			float ttPrice = raceParticipantInfo.getEvent().getTimeTransmitterPrice();
 			if(ttPrice > 0){
 				racePrice += ttPrice;
 			}
 		}
-		
-		/*if (raceParticipantInfo.getRentChip()) {
-			racePrice += raceParticipantInfo.getRace().getChipRent();
-		}*/
-		
 		return racePrice;
 	}
 
@@ -896,5 +898,47 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 		
 		return settings;
+	}
+
+	public List enableEvents(List ids) {
+		try{
+			ArrayList enabled = new ArrayList(ids.size());
+			for(Iterator iter = ids.iterator();iter.hasNext();){
+				Object id = iter.next();
+				try{
+					Event event = getEventHome().findByPrimaryKey(id);
+					event.setValid(true);
+					event.store();
+					enabled.add(id);
+				}catch (Exception e) {
+					getLogger().log(Level.WARNING, "Failed enabling event: '"+id+"'", e);
+				}
+			}
+			return enabled;
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed enabling events: '"+ids+"'", e);
+		}
+		return Collections.emptyList();
+	}
+
+	public List disableEvents(List ids) {
+		try{
+			ArrayList disabled = new ArrayList(ids.size());
+			for(Iterator iter = ids.iterator();iter.hasNext();){
+				Object id = iter.next();
+				try{
+					Event event = getEventHome().findByPrimaryKey(id);
+					event.setValid(false);
+					event.store();
+					disabled.add(id);
+				}catch (Exception e) {
+					getLogger().log(Level.WARNING, "Failed disabling event: '"+id+"'", e);
+				}
+			}
+			return disabled;
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed disabling events: '"+ids+"'", e);
+		}
+		return Collections.emptyList();
 	}
 }

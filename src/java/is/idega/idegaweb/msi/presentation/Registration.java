@@ -48,7 +48,6 @@ import com.idega.presentation.ui.CheckBox;
 import com.idega.presentation.ui.DropdownMenu;
 import com.idega.presentation.ui.Form;
 import com.idega.presentation.ui.HiddenInput;
-import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
@@ -207,16 +206,17 @@ public class Registration extends RaceBlock {
 			Layer useTT = new Layer();
 			choiceTable.add(useTT,3, iRow++);
 			CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
-			Label isRentTimeTransmitterLabel = new Label(localize("race_reg.rent_time_transmitter", "Rent time transmitter"), isRentTimeTransmitter);
+			Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
 			useTT.add(isRentTimeTransmitterLabel);
 			useTT.add(isRentTimeTransmitter);
 			Layer priceText = new Layer("label");
 			useTT.add(priceText);
-			priceText.add(localize("race_reg.price", "Price") + CoreConstants.SPACE);
+			priceText.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
 			Layer priceValue = new Layer("span");
 			priceText.add(priceValue);
 			priceValue.setStyleClass("tt-price");
-			priceText.add(" ISK");
+			priceText.add(" kr. ");
+			priceText.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
 			
 			IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 			IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
@@ -614,9 +614,20 @@ public class Registration extends RaceBlock {
 		}
 		runnerTable.add(getText(this.raceParticipantInfo.getRace().getName()), 2, runRow);
 		runnerTable.add(getText(this.raceParticipantInfo.getEvent().getEventID()), 3, runRow);
-		float runPrice = getRaceBusiness(iwc).getPriceForRunner(this.raceParticipantInfo);
+		float runPrice = getRaceBusiness(iwc).getEventPriceForRunner(this.raceParticipantInfo);
 		totalAmount += runPrice;
 		runnerTable.add(getText(formatAmount(runPrice)), 4, runRow++);
+		
+		if(this.raceParticipantInfo.isRentTimeTransmitter()){
+			float ttPrice = raceParticipantInfo.getEvent().getTimeTransmitterPrice();
+			if(ttPrice < 0){
+				ttPrice = 0;
+			}
+			runnerTable.add(getText(localize("race_reg.rent_time_transmitter2", "Rent time transmitter")),3,runRow);
+			runnerTable.add(formatAmount(ttPrice),4,runRow);
+			runRow++;
+			totalAmount += ttPrice;
+		}
 
 		this.raceParticipantInfo.setAmount(runPrice);
 
