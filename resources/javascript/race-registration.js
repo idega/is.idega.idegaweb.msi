@@ -13,7 +13,7 @@ var RaceRegistrationHelper = {
 				var useTTLayers = jQuery(".tt-layer");
 				var price = ttPrices[jQuery(this).val()];
 				var pLabel = jQuery('.tt-price');
-				if(price && (price > 0)){
+				if((price != null) && (price != undefined)){
 					pLabel.text(price);
 					useTTLayer.show();
 				}else{

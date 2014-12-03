@@ -149,7 +149,7 @@ public class EventEditor extends RaceBlock {
 		Web2Business web2;
 		try {
 			web2 = (Web2Business) IBOLookup.getServiceInstance(iwc, Web2Business.class);
-			files.add(web2.getBundleURIToJQueryLib("1.7"));
+			files.add(web2.getBundleURIToJQueryLib());
 		} catch (Exception e) {
 			this.getLogger().log(Level.WARNING, "Failed getting script files", e);
 		}
