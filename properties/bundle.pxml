@@ -44,7 +44,7 @@
     <key>
       <name>disable_payment_authorization_process</name>
       <type>java.lang.String</type>
-      <value>false</value>
+      <value>true</value>
     </key>
     <key>
       <name>iw_components</name>

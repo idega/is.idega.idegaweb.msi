@@ -204,7 +204,8 @@ public class Registration extends RaceBlock {
 		choiceTable.setHeight(iRow++, 12);
 		if(existsRentedTimeTransmitters){
 			Layer useTT = new Layer();
-			choiceTable.add(useTT,3, iRow++);
+			choiceTable.add(useTT,1, iRow++);
+			choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
 			CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
 			Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
 			useTT.add(isRentTimeTransmitterLabel);
@@ -250,13 +251,13 @@ public class Registration extends RaceBlock {
 		emailField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getEmail() != null) {
 			emailField.setText(this.raceParticipantInfo.getEmail());
-			this.add(new HiddenInput(PARAMETER_EMAIL, this.raceParticipantInfo.getEmail()));
+			choiceTable.add(new HiddenInput(PARAMETER_EMAIL, this.raceParticipantInfo.getEmail()),1,1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Email mail = getUserBusiness(iwc).getUsersMainEmail(
 						this.raceParticipantInfo.getUser());
 				emailField.setText(mail.getEmailAddress());
-				this.add(new HiddenInput(PARAMETER_EMAIL, mail.getEmailAddress()));
+				choiceTable.add(new HiddenInput(PARAMETER_EMAIL, mail.getEmailAddress()),1,1);
 			} catch (NoEmailFoundException nefe) {
 			}
 		}
@@ -279,13 +280,13 @@ public class Registration extends RaceBlock {
 		telField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getHomePhone() != null) {
 			telField.setText(this.raceParticipantInfo.getHomePhone());
-			this.add(new HiddenInput(PARAMETER_HOME_PHONE, this.raceParticipantInfo.getHomePhone()));
+			choiceTable.add(new HiddenInput(PARAMETER_HOME_PHONE, this.raceParticipantInfo.getHomePhone()),1,1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Phone phone = getUserBusiness(iwc).getUsersHomePhone(
 						this.raceParticipantInfo.getUser());
 				telField.setText(phone.getNumber());
-				this.add(new HiddenInput(PARAMETER_HOME_PHONE, phone.getNumber()));
+				choiceTable.add(new HiddenInput(PARAMETER_HOME_PHONE, phone.getNumber()),1,1);
 			} catch (NoPhoneFoundException nefe) {
 				// No phone registered...
 			}
@@ -313,13 +314,13 @@ public class Registration extends RaceBlock {
 		mobileField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getMobilePhone() != null) {
 			mobileField.setText(this.raceParticipantInfo.getMobilePhone());
-			this.add(new HiddenInput(PARAMETER_MOBILE_PHONE, this.raceParticipantInfo.getMobilePhone()));
+			choiceTable.add(new HiddenInput(PARAMETER_MOBILE_PHONE, this.raceParticipantInfo.getMobilePhone()),1,1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Phone phone = getUserBusiness(iwc).getUsersMobilePhone(
 						this.raceParticipantInfo.getUser());
 				mobileField.setText(phone.getNumber());
-				this.add(new HiddenInput(PARAMETER_MOBILE_PHONE, phone.getNumber()));
+				choiceTable.add(new HiddenInput(PARAMETER_MOBILE_PHONE, phone.getNumber()),1,1);
 			} catch (NoPhoneFoundException nefe) {
 			}
 		}
