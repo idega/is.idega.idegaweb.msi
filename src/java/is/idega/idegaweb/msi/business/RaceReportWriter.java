@@ -34,7 +34,6 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
 
 import com.idega.business.IBOLookup;
 import com.idega.idegaweb.IWApplicationContext;
@@ -229,15 +228,14 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		return headerStyle;
 	}
 	private HSSFCellStyle getTimeTransmitterStyle(HSSFWorkbook wb){
-		HSSFFont timeTransmitterFont = wb.createFont();
-		timeTransmitterFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
-		timeTransmitterFont.setColor(new HSSFColor.GREEN().getIndex());
-		timeTransmitterFont.setFontHeightInPoints((short) 12);
-		HSSFCellStyle timeTransmitterStyle = wb.createCellStyle();
-		timeTransmitterStyle.setFont(timeTransmitterFont);
-//		timeTransmitterStyle.setFillPattern(HSSFCellStyle.FINE_DOTS );
-//		timeTransmitterStyle.setFillBackgroundColor(new HSSFColor.LIGHT_BLUE().getIndex());
-		return timeTransmitterStyle;
+//		HSSFFont timeTransmitterFont = wb.createFont();
+//		timeTransmitterFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+//		timeTransmitterFont.setColor(new HSSFColor.GREEN().getIndex());
+//		timeTransmitterFont.setFontHeightInPoints((short) 12);
+//		HSSFCellStyle timeTransmitterStyle = wb.createCellStyle();
+//		timeTransmitterStyle.setFont(timeTransmitterFont);
+//		return timeTransmitterStyle;
+		return getNormalStyle(wb);
 	}
 	private HSSFCellStyle getNormalStyle(HSSFWorkbook wb){
 		HSSFFont normalFont = wb.createFont();

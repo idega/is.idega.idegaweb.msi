@@ -204,20 +204,24 @@ public class Registration extends RaceBlock {
 		choiceTable.setHeight(iRow++, 12);
 		if(existsRentedTimeTransmitters){
 			Layer useTT = new Layer();
-			choiceTable.add(useTT,1, iRow++);
-			choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
+			choiceTable.add(useTT,3, iRow++);
+//			choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
 			CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
 			Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
 			useTT.add(isRentTimeTransmitterLabel);
 			useTT.add(isRentTimeTransmitter);
 			Layer priceText = new Layer("label");
 			useTT.add(priceText);
-			priceText.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
+			priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
+			Layer priceTextContainer = new Layer();
+			priceText.add(priceTextContainer);
+			priceTextContainer.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
 			Layer priceValue = new Layer("span");
-			priceText.add(priceValue);
+			priceTextContainer.add(priceValue);
 			priceValue.setStyleClass("tt-price");
-			priceText.add(" kr. ");
-			priceText.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
+			priceTextContainer.add(" kr. ");
+			priceTextContainer.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
+			priceTextContainer.setStyleAttribute("width:450px;");
 			
 			IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
 			IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
