@@ -95,7 +95,6 @@ public class IWBundleStarter implements IWBundleStartable {
 			e.printStackTrace();
 		}
 		fixRaceNumbers(starterBundle);
-		addListeners(starterBundle);
 
 	}
 

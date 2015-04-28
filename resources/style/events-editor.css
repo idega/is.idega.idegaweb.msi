@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+.events-selector{
+	width:200px;
+	height:500px;
+	display:block;
+}
+.events-editor .action{
+	display:block;
+}

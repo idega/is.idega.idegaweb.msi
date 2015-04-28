@@ -3,6 +3,7 @@
  */
 package is.idega.idegaweb.msi.business;
 
+import is.idega.idegaweb.msi.bean.TimeTransmitterRentProperties;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.EventHome;
 import is.idega.idegaweb.msi.data.Participant;
@@ -27,10 +28,13 @@ import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -209,7 +213,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	public boolean addEventsToRace(Race race, String events[], Map price,
-			Map price2, Map teamCount) throws IBOLookupException, RemoteException,
+			Map price2, Map teamCount,Map timeTransmitterPrices) throws IBOLookupException, RemoteException,
 			FinderException {
 		if (events != null) {
 			Group gRace = null;
@@ -238,6 +242,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 						//raceEvent.setHasChip(getChipCheck(chips, id));
 						//raceEvent.setChipPrice(getPrice(chipPrice, id));
 						raceEvent.setTeamCount(getTeamCount(teamCount, id));
+						setTimeTransmitterProperties(raceEvent, timeTransmitterPrices, id);
 						raceEvent.store();
 					}
 				}
@@ -249,6 +254,24 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 
 		return true;
+	}
+	private void setTimeTransmitterProperties(RaceEvent raceEvent,Map timeTransmitterPrices, String key){
+		if ((timeTransmitterPrices == null) || (!timeTransmitterPrices.containsKey(key))) {
+			return;
+		}
+		TimeTransmitterRentProperties properties = (TimeTransmitterRentProperties) timeTransmitterPrices.get(key);
+		try {
+			float price = Float.parseFloat(properties.getPrice());
+			raceEvent.setTimeTransmitterPrice(price);
+			raceEvent.setTimeTransmitterPriceOn(properties.isRentOn());
+		} catch (NumberFormatException e) {
+			getLogger().log(Level.WARNING, "Failed setting time transmitter price", e);
+		}
+	}
+	public boolean addEventsToRace(Race race, String events[], Map price,
+			Map price2, Map teamCount) throws IBOLookupException, RemoteException,
+			FinderException {
+		return addEventsToRace(race, events, price, price2, teamCount, null);
 	}
 
 	private float getPrice(Map price, String key) {
@@ -280,7 +303,6 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 		return 0;
 	}
-
 	
 	private boolean getChipCheck(Map chips, String key) {
 		if (chips.containsKey(key)) {
@@ -343,7 +365,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			e.printStackTrace();
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	public Collection getRaceTypes() {
@@ -433,6 +455,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				participant.setSponsors(raceParticipantInfo.getSponsors());
 				//participant.setRentChip(raceParticipantInfo.getRentChip());
 				participant.setComment(raceParticipantInfo.getComment());
+				participant.setRentsTimeTransmitter(raceParticipantInfo.isRentTimeTransmitter());
 				if (participant.getRaceEvent().getTeamCount() > 1) {
 					participant.setPartner1(raceParticipantInfo.getPartner1());
 					if (participant.getRaceEvent().getTeamCount() > 2) {
@@ -538,7 +561,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
-	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
+	public float getEventPriceForRunner(RaceParticipantInfo raceParticipantInfo){
 		IWTimestamp now = IWTimestamp.RightNow();
 		float racePrice = 0.0f;
 		
@@ -551,10 +574,16 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			racePrice += raceParticipantInfo.getEvent().getPrice();			
 		}
 		
-		/*if (raceParticipantInfo.getRentChip()) {
-			racePrice += raceParticipantInfo.getRace().getChipRent();
-		}*/
-		
+		return racePrice;
+	}
+	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
+		float racePrice = getEventPriceForRunner(raceParticipantInfo);
+		if(raceParticipantInfo.isRentTimeTransmitter()){
+			float ttPrice = raceParticipantInfo.getEvent().getTimeTransmitterPrice();
+			if(ttPrice > 0){
+				racePrice += ttPrice;
+			}
+		}
 		return racePrice;
 	}
 
@@ -869,5 +898,47 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 		
 		return settings;
+	}
+
+	public List enableEvents(List ids) {
+		try{
+			ArrayList enabled = new ArrayList(ids.size());
+			for(Iterator iter = ids.iterator();iter.hasNext();){
+				Object id = iter.next();
+				try{
+					Event event = getEventHome().findByPrimaryKey(id);
+					event.setValid(true);
+					event.store();
+					enabled.add(id);
+				}catch (Exception e) {
+					getLogger().log(Level.WARNING, "Failed enabling event: '"+id+"'", e);
+				}
+			}
+			return enabled;
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed enabling events: '"+ids+"'", e);
+		}
+		return Collections.emptyList();
+	}
+
+	public List disableEvents(List ids) {
+		try{
+			ArrayList disabled = new ArrayList(ids.size());
+			for(Iterator iter = ids.iterator();iter.hasNext();){
+				Object id = iter.next();
+				try{
+					Event event = getEventHome().findByPrimaryKey(id);
+					event.setValid(false);
+					event.store();
+					disabled.add(id);
+				}catch (Exception e) {
+					getLogger().log(Level.WARNING, "Failed disabling event: '"+id+"'", e);
+				}
+			}
+			return disabled;
+		}catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed disabling events: '"+ids+"'", e);
+		}
+		return Collections.emptyList();
 	}
 }

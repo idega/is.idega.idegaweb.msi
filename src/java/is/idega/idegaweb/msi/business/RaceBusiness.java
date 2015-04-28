@@ -1,31 +1,35 @@
 package is.idega.idegaweb.msi.business;
 
 
-import java.util.Map;
-import java.rmi.RemoteException;
-import com.idega.data.IDOCreateException;
-import com.idega.util.IWTimestamp;
-import java.util.Locale;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.data.Participant;
-import com.idega.core.location.data.Country;
-import java.util.Collection;
-import com.idega.presentation.ui.DropdownMenu;
-import is.idega.idegaweb.msi.data.RaceNumberHome;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceTypeHome;
-import com.idega.business.IBOService;
-import com.idega.block.creditcard.business.CreditCardAuthorizationException;
 import is.idega.idegaweb.msi.data.ParticipantHome;
-import com.idega.business.IBOLookupException;
-import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
-import com.idega.user.business.UserBusiness;
-import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
-import com.idega.user.data.User;
-import javax.ejb.FinderException;
 import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceTypeHome;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
+import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
+import is.idega.idegaweb.msi.data.Season;
+
+import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.ejb.FinderException;
+
+import com.idega.block.creditcard.business.CreditCardAuthorizationException;
+import com.idega.business.IBOLookupException;
+import com.idega.business.IBOService;
+import com.idega.core.location.data.Country;
+import com.idega.data.IDOCreateException;
 import com.idega.idegaweb.IWResourceBundle;
+import com.idega.presentation.ui.DropdownMenu;
+import com.idega.user.business.UserBusiness;
+import com.idega.user.data.User;
+import com.idega.util.IWTimestamp;
 
 public interface RaceBusiness extends IBOService {
 	/**
@@ -55,6 +59,9 @@ public interface RaceBusiness extends IBOService {
 			Map price2, Map teamCount) throws IBOLookupException,
 			RemoteException, FinderException, RemoteException;
 
+	public boolean addEventsToRace(Race race, String events[], Map price,
+			Map price2, Map teamCount,Map timeTransmitterPrices) throws IBOLookupException, RemoteException,
+			FinderException;
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getEventsForRace
 	 */
@@ -115,6 +122,7 @@ public interface RaceBusiness extends IBOService {
 			double amount, String currency, String referenceNumber)
 			throws CreditCardAuthorizationException, RemoteException;
 
+	public float getEventPriceForRunner(RaceParticipantInfo raceParticipantInfo);
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getPriceForRunner
 	 */
@@ -216,4 +224,8 @@ public interface RaceBusiness extends IBOService {
 	 */
 	public RaceUserSettings getRaceUserSettings(User user)
 			throws RemoteException;
+	
+	public List enableEvents(List ids);
+	
+	public List disableEvents(List ids);
 }

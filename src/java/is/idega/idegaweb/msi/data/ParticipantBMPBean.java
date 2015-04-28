@@ -49,6 +49,7 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	private static final String COLUMN_PARTNER2 = "partner2";
 	
 	private static final String COLUMN_CREATED = "created_date";
+	public static final String COLUMN_RENTS_TIME_TRANSMITTER = "RENTS_TIME_TRANSMITTER";
 	
 	public ParticipantBMPBean() {
 		super();
@@ -77,10 +78,18 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		
 		addAttribute(COLUMN_PARTNER1, "Partner 1", String.class);
 		addAttribute(COLUMN_PARTNER2, "Partner 2", String.class);
+		addAttribute(COLUMN_RENTS_TIME_TRANSMITTER, COLUMN_RENTS_TIME_TRANSMITTER, Boolean.class);
 		
 		addAttribute(COLUMN_CREATED, "Created date", Timestamp.class);
 	}
 
+	public void setRentsTimeTransmitter(boolean rents){
+		setColumn(COLUMN_RENTS_TIME_TRANSMITTER, rents);
+	}
+	public boolean isRentsTimeTransmitter(){
+		return getBooleanColumnValue(COLUMN_RENTS_TIME_TRANSMITTER);
+	}
+	
 	public static String getEntityTableName() {
 		return ENTITY_NAME;
 	}

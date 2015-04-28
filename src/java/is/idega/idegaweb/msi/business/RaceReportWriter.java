@@ -29,6 +29,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -143,6 +145,10 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 						this.buffer = writeXLS(raceEvents, iwc);
 						setAsDownload(iwc, "race_report.xls",
 								this.buffer.length());
+					}else{
+						this.buffer = writeXLSNothingFound();
+						setAsDownload(iwc, "race_report.xls",
+								this.buffer.length());
 					}
 				}
 
@@ -159,229 +165,53 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		if (!participants.isEmpty()) {
 			HSSFWorkbook wb = new HSSFWorkbook();
 
+//			Styles
+			HSSFCellStyle headerStyle = getHeaderStyle(wb);
+			HSSFCellStyle timeTransmitterStyle = getTimeTransmitterStyle(wb);
+			HSSFCellStyle normalStyle = getNormalStyle(wb);
+			
 			HSSFSheet sheet = wb.createSheet(year.toString());
 			int cellRow = 0;
-			HSSFRow row = sheet.createRow(cellRow++);
 			int column = 0;
-
-			HSSFCell cell = row.createCell((short) column++);
+			HSSFRow row = sheet.createRow(cellRow++);
+			
+			HSSFCell cell = row.createCell(column++);
+			cell.setCellStyle(headerStyle);
 			cell.setCellValue(this.iwrb.getLocalizedString(
 					"race_report.race", "Race"));
-			cell = row.createCell((short) column++);
+			cell = row.createCell(column++);
+			cell.setCellStyle(headerStyle);
 			cell.setCellValue(this.iwrb.getLocalizedString(
 					"race_report.race_date", "Race date"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.race_number", "Race number"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.first_name", "First name"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.last_name", "Last name"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.personal_id", "Personal ID"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.race_vehicle", "Race vehicle"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.transmitter_number", "Transmitter number"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.race_class", "Class"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.car_registration", "Car registration"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.transponder1", "Transponder1"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.transponder2", "Transponder2"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.nationality", "Nationality"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.engine", "Engine"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString("race_report.type",
-					"Type"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString("race_report.cc",
-					"CC"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.sub_type", "Sub type"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString("race_report.club",
-					"Club"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.sponsor", "Sponsor"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString("race_report.team",
-					"Team"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.comment", "Comment"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.partner1", "Partner 1"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.partner2", "Partner 2"));
-			cell = row.createCell((short) column++);
-			cell.setCellValue(this.iwrb.getLocalizedString(
-					"race_report.created", "Date of entry"));
 
-			User racer;
-			Participant info;
-			RaceUserSettings settings;
-			Race race;
+			column = createHeaderRow(row, headerStyle,column);
+			
 
+			String yesString = iwrb.getLocalizedString("yes", "Yes");
+			String noString = iwrb.getLocalizedString("no", "No");
 			Iterator iter = participants.iterator();
 			while (iter.hasNext()) {
 				column = 0;
+				Participant info = (Participant) iter.next();
 				row = sheet.createRow(cellRow++);
-				info = (Participant) iter.next();
-				race = ConverterUtility.getInstance().convertGroupToRace(info.getRaceGroup());
-
-				racer = info.getUser();
-				settings = this.getRaceBusiness(iwc).getRaceUserSettings(racer);
-
-				cell = row.createCell((short) column++);
+				RaceEvent raceEvent = info.getRaceEvent();
+				Race race = ConverterUtility.getInstance().convertGroupToRace(info.getRaceGroup());
+				boolean hasTimeTransmitter = info.isRentsTimeTransmitter();
+				
+				cell = row.createCell(column++);
+				cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 				cell.setCellValue(race.getName() == null ? "" : race.getName());
 
-				cell = row.createCell((short) column++);
+				cell = row.createCell(column++);
+				cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 				cell.setCellValue(race.getRaceDate() == null ? "" :new IWTimestamp(race.getRaceDate())
 				.getDateString("dd.MM.yyyy"));
-
 				
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.getRaceNumber() == null ? "" : info
-						.getRaceNumber());
-
-				StringBuffer first = new StringBuffer(racer.getFirstName());
-				if (racer.getMiddleName() != null) {
-					first.append(" ");
-					first.append(racer.getMiddleName());
-				}
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(first.toString() == null ? "" : first
-						.toString());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(racer.getLastName() == null ? "" : racer
-						.getLastName());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(racer.getPersonalID() == null ? "" : racer
-						.getPersonalID());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.getRaceVehicle() == null ? "" : info
-						.getRaceVehicle().getLocalizationKey());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.getChipNumber() == null ? "" : info
-						.getChipNumber());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.getRaceEvent().getName() == null ? "" : info.getRaceEvent().getName());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getBodyNumber() == null ? "" : settings
-						.getBodyNumber());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getTransponderNumber() == null ? ""
-						: settings.getTransponderNumber());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue("");
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue("ISL");
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getEngine() == null ? "" : settings
-						.getEngine());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getVehicleType() == null ? "" : settings
-						.getVehicleType().getLocalizationKey());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getEngineCC() == null ? "" : settings
-						.getEngineCC());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getVehicleSubType() == null ? "" : settings
-						.getVehicleSubType().getLocalizationKey());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue("");
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info.getSponsors() == null ? "" : info
-						.getSponsors());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(settings == null
-						|| settings.getTeam() == null ? "" : settings.getTeam());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info == null || info.getComment() == null ? ""
-						: info.getComment());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info == null || info.getPartner1() == null ? ""
-						: info.getPartner1());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info == null || info.getPartner2() == null ? ""
-						: info.getPartner2());
-
-				cell = row.createCell((short) column++);
-				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-				cell.setCellValue(info == null || info.getCreatedDate() == null ? ""
-						: new IWTimestamp(info.getCreatedDate())
-								.getDateString("dd.MM.yyyy hh:mm:ss"));
-
+				column = createParticipantRow(row, timeTransmitterStyle, normalStyle, info, iwc, yesString, noString, raceEvent,column);
 			}
+			autosizeColumns(sheet,column);
 
 			wb.write(mos);
 		}
@@ -389,16 +219,296 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		return buffer;
 	}
 
+	private HSSFCellStyle getHeaderStyle(HSSFWorkbook wb){
+		HSSFFont headerFont = wb.createFont();
+		headerFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		headerFont.setFontHeightInPoints((short) 12);
+		HSSFCellStyle headerStyle = wb.createCellStyle();
+		headerStyle.setFont(headerFont);
+		return headerStyle;
+	}
+	private HSSFCellStyle getTimeTransmitterStyle(HSSFWorkbook wb){
+//		HSSFFont timeTransmitterFont = wb.createFont();
+//		timeTransmitterFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+//		timeTransmitterFont.setColor(new HSSFColor.GREEN().getIndex());
+//		timeTransmitterFont.setFontHeightInPoints((short) 12);
+//		HSSFCellStyle timeTransmitterStyle = wb.createCellStyle();
+//		timeTransmitterStyle.setFont(timeTransmitterFont);
+//		return timeTransmitterStyle;
+		return getNormalStyle(wb);
+	}
+	private HSSFCellStyle getNormalStyle(HSSFWorkbook wb){
+		HSSFFont normalFont = wb.createFont();
+		normalFont.setFontHeightInPoints((short) 12);
+		HSSFCellStyle normalStyle = wb.createCellStyle();
+		normalStyle.setFont(normalFont);
+		return normalStyle;
+	}
+	private int createHeaderRow(HSSFRow row,HSSFCellStyle headerStyle,int column){
+		
+		HSSFCell cell = row.createCell( column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.race_number", "Race number"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.first_name", "First name"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.last_name", "Last name"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.personal_id", "Personal ID"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.race_vehicle", "Race vehicle"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.transmitter_number", "Transmitter number"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.race_class", "Class"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.car_registration", "Car registration"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.transponder1", "Transponder1"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.transponder3", "Time transmitter"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.nationality", "Nationality"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.engine", "Engine"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.type", "Type"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.cc", "CC"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.sub_type", "Sub type"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.club", "Club"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.sponsor", "Sponsor"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.team", "Team"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.comment", "Comment"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.partner1", "Partner 1"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.partner2", "Partner 2"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.created", "Date of entry"));
+		return column;
+	}
+	private int createParticipantRow(HSSFRow row,HSSFCellStyle timeTransmitterStyle,HSSFCellStyle normalStyle,Participant info,IWContext iwc,String yesString,String noString,RaceEvent raceEvent,int column) throws RemoteException{
+
+		boolean hasTimeTransmitter = info.isRentsTimeTransmitter();
+		
+		User racer = info.getUser();
+		RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(
+				racer);
+
+		HSSFCell cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info.getRaceNumber() == null ? "" : info
+				.getRaceNumber());
+
+		StringBuffer first = new StringBuffer(racer.getFirstName());
+		if (racer.getMiddleName() != null) {
+			first.append(" ");
+			first.append(racer.getMiddleName());
+		}
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(first.toString() == null ? "" : first
+				.toString());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(racer.getLastName() == null ? "" : racer
+				.getLastName());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(racer.getPersonalID() == null ? ""
+				: racer.getPersonalID());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info.getRaceVehicle() == null ? "" : info
+				.getRaceVehicle().getLocalizationKey());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info.getChipNumber() == null ? "" : info
+				.getChipNumber());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(raceEvent.getName() == null ? ""
+				: raceEvent.getName());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getBodyNumber() == null ? "" : settings
+				.getBodyNumber());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getTransponderNumber() == null ? ""
+				: settings.getTransponderNumber());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
+		
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue("ISL");
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getEngine() == null ? "" : settings
+				.getEngine());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getVehicleType() == null ? ""
+				: settings.getVehicleType().getLocalizationKey());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getEngineCC() == null ? "" : settings
+				.getEngineCC());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getVehicleSubType() == null ? ""
+				: settings.getVehicleSubType().getLocalizationKey());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue("");
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info.getSponsors() == null ? "" : info
+				.getSponsors());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(settings == null
+				|| settings.getTeam() == null ? "" : settings
+				.getTeam());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info == null || info.getComment() == null ? ""
+				: info.getComment());
+		
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info == null || info.getPartner1() == null ? ""
+				: info.getPartner1());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info == null || info.getPartner2() == null ? ""
+				: info.getPartner2());
+
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(info == null
+				|| info.getCreatedDate() == null ? ""
+				: new IWTimestamp(info.getCreatedDate())
+						.getDateString("dd.MM.yyyy hh:mm:ss"));
+		return column;
+
+	}
+	private void autosizeColumns(HSSFSheet sheet,int columns){
+		for (int i = 0;i < columns;i++) {
+			sheet.autoSizeColumn(i);
+		}
+	}
 	public MemoryFileBuffer writeXLS(Map raceEvents, IWContext iwc)
 			throws Exception {
 		MemoryFileBuffer buffer = new MemoryFileBuffer();
 		MemoryOutputStream mos = new MemoryOutputStream(buffer);
 		if (!raceEvents.isEmpty()) {
 			HSSFWorkbook wb = new HSSFWorkbook();
-			// HSSFSheet sheet =
-			// wb.createSheet(StringHandler.shortenToLength(this.schoolName,
-			// 30));
+//			Styles
+			HSSFCellStyle headerStyle = getHeaderStyle(wb);
+			HSSFCellStyle timeTransmitterStyle = getTimeTransmitterStyle(wb);
+			HSSFCellStyle normalStyle = getNormalStyle(wb);
 
+			String yesString = iwrb.getLocalizedString("yes", "Yes");
+			String noString = iwrb.getLocalizedString("no", "No");
 			Iterator it = raceEvents.keySet().iterator();
 			while (it.hasNext()) {
 				Object key = it.next();
@@ -409,201 +519,35 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 				HSSFSheet sheet = wb.createSheet(StringHandler.shortenToLength(
 						raceEvent.getName(), 30));
 				int cellRow = 0;
+				int columns = 0;
 				HSSFRow row = sheet.createRow(cellRow++);
-				int column = 0;
-
-				HSSFCell cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.race_number", "Race number"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.first_name", "First name"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.last_name", "Last name"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.personal_id", "Personal ID"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.race_vehicle", "Race vehicle"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.transmitter_number", "Transmitter number"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.race_class", "Class"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.car_registration", "Car registration"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.transponder1", "Transponder1"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.transponder2", "Transponder2"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.nationality", "Nationality"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.engine", "Engine"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.type", "Type"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.cc", "CC"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.sub_type", "Sub type"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.club", "Club"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.sponsor", "Sponsor"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.team", "Team"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.comment", "Comment"));
-				cell = row.createCell((short) column++);
-				cell.setCellValue(this.iwrb.getLocalizedString(
-						"race_report.created", "Date of entry"));
-
-				User racer;
-				Participant info;
-				RaceUserSettings settings;
-
+				createHeaderRow(row, headerStyle,columns);
 				Iterator iter = eventParticipant.iterator();
 				while (iter.hasNext()) {
-					column = 0;
+					Participant info = (Participant) iter.next();
 					row = sheet.createRow(cellRow++);
-					info = (Participant) iter.next();
-
-					racer = info.getUser();
-					settings = this.getRaceBusiness(iwc).getRaceUserSettings(
-							racer);
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info.getRaceNumber() == null ? "" : info
-							.getRaceNumber());
-
-					StringBuffer first = new StringBuffer(racer.getFirstName());
-					if (racer.getMiddleName() != null) {
-						first.append(" ");
-						first.append(racer.getMiddleName());
-					}
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(first.toString() == null ? "" : first
-							.toString());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(racer.getLastName() == null ? "" : racer
-							.getLastName());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(racer.getPersonalID() == null ? ""
-							: racer.getPersonalID());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info.getRaceVehicle() == null ? "" : info
-							.getRaceVehicle().getLocalizationKey());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info.getChipNumber() == null ? "" : info
-							.getChipNumber());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(raceEvent.getName() == null ? ""
-							: raceEvent.getName());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getBodyNumber() == null ? "" : settings
-							.getBodyNumber());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getTransponderNumber() == null ? ""
-							: settings.getTransponderNumber());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue("");
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue("ISL");
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getEngine() == null ? "" : settings
-							.getEngine());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getVehicleType() == null ? ""
-							: settings.getVehicleType().getLocalizationKey());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getEngineCC() == null ? "" : settings
-							.getEngineCC());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getVehicleSubType() == null ? ""
-							: settings.getVehicleSubType().getLocalizationKey());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue("");
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info.getSponsors() == null ? "" : info
-							.getSponsors());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(settings == null
-							|| settings.getTeam() == null ? "" : settings
-							.getTeam());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info == null || info.getComment() == null ? ""
-							: info.getComment());
-
-					cell = row.createCell((short) column++);
-					cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-					cell.setCellValue(info == null
-							|| info.getCreatedDate() == null ? ""
-							: new IWTimestamp(info.getCreatedDate())
-									.getDateString("dd.MM.yyyy hh:mm:ss"));
+					columns = createParticipantRow(row, timeTransmitterStyle, normalStyle, info, iwc, yesString, noString, raceEvent,0);
 
 				}
+				autosizeColumns(sheet,columns);
 			}
 
 			wb.write(mos);
 		}
+		buffer.setMimeType("application/x-msexcel");
+		return buffer;
+	}
+	
+	public MemoryFileBuffer writeXLSNothingFound()
+	throws Exception {
+		MemoryFileBuffer buffer = new MemoryFileBuffer();
+		MemoryOutputStream mos = new MemoryOutputStream(buffer);
+		HSSFWorkbook wb = new HSSFWorkbook();
+		HSSFSheet sheet = wb.createSheet();
+		HSSFRow row = sheet.createRow(0);
+		HSSFCell cell = row.createCell(0);
+		cell.setCellValue(this.iwrb.getLocalizedString("race_report.nothing_found", "Nothing found"));
+		wb.write(mos);
 		buffer.setMimeType("application/x-msexcel");
 		return buffer;
 	}

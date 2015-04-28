@@ -35,6 +35,7 @@ public class GenerateNumbersListener implements ActionListener {
 				if(count > 200){
 					continue;
 				}
+				getLogger().info("Generating numbers for " + type.getRaceType());
 				int maxValue = home.getMaxNumberByType(type);
 				for (int i = 0; i < 300; i++) {
 					RaceNumber number = home.create();

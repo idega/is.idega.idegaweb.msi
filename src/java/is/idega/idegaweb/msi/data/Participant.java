@@ -1,12 +1,16 @@
 package is.idega.idegaweb.msi.data;
 
 
-import com.idega.data.IDOEntity;
-import com.idega.user.data.User;
 import java.sql.Timestamp;
+
+import com.idega.data.IDOEntity;
 import com.idega.user.data.Group;
+import com.idega.user.data.User;
 
 public interface Participant extends IDOEntity {
+	
+	public void setRentsTimeTransmitter(boolean rents);
+	public boolean isRentsTimeTransmitter();
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSeasonGroupID
 	 */

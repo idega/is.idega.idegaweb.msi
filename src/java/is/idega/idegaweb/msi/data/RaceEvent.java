@@ -19,6 +19,10 @@ public interface RaceEvent extends IDOEntity, Group {
 	 * @see is.idega.idegaweb.msi.data.RaceEventBMPBean#getPrice2
 	 */
 	public float getPrice2();
+	public float getTimeTransmitterPrice();
+	public void setTimeTransmitterPrice(float price);
+	public boolean isTimeTransmitterPriceOn();
+	public void setTimeTransmitterPriceOn(boolean price);
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.RaceEventBMPBean#getTeamCount
