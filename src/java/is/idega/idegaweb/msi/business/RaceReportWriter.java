@@ -1,8 +1,8 @@
 /*
  * $Id: RaceReportWriter.java,v 1.3 2008/05/21 09:04:17 palli Exp $ Created on Jan 25, 2006
- * 
+ *
  * Copyright (C) 2006 Idega Software hf. All Rights Reserved.
- * 
+ *
  * This software is the proprietary information of Idega hf. Use is subject to license terms.
  */
 package is.idega.idegaweb.msi.business;
@@ -60,6 +60,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 	private IWResourceBundle iwrb;
 
+	@Override
 	public String getMimeType() {
 		if (this.buffer != null) {
 			return this.buffer.getMimeType();
@@ -68,6 +69,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		}
 	}
 
+	@Override
 	public void init(HttpServletRequest req, IWContext iwc) {
 		try {
 			this.locale = iwc.getApplicationSettings().getApplicationLocale();
@@ -111,7 +113,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 												ConverterUtility
 														.getInstance()
 														.convertRaceToGroup(
-																(Integer) (race
+																(race
 																		.getPrimaryKey()))));
 					}
 					allRaces = true;
@@ -169,12 +171,12 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 			HSSFCellStyle headerStyle = getHeaderStyle(wb);
 			HSSFCellStyle timeTransmitterStyle = getTimeTransmitterStyle(wb);
 			HSSFCellStyle normalStyle = getNormalStyle(wb);
-			
+
 			HSSFSheet sheet = wb.createSheet(year.toString());
 			int cellRow = 0;
 			int column = 0;
 			HSSFRow row = sheet.createRow(cellRow++);
-			
+
 			HSSFCell cell = row.createCell(column++);
 			cell.setCellStyle(headerStyle);
 			cell.setCellValue(this.iwrb.getLocalizedString(
@@ -185,7 +187,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 					"race_report.race_date", "Race date"));
 
 			column = createHeaderRow(row, headerStyle,column);
-			
+
 
 			String yesString = iwrb.getLocalizedString("yes", "Yes");
 			String noString = iwrb.getLocalizedString("no", "No");
@@ -197,7 +199,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 				RaceEvent raceEvent = info.getRaceEvent();
 				Race race = ConverterUtility.getInstance().convertGroupToRace(info.getRaceGroup());
 				boolean hasTimeTransmitter = info.isRentsTimeTransmitter();
-				
+
 				cell = row.createCell(column++);
 				cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
@@ -208,7 +210,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 				cell.setCellValue(race.getRaceDate() == null ? "" :new IWTimestamp(race.getRaceDate())
 				.getDateString("dd.MM.yyyy"));
-				
+
 				column = createParticipantRow(row, timeTransmitterStyle, normalStyle, info, iwc, yesString, noString, raceEvent,column);
 			}
 			autosizeColumns(sheet,column);
@@ -245,7 +247,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		return normalStyle;
 	}
 	private int createHeaderRow(HSSFRow row,HSSFCellStyle headerStyle,int column){
-		
+
 		HSSFCell cell = row.createCell( column++);
 		cell.setCellStyle(headerStyle);
 		cell.setCellValue(this.iwrb.getLocalizedString(
@@ -339,7 +341,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 	private int createParticipantRow(HSSFRow row,HSSFCellStyle timeTransmitterStyle,HSSFCellStyle normalStyle,Participant info,IWContext iwc,String yesString,String noString,RaceEvent raceEvent,int column) throws RemoteException{
 
 		boolean hasTimeTransmitter = info.isRentsTimeTransmitter();
-		
+
 		User racer = info.getUser();
 		RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(
 				racer);
@@ -410,7 +412,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 		cell.setCellValue(info.isRentsTimeTransmitter() ? yesString : noString);
-		
+
 
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
@@ -468,7 +470,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 		cell.setCellValue(info == null || info.getComment() == null ? ""
 				: info.getComment());
-		
+
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
@@ -516,8 +518,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 				RaceEvent raceEvent = ConverterUtility.getInstance()
 						.convertGroupToRaceEvent(key);
 
-				HSSFSheet sheet = wb.createSheet(StringHandler.shortenToLength(
-						raceEvent.getName(), 30));
+				HSSFSheet sheet = wb.createSheet(StringHandler.shortenToLength(StringHandler.stripNonRomanCharacters(raceEvent.getName(), new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-', '/'}), 30));
 				int cellRow = 0;
 				int columns = 0;
 				HSSFRow row = sheet.createRow(cellRow++);
@@ -537,7 +538,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		buffer.setMimeType("application/x-msexcel");
 		return buffer;
 	}
-	
+
 	public MemoryFileBuffer writeXLSNothingFound()
 	throws Exception {
 		MemoryFileBuffer buffer = new MemoryFileBuffer();
@@ -552,6 +553,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		return buffer;
 	}
 
+	@Override
 	public void writeTo(OutputStream out) throws IOException {
 		if (this.buffer != null) {
 			MemoryInputStream mis = new MemoryInputStream(this.buffer);
@@ -567,7 +569,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 	protected RaceBusiness getRaceBusiness(IWApplicationContext iwc)
 			throws RemoteException {
-		return (RaceBusiness) IBOLookup.getServiceInstance(iwc,
+		return IBOLookup.getServiceInstance(iwc,
 				RaceBusiness.class);
 	}
 }
