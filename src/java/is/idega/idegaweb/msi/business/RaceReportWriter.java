@@ -518,7 +518,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 				RaceEvent raceEvent = ConverterUtility.getInstance()
 						.convertGroupToRaceEvent(key);
 
-				HSSFSheet sheet = wb.createSheet(StringHandler.shortenToLength(StringHandler.stripNonRomanCharacters(raceEvent.getName(), new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-', '/'}), 30));
+				HSSFSheet sheet = wb.createSheet(StringHandler.shortenToLength(StringHandler.stripNonRomanCharacters(raceEvent.getName(), new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '-'}), 30));
 				int cellRow = 0;
 				int columns = 0;
 				HSSFRow row = sheet.createRow(cellRow++);
