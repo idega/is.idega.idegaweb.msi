@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 
@@ -23,12 +24,15 @@ import com.idega.presentation.TableCell2;
 import com.idega.presentation.TableRow;
 import com.idega.presentation.TableRowGroup;
 import com.idega.presentation.text.Text;
+import com.idega.user.data.User;
+import com.idega.util.ListUtil;
 
 public class RaceParticipantList extends RaceBlock {
 	public static final String PARAMETER_RACE = "prm_race";
 
 	private Race race = null;
 
+	@Override
 	public void main(IWContext iwc) throws Exception {
 		try {
 			if (iwc.isParameterSet(PARAMETER_RACE)) {
@@ -72,8 +76,7 @@ public class RaceParticipantList extends RaceBlock {
 				Object key = it.next();
 				List eventParticipants = (List) participants.get(key);
 				try {
-					RaceEvent raceEvent = ConverterUtility.getInstance()
-							.convertGroupToRaceEvent(key);
+					RaceEvent raceEvent = ConverterUtility.getInstance().convertGroupToRaceEvent(key);
 					Layer subLayer = new Layer(Layer.DIV);
 					subLayer.setStyleClass("raceParticipantsEvent");
 					subLayer.setID("raceParticipantsEvent");
@@ -88,18 +91,16 @@ public class RaceParticipantList extends RaceBlock {
 					headingLayer.add(new Text(raceEvent.getName()));
 					headerLayer.add(headingLayer);
 
-					subLayer.add(getRaceParticipantListForEvent(iwc,
-							eventParticipants));
+					subLayer.add(getRaceParticipantListForEvent(iwc, eventParticipants, raceEvent));
 				} catch (Exception e) {
-					e.printStackTrace();
+					getLogger().log(Level.WARNING, "Error printing participants for " + key, e);
 				}
 			}
 		}
 		return layer;
 	}
 
-	private Table2 getRaceParticipantListForEvent(IWContext iwc,
-			List eventParticipants) throws RemoteException {
+	private Table2 getRaceParticipantListForEvent(IWContext iwc, List eventParticipants, RaceEvent raceEvent) throws RemoteException {
 		Table2 table = new Table2();
 		table.setStyleClass("raceParticipantTable");
 		table.setStyleClass("ruler");
@@ -153,87 +154,104 @@ public class RaceParticipantList extends RaceBlock {
 		group = table.createBodyRowGroup();
 		int iRow = 1;
 
-		Iterator iter = eventParticipants.iterator();
-		while (iter.hasNext()) {
-			row = group.createRow();
-			Participant participant = (Participant) iter.next();
-			RaceUserSettings settings = this.getRaceBusiness(iwc)
-					.getRaceUserSettings(participant.getUser());
-
-			if (iRow == 1) {
-				row.setStyleClass("firstRow");
-			} else if (!iter.hasNext()) {
-				row.setStyleClass("lastRow");
-			}
-
-			cell = row.createCell();
-			cell.setStyleClass("firstColumn");
-			cell.setStyleClass("raceNumber");
-			cell.add(new Text(participant.getRaceNumber() != null ? participant
-					.getRaceNumber() : ""));
-
-			cell = row.createCell();
-			cell.setStyleClass("name");
-			cell.add(new Text(participant.getUser() != null ? participant
-					.getUser().getName() : ""));
-
-			cell = row.createCell();
-			cell.setStyleClass("raceVehicle");
-			String raceVehicleString = "";
-			if (settings.getVehicleType() != null) {
-				raceVehicleString = getResourceBundle().getLocalizedString(
-						settings.getVehicleType().getLocalizationKey(),
-						settings.getVehicleType().getLocalizationKey());
-			}
-			cell.add(new Text(raceVehicleString));
-
-			cell = row.createCell();
-			cell.setStyleClass("raceVehicleSubtype");
-			String raceVehicleSubtypeString = "";
-			if (settings.getVehicleSubType() != null) {
-				raceVehicleSubtypeString = getResourceBundle()
-						.getLocalizedString(
-								settings.getVehicleSubType()
-										.getLocalizationKey(),
-								settings.getVehicleSubType()
-										.getLocalizationKey());
-			}
-			cell.add(new Text(raceVehicleSubtypeString));
-
-			cell = row.createCell();
-			cell.setStyleClass("raceEngineCC");
-			cell.add(new Text(settings.getEngineCC() != null ? settings
-					.getEngineCC() : ""));
-
-			cell = row.createCell();
-			cell.setStyleClass("raceEngine");
-			cell.add(new Text(settings.getEngine() != null ? settings
-					.getEngine() : ""));
-
-			cell = row.createCell();
-			cell.setStyleClass("raceTeam");
-			cell.add(new Text(settings.getTeam() != null ? settings.getTeam()
-					: ""));
-
-			StringBuffer sponsorString = new StringBuffer("");
-			if (settings.getSponsor() != null) {
-				if (settings.getSponsor().length() > 30) {
-					sponsorString.append(settings.getSponsor().substring(0, 30));
-				} else {
-					sponsorString.append(settings.getSponsor());					
+		if (!ListUtil.isEmpty(eventParticipants)) {
+			Iterator iter = eventParticipants.iterator();
+			while (iter.hasNext()) {
+				Participant participant = (Participant) iter.next();
+				if (participant == null) {
+					getLogger().warning("Participant is unknown for race event: " + raceEvent);
+					continue;
 				}
-			}
-			cell = row.createCell();
-			cell.setStyleClass("raceSponsor");
-			cell.add(new Text(sponsorString.toString()));
 
-			if (iRow % 2 == 0) {
-				row.setStyleClass("evenRow");
-			} else {
-				row.setStyleClass("oddRow");
-			}
+				row = group.createRow();
 
-			iRow++;
+				User user = null;
+				RaceUserSettings settings = null;
+				try {
+					user = participant.getUser();
+					settings = this.getRaceBusiness(iwc).getRaceUserSettings(user);
+				} catch (Exception e) {
+					getLogger().log(Level.WARNING, "Error getting settings for participant " + participant + ", user: " + user + (user == null ? "" : "(ID: " + user.getId() + ")") + ". Race event: " + raceEvent, e);
+				}
+				if (user == null) {
+					getLogger().warning("User can not be found for participant " + participant + ", race event: " + raceEvent);
+				}
+				if (settings == null) {
+					getLogger().warning("Settings can not be found for participant " + participant + ", race event: " + raceEvent);
+				}
+
+				if (iRow == 1) {
+					row.setStyleClass("firstRow");
+				} else if (!iter.hasNext()) {
+					row.setStyleClass("lastRow");
+				}
+
+				cell = row.createCell();
+				cell.setStyleClass("firstColumn");
+				cell.setStyleClass("raceNumber");
+				cell.add(new Text(participant.getRaceNumber() != null ? participant.getRaceNumber() : ""));
+
+				cell = row.createCell();
+				cell.setStyleClass("name");
+				cell.add(new Text(user != null ?user.getName() : ""));
+
+				cell = row.createCell();
+				cell.setStyleClass("raceVehicle");
+				String raceVehicleString = "";
+				if (settings != null && settings.getVehicleType() != null) {
+					raceVehicleString = getResourceBundle().getLocalizedString(
+							settings.getVehicleType().getLocalizationKey(),
+							settings.getVehicleType().getLocalizationKey());
+				}
+				cell.add(new Text(raceVehicleString));
+
+				cell = row.createCell();
+				cell.setStyleClass("raceVehicleSubtype");
+				String raceVehicleSubtypeString = "";
+				if (settings != null && settings.getVehicleSubType() != null) {
+					raceVehicleSubtypeString = getResourceBundle()
+							.getLocalizedString(
+									settings.getVehicleSubType()
+											.getLocalizationKey(),
+									settings.getVehicleSubType()
+											.getLocalizationKey());
+				}
+				cell.add(new Text(raceVehicleSubtypeString));
+
+				cell = row.createCell();
+				cell.setStyleClass("raceEngineCC");
+				cell.add(new Text(settings == null ? "" : settings.getEngineCC() != null ? settings.getEngineCC() : ""));
+
+				cell = row.createCell();
+				cell.setStyleClass("raceEngine");
+				cell.add(new Text(settings == null ? "" : settings.getEngine() != null ? settings.getEngine() : ""));
+
+				cell = row.createCell();
+				cell.setStyleClass("raceTeam");
+				cell.add(new Text(settings == null ? "" : settings.getTeam() != null ? settings.getTeam() : ""));
+
+				StringBuffer sponsorString = new StringBuffer("");
+				if (settings != null && settings.getSponsor() != null) {
+					if (settings.getSponsor().length() > 30) {
+						sponsorString.append(settings.getSponsor().substring(0, 30));
+					} else {
+						sponsorString.append(settings.getSponsor());
+					}
+				}
+				cell = row.createCell();
+				cell.setStyleClass("raceSponsor");
+				cell.add(new Text(sponsorString.toString()));
+
+				if (iRow % 2 == 0) {
+					row.setStyleClass("evenRow");
+				} else {
+					row.setStyleClass("oddRow");
+				}
+
+				iRow++;
+			}
+		} else {
+			getLogger().warning("Participants not provided");
 		}
 
 		return table;
