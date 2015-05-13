@@ -60,7 +60,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
 	private IWResourceBundle iwrb;
 
-	@Override
+	
 	public String getMimeType() {
 		if (this.buffer != null) {
 			return this.buffer.getMimeType();
@@ -69,7 +69,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		}
 	}
 
-	@Override
+	
 	public void init(HttpServletRequest req, IWContext iwc) {
 		try {
 			this.locale = iwc.getApplicationSettings().getApplicationLocale();
@@ -553,7 +553,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		return buffer;
 	}
 
-	@Override
+	
 	public void writeTo(OutputStream out) throws IOException {
 		if (this.buffer != null) {
 			MemoryInputStream mis = new MemoryInputStream(this.buffer);
@@ -567,9 +567,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		}
 	}
 
-	protected RaceBusiness getRaceBusiness(IWApplicationContext iwc)
-			throws RemoteException {
-		return IBOLookup.getServiceInstance(iwc,
-				RaceBusiness.class);
+	protected RaceBusiness getRaceBusiness(IWApplicationContext iwc) throws RemoteException {
+		return (RaceBusiness) IBOLookup.getServiceInstance(iwc, RaceBusiness.class);
 	}
 }

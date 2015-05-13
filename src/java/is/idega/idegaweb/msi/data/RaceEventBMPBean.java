@@ -39,14 +39,14 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	private static final String METADATA_TEAM_COUNT = "team_count";
 
 	//getters
-	@Override
+	
 	public String getEventID() {
 		String id = getMetaData(METADATA_EVENT_ID);
 
 		return id;
 	}
 
-	@Override
+	
 	public float getPrice() {
 		String price = getMetaData(METADATA_PRICE);
 
@@ -57,7 +57,7 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		return 0;
 	}
 
-	@Override
+	
 	public float getPrice2() {
 		String price = getMetaData(METADATA_PRICE2);
 
@@ -67,7 +67,7 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return 0;
 	}
-	@Override
+	
 	public float getTimeTransmitterPrice() {
 		try{
 			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE);
@@ -80,12 +80,12 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return 0;
 	}
-	@Override
+	
 	public void setTimeTransmitterPrice(float price) {
 		setMetaData(METADATA_TIME_TRANSMITER_PRICE, String.valueOf(price), "java.lang.Float");
 	}
 
-	@Override
+	
 	public boolean isTimeTransmitterPriceOn() {
 		try{
 			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE_ON);
@@ -96,7 +96,7 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return false;
 	}
-	@Override
+	
 	public void setTimeTransmitterPriceOn(boolean price) {
 		setMetaData(METADATA_TIME_TRANSMITER_PRICE_ON, price ? "Y" : "N", "java.lang.String");
 	}
@@ -121,7 +121,7 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		return 0;
 	}*/
 
-	@Override
+	
 	public int getTeamCount() {
 		String teamCount= getMetaData(METADATA_TEAM_COUNT);
 
@@ -137,17 +137,17 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	}
 
 	//setters
-	@Override
+	
 	public void setEventID(String id) {
 		setMetaData(METADATA_EVENT_ID, id, "java.lang.String");
 	}
 
-	@Override
+	
 	public void setPrice(float price) {
 		setMetaData(METADATA_PRICE, String.valueOf(price), "java.lang.Float");
 	}
 
-	@Override
+	
 	public void setPrice2(float price) {
 		setMetaData(METADATA_PRICE2, String.valueOf(price), "java.lang.Float");
 	}
@@ -161,12 +161,12 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		setMetaData(METADATA_CHIP_PRICE, String.valueOf(price), "java.lang.Float");
 	}*/
 
-	@Override
+	
 	public void setTeamCount(int teamCount) {
 		setMetaData(METADATA_TEAM_COUNT, String.valueOf(teamCount), "java.lang.Integer");
 	}
 
-	@Override
+	
 	public String toString() {
 		return "Name: " + getName() + ", ID: " + getId();
 	}

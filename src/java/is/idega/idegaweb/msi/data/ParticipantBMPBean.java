@@ -59,7 +59,7 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		super(id);
 	}
 
-	@Override
+	
 	public void initializeAttributes() {
 		addAttribute(getIDColumnName());
 
@@ -84,11 +84,11 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		addAttribute(COLUMN_CREATED, "Created date", Timestamp.class);
 	}
 
-	@Override
+	
 	public void setRentsTimeTransmitter(boolean rents){
 		setColumn(COLUMN_RENTS_TIME_TRANSMITTER, rents);
 	}
-	@Override
+	
 	public boolean isRentsTimeTransmitter(){
 		return getBooleanColumnValue(COLUMN_RENTS_TIME_TRANSMITTER);
 	}
@@ -97,38 +97,38 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return ENTITY_NAME;
 	}
 
-	@Override
+	
 	public String getEntityName() {
 		return getEntityTableName();
 	}
 
 	//GET
-	@Override
+	
 	public int getSeasonGroupID() {
 		return getIntColumnValue(COLUMN_SEASON);
 	}
 
-	@Override
+	
 	public Group getSeasonGroup() {
 		return (Group) getColumnValue(COLUMN_SEASON);
 	}
 
-	@Override
+	
 	public int getRaceGroupID() {
 		return getIntColumnValue(COLUMN_RACE);
 	}
 
-	@Override
+	
 	public Group getRaceGroup() {
 		return (Group) getColumnValue(COLUMN_RACE);
 	}
 
-	@Override
+	
 	public int getEventGroupID() {
 		return getIntColumnValue(COLUMN_EVENT);
 	}
 
-	@Override
+	
 	public RaceEvent getRaceEvent() {
 		int distanceGroupId = getIntColumnValue(COLUMN_EVENT);
 		RaceEventHome dHome;
@@ -140,42 +140,42 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		}
 	}
 
-	@Override
+	
 	public User getUser() {
 		return (User) getColumnValue(COLUMN_USER);
 	}
 
-	@Override
+	
 	public int getUserID() {
 		return getIntColumnValue(COLUMN_USER);
 	}
 
-	@Override
+	
 	public String getChipNumber() {
 		return getStringColumnValue(COLUMN_CHIP_NUMBER);
 	}
 
-	@Override
+	
 	public String getRaceNumber() {
 		return getStringColumnValue(COLUMN_RACE_NUMBER);
 	}
 
-	@Override
+	
 	public RaceVehicleType getRaceVehicle() {
 		return (RaceVehicleType) getColumnValue(COLUMN_RACE_VEHICLE);
 	}
 
-	@Override
+	
 	public String getSponsors() {
 		return getStringColumnValue(COLUMN_SPONSORS);
 	}
 
-	@Override
+	
 	public String getPayMethod() {
 		return getStringColumnValue(COLUMN_PAY_METHOD);
 	}
 
-	@Override
+	
 	public String getPayedAmount() {
 		return getStringColumnValue(COLUMN_AMOUNT_PAYED);
 	}
@@ -184,93 +184,93 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return getBooleanColumnValue(COLUMN_RENT_CHIP);
 	}*/
 
-	@Override
+	
 	public String getComment() {
 		return getStringColumnValue(COLUMN_COMMENT);
 	}
 
-	@Override
+	
 	public String getPartner1() {
 		return getStringColumnValue(COLUMN_PARTNER1);
 	}
 
-	@Override
+	
 	public String getPartner2() {
 		return getStringColumnValue(COLUMN_PARTNER2);
 	}
 
-	@Override
+	
 	public Timestamp getCreatedDate() {
 		return getTimestampColumnValue(COLUMN_CREATED);
 	}
 
 	//SET
-	@Override
+	
 	public void setSeasonGroupID(int seasonGroupID) {
 		setColumn(COLUMN_SEASON, seasonGroupID);
 	}
 
-	@Override
+	
 	public void setSeasonGroup(Group seasonGroup) {
 		setColumn(COLUMN_SEASON, seasonGroup);
 	}
 
-	@Override
+	
 	public void setRaceGroupID(int raceGroupID) {
 		setColumn(COLUMN_RACE, raceGroupID);
 	}
 
-	@Override
+	
 	public void setRaceGroup(Group raceGroup) {
 		setColumn(COLUMN_RACE, raceGroup);
 	}
 
-	@Override
+	
 	public void setEventGroupID(int eventGroupID) {
 		setColumn(COLUMN_EVENT, eventGroupID);
 	}
 
-	@Override
+	
 	public void setEventGroup(Group eventGroup) {
 		setColumn(COLUMN_EVENT, eventGroup);
 	}
 
-	@Override
+	
 	public void setUserID(int userID) {
 		setColumn(COLUMN_USER, userID);
 	}
 
-	@Override
+	
 	public void setUser(User user) {
 		setColumn(COLUMN_USER, user);
 	}
 
-	@Override
+	
 	public void setChipNumber(String chipNumber) {
 		setColumn(COLUMN_CHIP_NUMBER, chipNumber);
 	}
 
-	@Override
+	
 	public void setRaceNumber(String raceNumber) {
 		setColumn(COLUMN_RACE_NUMBER, raceNumber);
 	}
 
-	@Override
+	
 	public void setRaceVehicle(RaceVehicleType vehicle) {
 		setColumn(COLUMN_RACE_VEHICLE, vehicle);
 	}
 
-	@Override
+	
 	public void setSponsors(String sponsors) {
 		setColumn(COLUMN_SPONSORS, sponsors);
 	}
 
-	@Override
+	
 	public void setPayMethod(String payMethod) {
 		setColumn(COLUMN_PAY_METHOD, payMethod);
 	}
 
-	@Override
+	
 	public void setPayedAmount(String amount) {
 		setColumn(COLUMN_AMOUNT_PAYED, amount);
 	}
@@ -279,22 +279,22 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		setColumn(COLUMN_RENT_CHIP, rentChip);
 	}*/
 
-	@Override
+	
 	public void setComment(String comment) {
 		setColumn(COLUMN_COMMENT, comment);
 	}
 
-	@Override
+	
 	public void setPartner1(String partner1) {
 		setColumn(COLUMN_PARTNER1, partner1);
 	}
 
-	@Override
+	
 	public void setPartner2(String partner2) {
 		setColumn(COLUMN_PARTNER2, partner2);
 	}
 
-	@Override
+	
 	public void setCreatedDate(Timestamp created) {
 		setColumn(COLUMN_CREATED, created);
 	}
@@ -319,7 +319,7 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return idoFindPKsBySQL(query.toString());
 	}
 
-	@Override
+	
 	public String toString() {
 		return "ID: " + getPrimaryKey();
 	}
