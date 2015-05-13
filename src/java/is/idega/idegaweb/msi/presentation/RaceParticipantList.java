@@ -28,11 +28,11 @@ import com.idega.user.data.User;
 import com.idega.util.ListUtil;
 
 public class RaceParticipantList extends RaceBlock {
+	
 	public static final String PARAMETER_RACE = "prm_race";
 
 	private Race race = null;
 
-	@Override
 	public void main(IWContext iwc) throws Exception {
 		try {
 			if (iwc.isParameterSet(PARAMETER_RACE)) {
