@@ -260,10 +260,11 @@ public class RaceParticipantList extends RaceBlock {
 	protected Map getRaceParticipants(IWContext iwc) {
 		Collection raceParticipants = null;
 		try {
-			raceParticipants = getRaceBusiness(iwc).getParticipantHome()
-					.findAllByRace(this.race);
+			raceParticipants = getRaceBusiness(iwc).getParticipantHome().findAllByRace(this.race);
 		} catch (RemoteException e) {
 		} catch (FinderException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		if (raceParticipants != null && !raceParticipants.isEmpty()) {

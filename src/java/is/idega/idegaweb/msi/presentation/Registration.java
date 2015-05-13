@@ -977,8 +977,7 @@ public class Registration extends RaceBlock {
 		removeRaceParticipantInfo(iwc);
 	}
 
-	private void collectValues(IWContext iwc) throws RemoteException,
-			NumberFormatException, FinderException {
+	private void collectValues(IWContext iwc) throws RemoteException, NumberFormatException, FinderException {
 		User user = iwc.getCurrentUser();
 		raceParticipantInfo = getRaceParticipantInfo(iwc);
 		if (raceParticipantInfo == null) {
