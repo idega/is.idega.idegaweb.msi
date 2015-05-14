@@ -8,6 +8,7 @@
 	    	<param name="class" value="is.idega.idegaweb.msi.business.RaceBusiness"/>
 	    	<include method="enableEvents" />
 	    	<include method="disableEvents" />
+	    	<include method="getTransmitterPrices" />
 	 </create>
 
   </allow>

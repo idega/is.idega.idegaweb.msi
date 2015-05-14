@@ -67,6 +67,7 @@ import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
 import com.idega.util.IWTimestamp;
+import com.idega.util.StringUtil;
 
 /**
  * Description: Business bean (service) for run... <br>
@@ -77,9 +78,6 @@ import com.idega.util.IWTimestamp;
  */
 public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
-	/**
-	 * Comment for <code>serialVersionUID</code>
-	 */
 	private static final long serialVersionUID = 3105168986587179336L;
 
 	private final static String IW_BUNDLE_IDENTIFIER = MSIConstants.IW_BUNDLE_IDENTIFIER;
@@ -331,8 +329,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 			while (it.hasNext()) {
 				Group gEvent = (Group) it.next();
-				RaceEvent event = ConverterUtility.getInstance()
-						.convertGroupToRaceEvent(gEvent);
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
 				eventIDList.put(event.getEventID(), event);
 			}
 
@@ -940,5 +937,45 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			getLogger().log(Level.WARNING, "Failed disabling events: '"+ids+"'", e);
 		}
 		return Collections.emptyList();
+	}
+
+	public Float getTransmitterPrices(String raceId, String eventId) {
+		if (StringUtil.isEmpty(raceId)) {
+			getLogger().warning("Event ID is not provided");
+			return null;
+		}
+		if (StringUtil.isEmpty(eventId)) {
+			getLogger().warning("Event ID is not provided");
+			return null;
+		}
+		
+		try {
+			Race race = ((is.idega.idegaweb.msi.data.RaceHome) IDOLookup.getHome(Race.class)).findByPrimaryKey(raceId);
+			Map raceEvents = getEventsForRace(race);
+			if (raceEvents == null || raceEvents.isEmpty()) {
+				getLogger().warning("No events found for race " + raceId);
+				return null;
+			}
+			
+			RaceEvent raceEvent = null;
+			for (Iterator it = raceEvents.values().iterator(); (it.hasNext() && raceEvent == null);) {
+				raceEvent = (RaceEvent) it.next();
+				if (!eventId.equals(raceEvent.getId())) {
+					raceEvent = null;
+				}
+			}
+			if (raceEvent == null || !raceEvent.isTimeTransmitterPriceOn()) {
+				getLogger().warning("Event (ID: " + eventId + ") not found for race " + raceId + " in " + raceEvents);
+				return null;
+			}
+			
+			Float price = Float.valueOf(raceEvent.getTimeTransmitterPrice());
+			getLogger().info("Got price " + price + " for event (ID: " + eventId + ") and race " + raceId);
+			return price;
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting transmitter price for race: " + raceId + " and event: " + eventId, e);
+		}
+		
+		return null;
 	}
 }

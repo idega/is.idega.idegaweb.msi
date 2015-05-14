@@ -1,26 +1,29 @@
-/**
- * 
- */
 var RaceRegistrationHelper = {
-		ttPricesActions : function(ttPrices){
+		ttPricesActions : function(ttPrices) {
 			var useTTCheckbox = jQuery('[name="prm_rent_tt"]');
 			var useTTLayer = useTTCheckbox.parents('tr').first();
 			useTTLayer.addClass("tt-layer");
-//			useTTLayer.prev().addClass("tt-layer");
 			jQuery(".tt-layer").hide();
-			jQuery('[name="prm_event"]').change(function(){
+			jQuery('[name="prm_event"]').change(function(event) {
 				var useTTCheckbox = jQuery('[name="prm_rent_tt"]');
 				var useTTLayers = jQuery(".tt-layer");
-				var price = ttPrices[jQuery(this).val()];
-				var pLabel = jQuery('.tt-price');
-				if((price != null) && (price != undefined)){
-					pLabel.text(price);
-					useTTLayer.show();
-				}else{
-					useTTCheckbox.prop('checked',false);
-					pLabel.text('');
-					useTTLayer.hide();
-				}
+				var raceId = jQuery('input[type="hidden"][name="prm_race"]').val();
+				var eventId = jQuery('#' + event.target.id).val();
+				showLoadingMessage('');
+				RaceBusiness.getTransmitterPrices(raceId, eventId, {
+					callback: function(price) {
+						closeAllLoadingMessages();
+						var pLabel = jQuery('.tt-price');
+						if((price != null) && (price != undefined) && price != 0){
+							pLabel.text(price);
+							useTTLayer.show();
+						}else{
+							useTTCheckbox.prop('checked',false);
+							pLabel.text('');
+							useTTLayer.hide();
+						}
+					}
+				});
 			});
 		}
 };

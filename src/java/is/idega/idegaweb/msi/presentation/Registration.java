@@ -164,27 +164,14 @@ public class Registration extends RaceBlock {
 		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance",
 				"You have to select a distance"));
 		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance","Please select distance"));
+		
 		Map events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
 		Iterator it = events.keySet().iterator();
-		boolean existsRentedTimeTransmitters = false;
-		StringBuilder existingTimetransmitterObject = new StringBuilder("{");
 		while (it.hasNext()) {
 			Object key = it.next();
 			RaceEvent event = (RaceEvent) events.get(key);
 			String pk = event.getPrimaryKey().toString();
 			eventsDropdown.addOption(new SelectOption(event.getEventID(), pk));
-			if(!event.isTimeTransmitterPriceOn()){
-				continue;
-			}
-			existsRentedTimeTransmitters = true;
-			float ttPrice = event.getTimeTransmitterPrice();
-			existingTimetransmitterObject.append(pk).append(":").append(ttPrice).append(",");
-		}
-		if(existsRentedTimeTransmitters){
-			//remove last comma
-			existingTimetransmitterObject.deleteCharAt(existingTimetransmitterObject.length() - 1).append("}");
-		}else{
-			existingTimetransmitterObject.append("}");
 		}
 		Text redStar = getHeader("*");
 		redStar.setFontColor("#ff0000");
@@ -202,49 +189,47 @@ public class Registration extends RaceBlock {
 		choiceTable.add(eventsDropdown, 3, iRow++);
 
 		choiceTable.setHeight(iRow++, 12);
-		if(existsRentedTimeTransmitters){
-			Layer useTT = new Layer();
-			choiceTable.add(useTT,3, iRow++);
-//			choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
-			CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
-			Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
-			useTT.add(isRentTimeTransmitterLabel);
-			useTT.add(isRentTimeTransmitter);
-			Layer priceText = new Layer("label");
-			useTT.add(priceText);
-			priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
-			Layer priceTextContainer = new Layer();
-			priceText.add(priceTextContainer);
-			priceTextContainer.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
-			Layer priceValue = new Layer("span");
-			priceTextContainer.add(priceValue);
-			priceValue.setStyleClass("tt-price");
-			priceTextContainer.add(" kr. ");
-			priceTextContainer.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
-			priceTextContainer.setStyleAttribute("width:450px;");
+		Layer useTT = new Layer();
+		choiceTable.add(useTT,3, iRow++);
+//		choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
+		CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
+		Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
+		useTT.add(isRentTimeTransmitterLabel);
+		useTT.add(isRentTimeTransmitter);
+		Layer priceText = new Layer("label");
+		useTT.add(priceText);
+		priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
+		Layer priceTextContainer = new Layer();
+		priceText.add(priceTextContainer);
+		priceTextContainer.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
+		Layer priceValue = new Layer("span");
+		priceTextContainer.add(priceValue);
+		priceValue.setStyleClass("tt-price");
+		priceTextContainer.add(" kr. ");
+		priceTextContainer.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
+		priceTextContainer.setStyleAttribute("width:450px;");
 			
-			IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-			IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
-			ArrayList scripts = new ArrayList();
-			scripts.add(CoreUtil.getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
-			try {
-				Web2Business web2 = (Web2Business) IBOLookup.getServiceInstance(iwc, Web2Business.class);
-				scripts.add(web2.getBundleURIToJQueryLib());
-			} catch (Exception e) {
-				getLogger().log(Level.WARNING, "Failed getting script files", e);
-			}
-			scripts.add(iwb.getVirtualPathWithFileNameString("javascript/race-registration.js"));
-			PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
-			
-			Layer script = new Layer("script");
-			useTT.add(script);
-			StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
-				.append("RaceRegistrationHelper.ttPricesActions(")
-				.append(existingTimetransmitterObject).append(");")
-			.append("})");
-			script.add(actions.toString());
-		}
+		Layer script = new Layer("script");
+		useTT.add(script);
+		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
+			.append("RaceRegistrationHelper.ttPricesActions(null);})");
+		script.add(actions.toString());
 
+		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
+		IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
+		ArrayList scripts = new ArrayList();
+		scripts.add(CoreUtil.getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
+		try {
+			Web2Business web2 = (Web2Business) IBOLookup.getServiceInstance(iwc, Web2Business.class);
+			scripts.add(web2.getBundleURIToJQueryLib());
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Failed getting script files", e);
+		}
+		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
+		scripts.add("/dwr/interface/RaceBusiness.js");
+		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/race-registration.js"));
+		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
+		
 		Text nameField = (Text) getText("");
 		nameField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getUser() != null) {

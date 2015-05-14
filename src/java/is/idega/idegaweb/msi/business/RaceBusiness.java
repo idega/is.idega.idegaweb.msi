@@ -228,4 +228,7 @@ public interface RaceBusiness extends IBOService {
 	public List enableEvents(List ids);
 	
 	public List disableEvents(List ids);
+	
+	public Float getTransmitterPrices(String raceId, String eventId);
+	
 }
