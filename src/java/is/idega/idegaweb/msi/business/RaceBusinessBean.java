@@ -964,8 +964,12 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 					raceEvent = null;
 				}
 			}
-			if (raceEvent == null || !raceEvent.isTimeTransmitterPriceOn()) {
+			if (raceEvent == null) {
 				getLogger().warning("Event (ID: " + eventId + ") not found for race " + raceId + " in " + raceEvents);
+				return null;
+			}
+			if (!raceEvent.isTimeTransmitterPriceOn()) {
+				getLogger().info("Event (ID: " + eventId + ") does offer to rent transmitters for race " + raceId);
 				return null;
 			}
 			

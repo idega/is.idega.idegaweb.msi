@@ -14,10 +14,10 @@ var RaceRegistrationHelper = {
 					callback: function(price) {
 						closeAllLoadingMessages();
 						var pLabel = jQuery('.tt-price');
-						if((price != null) && (price != undefined) && price != 0){
+						if ((price != null) && (price != undefined)) {
 							pLabel.text(price);
 							useTTLayer.show();
-						}else{
+						} else {
 							useTTCheckbox.prop('checked',false);
 							pLabel.text('');
 							useTTLayer.hide();
