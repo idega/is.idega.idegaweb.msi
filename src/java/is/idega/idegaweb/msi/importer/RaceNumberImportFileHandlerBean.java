@@ -21,6 +21,7 @@ import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
+import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 
 import is.idega.idegaweb.msi.business.RaceBusiness;
@@ -37,12 +38,13 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 	private List failedRecords;
 	private List successRecords;
 
+	@Override
 	public boolean handleRecords() throws RemoteException, RemoteException {
 		failedRecords = new ArrayList();
 		successRecords = new ArrayList();
 
-		UserBusiness userBusiness = (UserBusiness) IBOLookup.getServiceInstance(getIWApplicationContext(), UserBusiness.class);
-		RaceBusiness raceBusiness = (RaceBusiness) IBOLookup.getServiceInstance(getIWApplicationContext(), RaceBusiness.class);
+		UserBusiness userBusiness = IBOLookup.getServiceInstance(getIWApplicationContext(), UserBusiness.class);
+		RaceBusiness raceBusiness = IBOLookup.getServiceInstance(getIWApplicationContext(), RaceBusiness.class);
 
 		int counter = 0;
 		String record;
@@ -63,6 +65,8 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 					failedRecords.add(record);
 					continue;
 				}
+				number = number.trim();
+				number = StringHandler.replace(number, ".0", CoreConstants.EMPTY);
 
 				String personalID = (String) values.get(1);
 				if (StringUtil.isEmpty(personalID)) {
@@ -70,11 +74,20 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 					failedRecords.add(record);
 					continue;
 				}
+				personalID = personalID.trim();
+				personalID = StringHandler.replace(personalID, CoreConstants.DOT, CoreConstants.EMPTY);
+				personalID = StringHandler.replace(personalID, "E9", CoreConstants.EMPTY);
+				if (personalID.length() != 10) {
+					getLogger().warning("Invalid personal ID: '" + personalID + "', values: " + values);
+					failedRecords.add(record);
+					continue;
+				}
+
 				User user = null;
 				try {
 					user = userBusiness.getUser(personalID);
 				} catch (Exception e) {
-					e.printStackTrace();
+					getLogger().log(Level.WARNING, "User not found in DB by personal ID: " + personalID, e);
 				}
 				if (user == null) {
 					getLogger().warning("User is unknown for personal ID: " + personalID + ", values: " + values);
@@ -85,12 +98,12 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 				try {
 					userSettings = raceBusiness.getRaceUserSettings(user);
 				} catch (Exception e) {
-					e.printStackTrace();
+					getLogger().log(Level.WARNING, "User settings not found in DB for " + user + ", personal ID: " + personalID, e);
 				}
 				if (userSettings == null) {
-					getLogger().warning("User settings not foun for " + user + ", personal ID: " + personalID + ", values: " + values);
-					failedRecords.add(record);
-					continue;
+					userSettings = raceBusiness.getRaceUserSettingsHome().create();
+					userSettings.setUser(user);
+					userSettings.store();
 				}
 
 				String raceTypeValue = (String) values.get(4);
@@ -99,6 +112,7 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 					failedRecords.add(record);
 					continue;
 				}
+				raceTypeValue = raceTypeValue.trim();
 				RaceType raceType = null;
 				try {
 					raceType = raceBusiness.getRaceTypeHome().findByRaceType(raceTypeValue);
@@ -220,17 +234,21 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 		return true;
 	}
 
+	@Override
 	public void setImportFile(ImportFile file) throws RemoteException, RemoteException {
 		this.importFile = file;
 	}
 
+	@Override
 	public void setRootGroup(Group rootGroup) throws RemoteException, RemoteException {
 	}
 
+	@Override
 	public List getFailedRecords() throws RemoteException, RemoteException {
 		return failedRecords;
 	}
 
+	@Override
 	public List getSuccessRecords() throws RemoteException {
 		return successRecords;
 	}
