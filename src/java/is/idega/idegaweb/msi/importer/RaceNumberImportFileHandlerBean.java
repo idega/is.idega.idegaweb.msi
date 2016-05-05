@@ -38,13 +38,12 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 	private List failedRecords;
 	private List successRecords;
 
-	@Override
 	public boolean handleRecords() throws RemoteException, RemoteException {
 		failedRecords = new ArrayList();
 		successRecords = new ArrayList();
 
-		UserBusiness userBusiness = IBOLookup.getServiceInstance(getIWApplicationContext(), UserBusiness.class);
-		RaceBusiness raceBusiness = IBOLookup.getServiceInstance(getIWApplicationContext(), RaceBusiness.class);
+		UserBusiness userBusiness = (UserBusiness) IBOLookup.getServiceInstance(getIWApplicationContext(), UserBusiness.class);
+		RaceBusiness raceBusiness = (RaceBusiness) IBOLookup.getServiceInstance(getIWApplicationContext(), RaceBusiness.class);
 
 		int counter = 0;
 		String record;
@@ -234,21 +233,17 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 		return true;
 	}
 
-	@Override
 	public void setImportFile(ImportFile file) throws RemoteException, RemoteException {
 		this.importFile = file;
 	}
 
-	@Override
 	public void setRootGroup(Group rootGroup) throws RemoteException, RemoteException {
 	}
 
-	@Override
 	public List getFailedRecords() throws RemoteException, RemoteException {
 		return failedRecords;
 	}
 
-	@Override
 	public List getSuccessRecords() throws RemoteException {
 		return successRecords;
 	}
