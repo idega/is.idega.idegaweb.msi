@@ -9,11 +9,6 @@
  */
 package is.idega.idegaweb.msi;
 
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceNumberHome;
-import is.idega.idegaweb.msi.listeners.GenerateNumbersListener;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.Collection;
@@ -26,6 +21,8 @@ import javax.ejb.FinderException;
 
 import com.idega.block.creditcard.data.KortathjonustanMerchant;
 import com.idega.block.creditcard.data.KortathjonustanMerchantHome;
+import com.idega.block.importer.data.ImportHandler;
+import com.idega.block.importer.data.ImportHandlerHome;
 import com.idega.business.IBOLookup;
 import com.idega.core.business.ICApplicationBindingBusiness;
 import com.idega.data.IDOLookup;
@@ -38,6 +35,12 @@ import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.util.EventTimer;
 import com.idega.util.ListUtil;
+
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.importer.RaceNumberImportFileHandler;
+import is.idega.idegaweb.msi.listeners.GenerateNumbersListener;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
 
 /**
@@ -52,6 +55,8 @@ public class IWBundleStarter implements IWBundleStartable {
 	 * @see com.idega.idegaweb.IWBundleStartable#start(com.idega.idegaweb.IWBundle)
 	 */
 	public void start(IWBundle starterBundle) {
+		registerImporters(starterBundle);
+		
 		updateData();
 		addStandardViews(starterBundle.getApplication());
 		IWApplicationContext iwac = IWMainApplication.getDefaultIWApplicationContext();
@@ -163,4 +168,26 @@ public class IWBundleStarter implements IWBundleStartable {
 	
 	private void updateData() {
 	}
+	
+	private void registerImporters(IWBundle bundle) {
+		try {
+			ImportHandlerHome home = (ImportHandlerHome) IDOLookup.getHome(ImportHandler.class);
+			try {
+				home.findByClassName(RaceNumberImportFileHandler.class.getName());
+			} catch (FinderException fe) {
+				try {
+					ImportHandler handler = home.create();
+					handler.setName("Race numbers");
+					handler.setDescription("Race numbers import handler (excel files).");
+					handler.setClassName(RaceNumberImportFileHandler.class.getName());
+					handler.store();
+				} catch (CreateException ce) {
+					ce.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
