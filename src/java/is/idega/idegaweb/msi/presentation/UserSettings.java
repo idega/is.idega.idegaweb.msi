@@ -544,7 +544,7 @@ public class UserSettings extends RaceBlock {
 
 		
 		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");
+		formItem.setStyleClass("formItemAside");
 		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_TRANSPONDER, DEFAULT_TRANSPONDER), tiTransponder);
 		formItem.add(label);
 		formItem.add(tiTransponder);
@@ -583,7 +583,7 @@ public class UserSettings extends RaceBlock {
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");
+		formItem.setStyleClass("formItemAside");
 		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_BODY_NUMBER, DEFAULT_BODY_NUMBER), tiBodyNumber);
 		formItem.add(label);
 		formItem.add(tiBodyNumber);
