@@ -48,4 +48,6 @@ public interface RaceEvent extends IDOEntity, Group {
 	 * @see is.idega.idegaweb.msi.data.RaceEventBMPBean#setTeamCount
 	 */
 	public void setTeamCount(int teamCount);
+
+	public void setNotification(boolean publishEvent);
 }

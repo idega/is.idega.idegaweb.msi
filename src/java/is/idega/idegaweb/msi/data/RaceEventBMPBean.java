@@ -9,10 +9,15 @@
  */
 package is.idega.idegaweb.msi.data;
 
+import is.idega.idegaweb.msi.events.RaceEventUpdatedAction;
+
 import java.util.logging.Level;
+
+import javax.ejb.RemoveException;
 
 import com.idega.user.data.Group;
 import com.idega.user.data.GroupBMPBean;
+import com.idega.util.expression.ELUtil;
 
 
 /**
@@ -23,6 +28,10 @@ import com.idega.user.data.GroupBMPBean;
  */
 public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
+	private static final long serialVersionUID = 6322170965139587414L;
+
+	private boolean publishEvent;
+	
 	private static final String METADATA_EVENT_ID = "event_id";
 
 	private static final String METADATA_PRICE = "price";
@@ -32,21 +41,13 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	public static final String METADATA_TIME_TRANSMITER_PRICE = "TIME_TRANSMITTER_PRICE";
 	public static final String METADATA_TIME_TRANSMITER_PRICE_ON = "TIME_TRANSMITTER_PRICE_ON";
 
-	//private static final String METADATA_HAS_CHIP = "has_chip";
-
-	//private static final String METADATA_CHIP_PRICE = "chip_price";
-
 	private static final String METADATA_TEAM_COUNT = "team_count";
 
 	//getters
-	
 	public String getEventID() {
-		String id = getMetaData(METADATA_EVENT_ID);
-
-		return id;
+		return getMetaData(METADATA_EVENT_ID);
 	}
 
-	
 	public float getPrice() {
 		String price = getMetaData(METADATA_PRICE);
 
@@ -57,7 +58,6 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 		return 0;
 	}
 
-	
 	public float getPrice2() {
 		String price = getMetaData(METADATA_PRICE2);
 
@@ -67,7 +67,7 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return 0;
 	}
-	
+
 	public float getTimeTransmitterPrice() {
 		try{
 			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE);
@@ -80,12 +80,11 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return 0;
 	}
-	
+
 	public void setTimeTransmitterPrice(float price) {
 		setMetaData(METADATA_TIME_TRANSMITER_PRICE, String.valueOf(price), "java.lang.Float");
 	}
 
-	
 	public boolean isTimeTransmitterPriceOn() {
 		try{
 			String price = getMetaData(METADATA_TIME_TRANSMITER_PRICE_ON);
@@ -96,32 +95,11 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 
 		return false;
 	}
-	
+
 	public void setTimeTransmitterPriceOn(boolean price) {
 		setMetaData(METADATA_TIME_TRANSMITER_PRICE_ON, price ? "Y" : "N", "java.lang.String");
 	}
 
-/*	public boolean getHasChip() {
-		String hasChip = getMetaData(METADATA_HAS_CHIP);
-
-		if (hasChip != null) {
-			return Boolean.parseBoolean(hasChip);
-		}
-
-		return false;
-	}
-
-	public float getChipPrice() {
-		String price = getMetaData(METADATA_CHIP_PRICE);
-
-		if (price != null) {
-			return Float.parseFloat(price);
-		}
-
-		return 0;
-	}*/
-
-	
 	public int getTeamCount() {
 		String teamCount= getMetaData(METADATA_TEAM_COUNT);
 
@@ -137,37 +115,61 @@ public class RaceEventBMPBean extends GroupBMPBean  implements Group, RaceEvent{
 	}
 
 	//setters
-	
 	public void setEventID(String id) {
 		setMetaData(METADATA_EVENT_ID, id, "java.lang.String");
 	}
 
-	
 	public void setPrice(float price) {
 		setMetaData(METADATA_PRICE, String.valueOf(price), "java.lang.Float");
 	}
 
-	
 	public void setPrice2(float price) {
 		setMetaData(METADATA_PRICE2, String.valueOf(price), "java.lang.Float");
 	}
 
-/*	public void setHasChip(boolean hasChip) {
-		setMetaData(METADATA_HAS_CHIP, Boolean.valueOf(hasChip).toString(), "java.lang.Boolean");
-	}
-
-
-	public void setChipPrice(float price) {
-		setMetaData(METADATA_CHIP_PRICE, String.valueOf(price), "java.lang.Float");
-	}*/
-
-	
 	public void setTeamCount(int teamCount) {
 		setMetaData(METADATA_TEAM_COUNT, String.valueOf(teamCount), "java.lang.Integer");
 	}
 
-	
 	public String toString() {
 		return "Name: " + getName() + ", ID: " + getId();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.idega.user.data.GroupBMPBean#store()
+	 */
+	@Override
+	public void store() {
+		super.store();
+
+		if (this.publishEvent) {
+			RaceEventUpdatedAction event = new RaceEventUpdatedAction(this);
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.idega.data.GenericEntity#remove()
+	 */
+	@Override
+	public void remove() throws RemoveException {
+		RaceEventUpdatedAction event = new RaceEventUpdatedAction(this);
+		event.setRemoved(Boolean.TRUE);
+		super.remove();
+
+		if (this.publishEvent) {
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.RaceEvent#setNotification(boolean)
+	 */
+	@Override
+	public void setNotification(boolean publishEvent) {
+		this.publishEvent = publishEvent;
 	}
 }
