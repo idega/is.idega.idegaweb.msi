@@ -4,10 +4,6 @@ package is.idega.idegaweb.msi.data;
 import com.idega.data.IDOEntity;
 
 public interface Event extends IDOEntity {
-	/**
-	 * @see is.idega.idegaweb.msi.data.EventBMPBean#getPrimaryKeyClass
-	 */
-	public Class getPrimaryKeyClass();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.EventBMPBean#getName
@@ -22,4 +18,6 @@ public interface Event extends IDOEntity {
 	public boolean isValid();
 	
 	public void setValid(boolean valid);
+
+	void setNotification(boolean publishEvent);
 }
