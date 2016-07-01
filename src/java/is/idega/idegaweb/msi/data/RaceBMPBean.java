@@ -9,15 +9,18 @@
  */
 package is.idega.idegaweb.msi.data;
 
+import is.idega.idegaweb.msi.events.RaceUpdatedAction;
+
 import java.sql.Timestamp;
 
-import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.user.data.Group;
 import com.idega.user.data.GroupBMPBean;
 import com.idega.util.IWTimestamp;
+import com.idega.util.expression.ELUtil;
 
 
 /**
@@ -27,6 +30,11 @@ import com.idega.util.IWTimestamp;
  * @version $Revision: 1.4 $
  */
 public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
+
+	private static final long serialVersionUID = -4425187386593352783L;
+
+	private boolean publishEvent = Boolean.FALSE;
+
 	private static final String METADATA_RACE_DATE = "run_date";
 	
 	private static final String METADATA_LAST_REGISTRATION_DATE = "last_registration_date";
@@ -85,7 +93,6 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 				return category;
 			} catch (IDOLookupException e) {
 			} catch (NumberFormatException e) {
-			} catch (FinderException e) {
 			}
 		}
 			
@@ -100,7 +107,6 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 				return type;
 			} catch (IDOLookupException e) {
 			} catch (NumberFormatException e) {
-			} catch (FinderException e) {
 			}
 		}
 			
@@ -151,4 +157,41 @@ public class RaceBMPBean extends GroupBMPBean  implements Race, Group {
 		setMetaData(METADATA_RACE_TYPE, raceTypeID, "java.lang.String");
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * @see com.idega.user.data.GroupBMPBean#store()
+	 */
+	@Override
+	public void store() {
+		super.store();
+
+		if (this.publishEvent) {
+			RaceUpdatedAction event = new RaceUpdatedAction(this);
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see com.idega.data.GenericEntity#remove()
+	 */
+	@Override
+	public void remove() throws RemoveException {
+		RaceUpdatedAction event = new RaceUpdatedAction(this);
+		event.setRemoved(Boolean.TRUE);
+
+		super.remove();
+		if (this.publishEvent) {
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	/* 
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.Race#setNotification(boolean)
+	 */
+	@Override
+	public void setNotification(boolean publishEvent) {
+		this.publishEvent = publishEvent;
+	}
 }

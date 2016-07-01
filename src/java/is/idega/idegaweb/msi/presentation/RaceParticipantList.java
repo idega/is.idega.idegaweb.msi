@@ -261,7 +261,6 @@ public class RaceParticipantList extends RaceBlock {
 		Collection raceParticipants = null;
 		try {
 			raceParticipants = getRaceBusiness(iwc).getParticipantHome().findAllByRace(this.race);
-		} catch (RemoteException e) {
 		} catch (FinderException e) {
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,9 +1,12 @@
 package is.idega.idegaweb.msi.data;
 
 
-import com.idega.user.data.Group;
+import is.idega.idegaweb.msi.events.RaceUpdatedAction;
+
 import java.sql.Timestamp;
+
 import com.idega.data.IDOEntity;
+import com.idega.user.data.Group;
 
 public interface Race extends IDOEntity, Group {
 	/**
@@ -62,7 +65,8 @@ public interface Race extends IDOEntity, Group {
 	public void setRaceCategory(RaceCategory raceCategory);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceCategory
+	 * 
+	 * @param raceCategoryID is {@link RaceCategory#getPrimaryKey()}
 	 */
 	public void setRaceCategory(String raceCategoryID);
 
@@ -72,7 +76,15 @@ public interface Race extends IDOEntity, Group {
 	public void setRaceType(RaceType raceType);
 
 	/**
-	 * @see is.idega.idegaweb.msi.data.RaceBMPBean#setRaceType
+	 * 
+	 * @param raceTypeID is {@link RaceType#getPrimaryKey()}
 	 */
 	public void setRaceType(String raceTypeID);
+
+	/**
+	 *  
+	 * @param publishEvent <code>true</code> if {@link RaceUpdatedAction} 
+	 * should be emitted or <code>false</code>;
+	 */
+	public void setNotification(boolean publishEvent);
 }

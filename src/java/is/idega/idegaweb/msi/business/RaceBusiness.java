@@ -1,11 +1,16 @@
 package is.idega.idegaweb.msi.business;
 
 
+import is.idega.idegaweb.msi.bean.TimeTransmitterRentProperties;
+import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.Participant;
 import is.idega.idegaweb.msi.data.ParticipantHome;
 import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
 import is.idega.idegaweb.msi.data.RaceNumber;
 import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceType;
 import is.idega.idegaweb.msi.data.RaceTypeHome;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
@@ -28,23 +33,28 @@ import com.idega.data.IDOCreateException;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.ui.DropdownMenu;
 import com.idega.user.business.UserBusiness;
+import com.idega.user.data.Group;
 import com.idega.user.data.User;
 import com.idega.util.IWTimestamp;
 
 public interface RaceBusiness extends IBOService {
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#createRace
-	 */
-	public Race createRace(String seasonID, String raceName, String raceDate,
-			String lastRegistration, String lastRegistrationPrice1,
-			String type, String category) throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#updateRace
-	 */
-	public void updateRace(Race race, String raceDate, String lastRegistration,
-			String lastRegistrationPrice1, String type, String category)
-			throws RemoteException;
+	Race createRace(
+			String seasonID, 
+			String raceName, 
+			String raceDate,
+			String lastRegistration, 
+			String lastRegistrationPrice1,
+			String type, 
+			String category);
+
+	void updateRace(
+			Race race, 
+			String raceDate, 
+			String lastRegistration,
+			String lastRegistrationPrice1, 
+			String type, 
+			String category);
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#updateRaceNumber
@@ -52,20 +62,24 @@ public interface RaceBusiness extends IBOService {
 	public void updateRaceNumber(RaceNumber raceNumber, String userSSN)
 			throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#addEventsToRace
-	 */
-	public boolean addEventsToRace(Race race, String[] events, Map price,
-			Map price2, Map teamCount) throws IBOLookupException,
-			RemoteException, FinderException, RemoteException;
+	boolean addEventsToRace(
+			Race race, 
+			String[] events, 
+			Map<String, String> price,
+			Map<String, String> price2, 
+			Map<String, String> teamCount);
 
-	public boolean addEventsToRace(Race race, String events[], Map price,
-			Map price2, Map teamCount,Map timeTransmitterPrices) throws IBOLookupException, RemoteException,
-			FinderException;
+	boolean addEventsToRace(
+			Race race, 
+			String events[], 
+			Map<String, String> price,
+			Map<String, String> price2, 
+			Map<String, String> teamCount,
+			Map<String, TimeTransmitterRentProperties> timeTransmitterPrices);
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getEventsForRace
 	 */
-	public Map getEventsForRace(Race race) throws FinderException,
+	public Map<String, RaceEvent> getEventsForRace(Race race) throws FinderException,
 			IBOLookupException, RemoteException, RemoteException;
 
 	/**
@@ -74,25 +88,13 @@ public interface RaceBusiness extends IBOService {
 	public boolean isRegisteredInRun(int runID, int userID)
 			throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getEvents
-	 */
-	public Collection getEvents() throws RemoteException;
+	Collection<Event> getEvents();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceTypes
-	 */
-	public Collection getRaceTypes() throws RemoteException;
+	Collection<RaceType> getRaceTypes();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceCategories
-	 */
-	public Collection getRaceCategories() throws RemoteException;
+	Collection<RaceCategory> getRaceCategories();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#createEvent
-	 */
-	public boolean createEvent(String name) throws RemoteException;
+	boolean createEvent(String name);
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#isRegisteredInRun
@@ -151,15 +153,9 @@ public interface RaceBusiness extends IBOService {
 	public void sendMessage(String email, String subject, String body)
 			throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRuns
-	 */
-	public Collection getRuns() throws RemoteException;
+	Collection<Group> getRuns();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getSeasons
-	 */
-	public Collection getSeasons() throws RemoteException;
+	Collection<Group> getSeasons();
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getMXRaceNumbers
@@ -171,10 +167,7 @@ public interface RaceBusiness extends IBOService {
 	 */
 	public Collection getSnocrossRaceNumbers() throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getCountries
-	 */
-	public Collection getCountries() throws RemoteException;
+	Collection<Country> getCountries();
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getUserBiz
@@ -193,31 +186,15 @@ public interface RaceBusiness extends IBOService {
 	public Participant getParticipantByPrimaryKey(int participantID)
 			throws RemoteException;
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getParticipantHome
-	 */
-	public ParticipantHome getParticipantHome() throws RemoteException;
+	ParticipantHome getParticipantHome();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceUserSettingsHome
-	 */
-	public RaceUserSettingsHome getRaceUserSettingsHome()
-			throws RemoteException;
+	RaceUserSettingsHome getRaceUserSettingsHome();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceTypeHome
-	 */
-	public RaceTypeHome getRaceTypeHome() throws RemoteException;
+	RaceTypeHome getRaceTypeHome();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceNumberHome
-	 */
-	public RaceNumberHome getRaceNumberHome() throws RemoteException;
+	RaceNumberHome getRaceNumberHome();
 
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceVehicleTypeHome
-	 */
-	public RaceVehicleTypeHome getRaceVehicleTypeHome() throws RemoteException;
+	RaceVehicleTypeHome getRaceVehicleTypeHome();
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getRaceUserSettings

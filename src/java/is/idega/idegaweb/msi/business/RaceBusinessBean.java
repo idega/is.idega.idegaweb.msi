@@ -12,6 +12,8 @@ import is.idega.idegaweb.msi.data.Race;
 import is.idega.idegaweb.msi.data.RaceCategory;
 import is.idega.idegaweb.msi.data.RaceCategoryHome;
 import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceEventHome;
+import is.idega.idegaweb.msi.data.RaceHome;
 import is.idega.idegaweb.msi.data.RaceNumber;
 import is.idega.idegaweb.msi.data.RaceNumberHome;
 import is.idega.idegaweb.msi.data.RaceType;
@@ -35,9 +37,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.transaction.UserTransaction;
 
@@ -66,8 +68,10 @@ import com.idega.user.business.GroupBusiness;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.ArrayUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.StringUtil;
+import com.idega.util.datastructures.map.MapUtil;
 
 /**
  * Description: Business bean (service) for run... <br>
@@ -94,50 +98,83 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 	public static final String PROPERTY_INFO_PK = "cc_info_pk";
 
-	public Race createRace(String seasonID, String raceName, String raceDate,
-			String lastRegistration, String lastRegistrationPrice1, String type, String category) {
-		Race race = null;
-
+	private EventHome getEventHome() {
 		try {
-			Group season = getGroupBiz().getGroupByGroupID(
-					Integer.parseInt(seasonID));
-			Group gRace = getGroupBiz().createGroupUnder(raceName, raceName,
-					MSIConstants.GROUP_TYPE_RACE, season);
-			race = ConverterUtility.getInstance().convertGroupToRace(gRace);
-			race.setRaceDate(new IWTimestamp(raceDate).getTimestamp());
-			race.setLastRegistrationDate(new IWTimestamp(lastRegistration)
-					.getTimestamp());
-			race.setLastRegistrationDatePrice1(new IWTimestamp(lastRegistrationPrice1)
-			.getTimestamp());
-			race.setRaceType(type);
-			race.setRaceCategory(category);
-			//race.setChipRent(Float.parseFloat(chipRent));
-			race.store();
-		} catch (IBOLookupException e) {
-			e.printStackTrace();
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
-		} catch (CreateException e) {
-			e.printStackTrace();
+			return (EventHome) IDOLookup.getHome(Event.class);
+		} catch (IDOLookupException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+					"Failed to get " + EventHome.class + "cause of: ", e);
 		}
 
-		return race;
+		return null;
 	}
 
-	public void updateRace(Race race, String raceDate, String lastRegistration, String lastRegistrationPrice1, String type, String category) {
+	private RaceHome getRaceHome() {
+		try {
+			return (RaceHome) IDOLookup.getHome(Race.class);
+		} catch (IDOLookupException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+					"Failed to get " + RaceHome.class + "cause of: ", e);
+		}
 
-		race.setRaceDate(new IWTimestamp(raceDate).getTimestamp());
-		race.setLastRegistrationDate(new IWTimestamp(lastRegistration)
-				.getTimestamp());
-		race.setLastRegistrationDatePrice1(new IWTimestamp(lastRegistrationPrice1).getTimestamp());
-		//race.setChipRent(Float.parseFloat(chipRent));
-		race.setRaceType(type);
-		race.setRaceCategory(category);
-		race.store();
+		return null;
+	}
+
+	private RaceEventHome getRaceEventHome() {
+		try {
+			return (RaceEventHome) IDOLookup.getHome(RaceEvent.class);
+		} catch (IDOLookupException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+					"Failed to get " + RaceEventHome.class + "cause of: ", e);
+		}
+
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#createRace(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public Race createRace(
+			String seasonID, 
+			String raceName, 
+			String raceDate,
+			String lastRegistration, 
+			String lastRegistrationPrice1, 
+			String type, 
+			String category) {
+		return getRaceHome().update(
+				null, 
+				Integer.valueOf(seasonID), 
+				raceName, 
+				raceName, 
+				new IWTimestamp(raceDate).getTimestamp(), 
+				new IWTimestamp(lastRegistration).getTimestamp(), 
+				new IWTimestamp(lastRegistrationPrice1).getTimestamp(), 
+				type, 
+				category, 
+				null, false);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#updateRace(is.idega.idegaweb.msi.data.Race, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+	@Override
+	public void updateRace(
+			Race race, 
+			String raceDate, 
+			String lastRegistration, 
+			String lastRegistrationPrice1, 
+			String type, 
+			String category) {
+		getRaceHome().update((Integer) race.getPrimaryKey(), 
+				null, null, null, 
+				new IWTimestamp(raceDate).getTimestamp(), 
+				new IWTimestamp(lastRegistration).getTimestamp(), 
+				new IWTimestamp(lastRegistrationPrice1).getTimestamp(), 
+				type, category, null, true);
 	}
 
 	public void updateRaceNumber(RaceNumber raceNumber, String userSSN) {
@@ -210,72 +247,58 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
-	public boolean addEventsToRace(Race race, String events[], Map price,
-			Map price2, Map teamCount,Map timeTransmitterPrices) throws IBOLookupException, RemoteException,
-			FinderException {
-		if (events != null) {
-			Group gRace = null;
-			int eventCount = events.length;
-			try {
-				gRace = getGroupBiz().getGroupByGroupID(
-						(((Integer) race.getPrimaryKey()).intValue()));
-				if (gRace != null) {
-					Map raceEvents = getEventsForRace(race);
-					for (int i = 0; i < eventCount; i++) {
-						String id = events[i];
-						RaceEvent raceEvent = null;
-						if (raceEvents.containsKey(id)) {
-							raceEvent = (RaceEvent) raceEvents.get(id);
-						} else {
-							Event event = getEventHome().findByPrimaryKey(id);
-							Group gRaceEvent = getGroupBiz().createGroupUnder(
-									event.getName(), event.getName(),
-									MSIConstants.GROUP_TYPE_RACE_EVENT, gRace);
-							raceEvent = ConverterUtility.getInstance()
-									.convertGroupToRaceEvent(gRaceEvent);
-							raceEvent.setEventID(id);
-						}
-						raceEvent.setPrice(getPrice(price, id));
-						raceEvent.setPrice2(getPrice(price2, id));
-						//raceEvent.setHasChip(getChipCheck(chips, id));
-						//raceEvent.setChipPrice(getPrice(chipPrice, id));
-						raceEvent.setTeamCount(getTeamCount(teamCount, id));
-						setTimeTransmitterProperties(raceEvent, timeTransmitterPrices, id);
-						raceEvent.store();
-					}
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#addEventsToRace(is.idega.idegaweb.msi.data.Race, java.lang.String[], java.util.Map, java.util.Map, java.util.Map, java.util.Map)
+	 */
+	public boolean addEventsToRace(
+			Race race, 
+			String events[], 
+			Map<String, String> price,
+			Map<String, String> price2, 
+			Map<String, String> teamCount,
+			Map<String, TimeTransmitterRentProperties> timeTransmitterPrices) {
+		if (race != null && !ArrayUtil.isEmpty(events)) {
+			for (String eventId : events) {
+				TimeTransmitterRentProperties properties = null;
+				if (timeTransmitterPrices != null) {
+					properties = timeTransmitterPrices.get(eventId);
 				}
-			} catch (EJBException e) {
-				e.printStackTrace();
-			} catch (CreateException e) {
-				e.printStackTrace();
+
+				if (getRaceEventHome().update(
+						null, 
+						(Integer) race.getPrimaryKey(), 
+						eventId, 
+						getEventPrice(price, eventId), 
+						getEventPrice(price2, eventId), 
+						getTeamCount(teamCount, eventId), 
+						properties != null ? Float.parseFloat(properties.getPrice()) : null, 
+						properties != null ? properties.isRentOn() : null, true) == null) {
+					return Boolean.FALSE;
+				}
 			}
 		}
 
-		return true;
+		return Boolean.TRUE;
 	}
-	private void setTimeTransmitterProperties(RaceEvent raceEvent,Map timeTransmitterPrices, String key){
-		if ((timeTransmitterPrices == null) || (!timeTransmitterPrices.containsKey(key))) {
-			return;
-		}
-		TimeTransmitterRentProperties properties = (TimeTransmitterRentProperties) timeTransmitterPrices.get(key);
-		try {
-			float price = Float.parseFloat(properties.getPrice());
-			raceEvent.setTimeTransmitterPrice(price);
-			raceEvent.setTimeTransmitterPriceOn(properties.isRentOn());
-		} catch (NumberFormatException e) {
-			getLogger().log(Level.WARNING, "Failed setting time transmitter price", e);
-		}
-	}
-	public boolean addEventsToRace(Race race, String events[], Map price,
-			Map price2, Map teamCount) throws IBOLookupException, RemoteException,
-			FinderException {
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#addEventsToRace(is.idega.idegaweb.msi.data.Race, java.lang.String[], java.util.Map, java.util.Map, java.util.Map)
+	 */
+	public boolean addEventsToRace(
+			Race race, 
+			String events[], 
+			Map<String, String> price,
+			Map<String, String> price2, 
+			Map<String, String> teamCount) {
 		return addEventsToRace(race, events, price, price2, teamCount, null);
 	}
 
-	private float getPrice(Map price, String key) {
-		if (price.containsKey(key)) {
-			String value = (String) price.get(key);
-			if (value != null && !"".equals(value)) {
+	private float getEventPrice(Map<String, String> prices, String key) {
+		if (!MapUtil.isEmpty(prices) && prices.containsKey(key)) {
+			String value = (String) prices.get(key);
+			if (!StringUtil.isEmpty(value)) {
 				try {
 					return Float.parseFloat(value);
 				} catch (NumberFormatException e) {
@@ -287,10 +310,10 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return 0.0f;
 	}
 
-	private int getTeamCount(Map teamCount, String key) {
+	private int getTeamCount(Map<String, String> teamCount, String key) {
 		if (teamCount.containsKey(key)) {
 			String value = (String) teamCount.get(key);
-			if (value != null && !"".equals(value)) {
+			if (!StringUtil.isEmpty(value)) {
 				try {
 					return Integer.parseInt(value);
 				} catch (NumberFormatException e) {
@@ -301,35 +324,19 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 		return 0;
 	}
-	
-	private boolean getChipCheck(Map chips, String key) {
-		if (chips.containsKey(key)) {
-			String value = (String) chips.get(key);
-			if (value != null && !"".equals(value)) {
-				try {
-					return Boolean.parseBoolean(value);
-				} catch (NumberFormatException e) {
-					return false;
-				}
-			}
-		}
 
-		return false;
-	}
-
-	public Map getEventsForRace(Race race) throws FinderException,
+	public Map<String, RaceEvent> getEventsForRace(Race race) throws FinderException,
 			IBOLookupException, RemoteException {
 		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
 
 		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
-		Collection events = getGroupBiz().getChildGroups(gRace, types, true);
+		Collection<Group> events = getGroupBiz().getChildGroups(gRace, types, true);
 		if (events != null) {
-			Iterator it = events.iterator();
-			Map eventIDList = new HashMap();
+			Map<String, RaceEvent> eventIDList = new HashMap<String, RaceEvent>();
 
+			Iterator<Group> it = events.iterator();
 			while (it.hasNext()) {
-				Group gEvent = (Group) it.next();
-				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(gEvent);
+				RaceEvent event = ConverterUtility.getInstance().convertGroupToRaceEvent(it.next());
 				eventIDList.put(event.getEventID(), event);
 			}
 
@@ -353,57 +360,26 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return false;
 	}
 
-	public Collection getEvents() {
-		try {
-			return ((EventHome) IDOLookup.getHome(Event.class)).findAll();
-		} catch (IDOLookupException e) {
-			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
-		}
-
-		return Collections.emptyList();
+	public Collection<Event> getEvents() {
+		return getEventHome().findAll();
 	}
 
-	public Collection getRaceTypes() {
-		try {
-			return ((RaceTypeHome) IDOLookup.getHome(RaceType.class)).findAll();
-		} catch (IDOLookupException e) {
-			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
-		}
-
-		return null;
+	public Collection<RaceType> getRaceTypes() {
+		return getRaceTypeHome().findAll();
 	}
 
-	public Collection getRaceCategories() {
+	public Collection<RaceCategory> getRaceCategories() {
 		try {
 			return ((RaceCategoryHome) IDOLookup.getHome(RaceCategory.class)).findAll();
 		} catch (IDOLookupException e) {
 			e.printStackTrace();
-		} catch (FinderException e) {
-			e.printStackTrace();
 		}
 
 		return null;
 	}
 
-	
 	public boolean createEvent(String name) {
-		try {
-			Event event = ((EventHome) IDOLookup.getHome(Event.class)).create();
-			event.setName(name);
-			event.store();
-
-			return true;
-		} catch (IDOLookupException e) {
-			e.printStackTrace();
-		} catch (CreateException e) {
-			e.printStackTrace();
-		}
-
-		return false;
+		return getEventHome().update(name, Boolean.TRUE, Boolean.TRUE) != null;
 	}
 
 	public boolean isRegisteredInRun(int runID, String personalID) {
@@ -420,9 +396,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 
-	public Participant saveParticipant(RaceParticipantInfo raceParticipantInfo,
-			String email, String hiddenCardNumber, double amount,
-			IWTimestamp date, Locale locale) throws IDOCreateException {
+	public Participant saveParticipant(
+			RaceParticipantInfo raceParticipantInfo,
+			String email, 
+			String hiddenCardNumber, 
+			double amount,
+			IWTimestamp date, 
+			Locale locale) throws IDOCreateException {
 		Participant retParticipant = null;
 
 		UserTransaction trans = getSessionContext().getUserTransaction();
@@ -573,6 +553,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		
 		return racePrice;
 	}
+
 	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
 		float racePrice = getEventPriceForRunner(raceParticipantInfo);
 		if(raceParticipantInfo.isRentTimeTransmitter()){
@@ -645,26 +626,14 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return new DropdownMenu();
 	}
 
-	private EventHome getEventHome() {
-		EventHome eventHome = null;
-		try {
-			eventHome = (EventHome) getIDOHome(Event.class);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
-
-		return eventHome;
-	}
-
 	public Season getSeasonByGroupId(Integer groupId) {
 		try {
 			SeasonHome seasonHome = (SeasonHome) getIDOHome(Season.class);
 			return seasonHome.findByPrimaryKey(groupId);
 		} catch (RemoteException e) {
 			log(e);
-		} catch (FinderException e) {
-			log(e);
 		}
+
 		return null;
 	}
 
@@ -708,27 +677,22 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
-	public Collection getRuns() {
-		Collection runs = null;
+	public Collection<Group> getRuns() {
 		String[] type = { MSIConstants.GROUP_TYPE_RACE };
 		try {
-			runs = getGroupBiz().getGroups(type, true);
-		} catch (Exception e) {
-			runs = null;
-		}
-		return runs;
+			return getGroupBiz().getGroups(type, true);
+		} catch (Exception e) {}
+
+		return null;
 	}
 
-	public Collection getSeasons() {
-		Collection season = null;
+	public Collection<Group> getSeasons() {
 		String[] type = { MSIConstants.GROUP_TYPE_SEASON };
 		try {
-			season = getGroupBiz().getGroups(type, true);
-		} catch (Exception e) {
-			season = null;
-		}
-		return season;
+			return getGroupBiz().getGroups(type, true);
+		} catch (Exception e) {}
 
+		return null;
 	}
 
 	public Collection getMXRaceNumbers() {
@@ -766,11 +730,11 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	 * 
 	 * @return Colleciton of all countries
 	 */
-	public Collection getCountries() {
-		Collection countries = null;
+	public Collection<Country> getCountries() {
+		Collection<Country> countries = null;
 		try {
 			CountryHome countryHome = (CountryHome) getIDOHome(Country.class);
-			countries = new ArrayList(countryHome.findAll());
+			countries = new ArrayList<Country>(countryHome.findAll());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -778,9 +742,9 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	private GroupBusiness getGroupBiz() throws IBOLookupException {
-		GroupBusiness business = (GroupBusiness) IBOLookup.getServiceInstance(
-				getIWApplicationContext(), GroupBusiness.class);
-		return business;
+		return (GroupBusiness) IBOLookup.getServiceInstance(
+				getIWApplicationContext(), 
+				GroupBusiness.class);
 	}
 
 	private CreditCardBusiness getCreditCardBusiness() {
@@ -793,9 +757,9 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	public UserBusiness getUserBiz() throws IBOLookupException {
-		UserBusiness business = (UserBusiness) IBOLookup.getServiceInstance(
-				getIWApplicationContext(), UserBusiness.class);
-		return business;
+		return (UserBusiness) IBOLookup.getServiceInstance(
+				getIWApplicationContext(), 
+				UserBusiness.class);
 	}
 
 	public Country getCountryByNationality(Object nationality) {
@@ -817,26 +781,23 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	public Participant getParticipantByPrimaryKey(int participantID) {
-		Participant participant = null;
 		try {
-			ParticipantHome runHome = (ParticipantHome) getIDOHome(Participant.class);
-			participant = runHome.findByPrimaryKey(new Integer(participantID));
-		} catch (RemoteException e1) {
-			e1.printStackTrace();
+			return getParticipantHome().findByPrimaryKey(participantID);
 		} catch (FinderException e1) {
 			e1.printStackTrace();
 		}
-		return participant;
+
+		return null;
 	}
 	
 	public ParticipantHome getParticipantHome() {
 		try {
 			return (ParticipantHome) getIDOHome(Participant.class);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + ParticipantHome.class + " cause of: ", e);
 		}
-		
+
 		return null;
 	}
 	
@@ -844,10 +805,10 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceUserSettingsHome) getIDOHome(RaceUserSettings.class);
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceUserSettingsHome.class + " cause of: ", e);
 		}
-		
+
 		return null;
 	}
 
@@ -855,9 +816,10 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceTypeHome) getIDOHome(RaceType.class);
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
 		}
-		
+
 		return null;
 	}
 
@@ -865,9 +827,10 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceNumberHome) getIDOHome(RaceNumber.class);
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
 		}
-		
+
 		return null;
 	}
 	
@@ -875,9 +838,10 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceVehicleTypeHome) getIDOHome(RaceVehicleType.class);
 		} catch (RemoteException e) {
-			e.printStackTrace();
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceVehicleTypeHome.class + " cause of: ", e);
 		}
-		
+
 		return null;
 	}
 
@@ -903,7 +867,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			for(Iterator iter = ids.iterator();iter.hasNext();){
 				Object id = iter.next();
 				try{
-					Event event = getEventHome().findByPrimaryKey(id);
+					Event event = getEventHome().findByPrimaryKey(id.toString());
 					event.setValid(true);
 					event.store();
 					enabled.add(id);
@@ -924,7 +888,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			for(Iterator iter = ids.iterator();iter.hasNext();){
 				Object id = iter.next();
 				try{
-					Event event = getEventHome().findByPrimaryKey(id);
+					Event event = getEventHome().findByPrimaryKey(id.toString());
 					event.setValid(false);
 					event.store();
 					disabled.add(id);

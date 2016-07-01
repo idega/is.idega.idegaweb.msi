@@ -59,7 +59,11 @@ public class ConverterUtility {
 	}
 
 	public Group convertRaceToGroup(Race race) throws FinderException {
-		return convertRaceToGroup(race.getPrimaryKey());
+		if (race != null) {
+			return convertRaceToGroup(race.getPrimaryKey());
+		}
+
+		return null;
 	}
 	
 	public Group convertRaceToGroup(Object racePK) throws FinderException {

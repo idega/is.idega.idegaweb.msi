@@ -673,17 +673,17 @@ public class RaceEditor extends RaceBlock {
 			String category = iwc.getParameter(PARAMETER_RACE_CATEGORY);
 			
 			String events[] = iwc.getParameterValues(PARAMETER_RACE_EVENTS);
-			Map prices = null;
-			Map prices2 = null;
-			Map timeTransmitterPrices = null;
+			Map<String, String> prices = null;
+			Map<String, String> prices2 = null;
+			Map<String, TimeTransmitterRentProperties> timeTransmitterPrices = null;
 			//Map chips = null;
 			//Map chipPrices = null;
-			Map teamCount = null;
+			Map<String, String> teamCount = null;
 			if (events != null && events.length > 0) {
-				prices = new HashMap();
-				prices2 = new HashMap();
-				teamCount = new HashMap();
-				timeTransmitterPrices = new HashMap(); 
+				prices = new HashMap<String, String>();
+				prices2 = new HashMap<String, String>();
+				teamCount = new HashMap<String, String>();
+				timeTransmitterPrices = new HashMap<String, TimeTransmitterRentProperties>(); 
 				for (int i = 0; i < events.length; i++) {
 					prices.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE + "_" + events[i]));
 					prices2.put(events[i], iwc.getParameter(PARAMETER_RACE_EVENTS_PRICE2 + "_" + events[i]));

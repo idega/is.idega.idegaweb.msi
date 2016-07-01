@@ -4,7 +4,6 @@ package is.idega.idegaweb.msi.data;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -21,9 +20,6 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 		return (RaceNumber) super.createIDO();
 	}
 
-	private Logger getLogger(){
-		return Logger.getLogger(RaceNumberHomeImpl.class.getName());
-	}
 	public RaceNumber findByPrimaryKey(Object pk) throws FinderException {
 		return (RaceNumber) super.findByPrimaryKeyIDO(pk);
 	}
@@ -48,7 +44,7 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 			RaceNumberBMPBean entity = (RaceNumberBMPBean) this.idoCheckOutPooledEntity();
 			return entity.countAllNotInUseByType(raceType);
 		}catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed counting race numbers", e);
+			getLog().log(Level.WARNING, "Failed counting race numbers", e);
 		}
 		return 0;
 	}
@@ -59,7 +55,7 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 			return findByPrimaryKeyCollection(ids);
 		}catch (FinderException e) {
 		}catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed counting race numbers", e);
+			getLog().log(Level.WARNING, "Failed counting race numbers", e);
 		}
 		return Collections.EMPTY_LIST;
 	}
@@ -70,7 +66,7 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 			return findByPrimaryKeyCollection(ids);
 		}catch (FinderException e) {
 		}catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed counting race numbers", e);
+			getLog().log(Level.WARNING, "Failed counting race numbers", e);
 		}
 		return Collections.EMPTY_LIST;
 	}
@@ -81,7 +77,7 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 			RaceNumber rn = findByPrimaryKey(pk);
 			return Integer.valueOf(rn.getRaceNumber()).intValue();
 		}catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed counting race numbers", e);
+			getLog().log(Level.WARNING, "Failed counting race numbers", e);
 		}
 		return 0;
 	}
