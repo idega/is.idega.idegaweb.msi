@@ -17,6 +17,7 @@ import is.idega.idegaweb.msi.data.RaceNumber;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -26,10 +27,12 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
+import javax.faces.context.FacesContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.creditcard.business.CreditCardAuthorizationException;
 import com.idega.block.web2.business.Web2Business;
-import com.idega.business.IBOLookup;
 import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
@@ -59,6 +62,7 @@ import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
+import com.idega.util.expression.ELUtil;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -106,6 +110,66 @@ public class Registration extends RaceBlock {
 
 	private RaceParticipantInfo raceParticipantInfo;
 
+	@Autowired
+	private Web2Business web2Business;
+
+	protected IWBundle getBundle() {
+		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		if (application != null) {
+			return application.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
+		}
+
+		return null;
+	}
+
+	protected IWBundle getSportUnionBundle() {
+		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		if (application != null) {
+			return application.getBundle("com.idega.sport.union");
+		}
+
+		return null;
+	}
+
+	private IWBundle getCoreBundle() {
+		return CoreUtil.getCoreBundle();
+	}
+
+	private Web2Business getWeb2Business() {
+		if (this.web2Business == null) {
+			this.web2Business = ELUtil.getInstance().getBean(Web2Business.SPRING_BEAN_IDENTIFIER);
+		}
+
+		return this.web2Business;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.idega.presentation.Block#encodeBegin(javax.faces.context.FacesContext)
+	 */
+	@Override
+	public void encodeBegin(FacesContext fc) throws IOException {
+		super.encodeBegin(fc);
+		
+		IWContext iwc = IWContext.getIWContext(fc);
+		ArrayList<String> scripts = new ArrayList<String>();
+		scripts.add(getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
+		scripts.add(getWeb2Business().getBundleURIToJQueryLib());
+		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
+		scripts.add("/dwr/interface/RaceBusiness.js");
+		scripts.add(getBundle().getVirtualPathWithFileNameString("javascript/race-registration.js"));
+		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
+
+		ArrayList<String> styles = new ArrayList<String>();
+		if (getSportUnionBundle() != null) {
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/label.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/select.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/button.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/textarea.css"));
+			PresentationUtil.addStyleSheetsToHeader(iwc, styles);
+		}
+	}
+
 	public void main(IWContext iwc) throws Exception {
 		switch (parseAction(iwc)) {
 		case ACTION_STEP_PERSONALDETAILS:
@@ -124,6 +188,36 @@ public class Registration extends RaceBlock {
 			cancel(iwc);
 			break;
 		}
+	}
+
+	private DropdownMenu getEventsMenu(IWContext iwc) {
+		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_EVENT));
+		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance", "You have to select a distance"));
+		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance","Please select distance"));
+		Map<String, RaceEvent> events = null;
+		try {
+			events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
+		} catch (RemoteException | FinderException e) {
+			getLogger().log(
+					Level.WARNING, 
+					"Failed to get events for race, cause of: ", e);
+		}
+
+		for (String key : events.keySet()) {
+			RaceEvent event = (RaceEvent) events.get(key);
+			String pk = event.getPrimaryKey().toString();
+			eventsDropdown.addOption(new SelectOption(event.getEventID(), pk));
+		}
+
+		return eventsDropdown;
+	}
+
+	private Layer getEventsMenuLayer(IWContext iwc) {
+		DropdownMenu eventsMenu = getEventsMenu(iwc);
+		
+		Layer eventsLayer = new Layer();
+		eventsLayer.setStyleClass("formItem");
+		return eventsLayer;
 	}
 
 	private void stepPersonalDetails(IWContext iwc) throws RemoteException, FinderException {
@@ -159,33 +253,18 @@ public class Registration extends RaceBlock {
 		table.add(choiceTable, 1, row++);
 		int iRow = 1;
 
-		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(
-				PARAMETER_EVENT));
-		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance",
-				"You have to select a distance"));
-		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance","Please select distance"));
-		
-		Map events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
-		Iterator it = events.keySet().iterator();
-		while (it.hasNext()) {
-			Object key = it.next();
-			RaceEvent event = (RaceEvent) events.get(key);
-			String pk = event.getPrimaryKey().toString();
-			eventsDropdown.addOption(new SelectOption(event.getEventID(), pk));
-		}
 		Text redStar = getHeader("*");
 		redStar.setFontColor("#ff0000");
 
-		choiceTable.add(getHeader(localize("race_reg.race_name", "Race name")),
-				1, iRow);
+		choiceTable.add(getHeader(localize("race_reg.race_name", "Race name")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
-		choiceTable.add(
-				getHeader(localize("race_reg.event_name", "Event name")), 3,
-				iRow);
+		choiceTable.add(getHeader(localize("race_reg.event_name", "Event name")), 3, iRow);
 		choiceTable.add(redStar, 3, iRow++);
 		if (this.raceParticipantInfo.getRace() != null) {
 			choiceTable.add(this.raceParticipantInfo.getRace().getName(), 1, iRow);
 		}
+
+		DropdownMenu eventsDropdown = getEventsMenu(iwc);
 		choiceTable.add(eventsDropdown, 3, iRow++);
 
 		choiceTable.setHeight(iRow++, 12);
@@ -214,21 +293,6 @@ public class Registration extends RaceBlock {
 		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
 			.append("RaceRegistrationHelper.ttPricesActions(null);})");
 		script.add(actions.toString());
-
-		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
-		ArrayList scripts = new ArrayList();
-		scripts.add(CoreUtil.getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
-		try {
-			Web2Business web2 = (Web2Business) IBOLookup.getServiceInstance(iwc, Web2Business.class);
-			scripts.add(web2.getBundleURIToJQueryLib());
-		} catch (Exception e) {
-			getLogger().log(Level.WARNING, "Failed getting script files", e);
-		}
-		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
-		scripts.add("/dwr/interface/RaceBusiness.js");
-		scripts.add(iwb.getVirtualPathWithFileNameString("javascript/race-registration.js"));
-		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
 		
 		Text nameField = (Text) getText("");
 		nameField.setWidth(Table.HUNDRED_PERCENT);
@@ -494,12 +558,12 @@ public class Registration extends RaceBlock {
 		if (iwc.isSuperAdmin()) {
 			return true;
 		}
-		
+
 		if (this.raceParticipantInfo.getRace().getRaceCategory().getCategoryKey().equals(MSIConstants.ICELANDIC_CHAMPIONSHIP)) {
 			if (this.raceParticipantInfo.getRaceNumber() == null) {
 				return false;
 			}
-			
+
 			try {
 				RaceNumber raceNumber = this.getRaceBusiness(iwc).getRaceNumberHome().findByRaceNumber(Integer.parseInt(this.raceParticipantInfo.getRaceNumber()), this.raceParticipantInfo.getRace().getRaceType());
 				if (!raceNumber.getIsApproved()) {
@@ -509,7 +573,7 @@ public class Registration extends RaceBlock {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 	
@@ -962,65 +1026,29 @@ public class Registration extends RaceBlock {
 		removeRaceParticipantInfo(iwc);
 	}
 
-	private void collectValues(IWContext iwc) throws RemoteException, NumberFormatException, FinderException {
+	private int parseAction(IWContext iwc) throws RemoteException,
+			NumberFormatException, FinderException {
+		int action = ACTION_STEP_PERSONALDETAILS;
+
+		if (iwc.isParameterSet(PARAMETER_ACTION)) {
+			action = Integer.parseInt(iwc.getParameter(PARAMETER_ACTION));
+		}
+
 		User user = iwc.getCurrentUser();
-		raceParticipantInfo = getRaceParticipantInfo(iwc);
+		raceParticipantInfo = (RaceParticipantInfo) iwc.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 		if (raceParticipantInfo == null) {
 			raceParticipantInfo = new RaceParticipantInfo();
 		}
-		
-		raceParticipantInfo.setUser(user);
 
 		if (iwc.isParameterSet(PARAMETER_RACE)) {
 			raceParticipantInfo.setRace(ConverterUtility.getInstance().convertGroupToRace(
 					new Integer(iwc.getParameter(PARAMETER_RACE))));
 		}
 
-		fillParticipantInfoWithUserSettings(iwc);
+		this.raceParticipantInfo.setUser(user);
 
-		if (iwc.isParameterSet(PARAMETER_EVENT)) {
-			raceParticipantInfo.setEvent(ConverterUtility.getInstance()
-					.convertGroupToRaceEvent(new Integer(iwc.getParameter(PARAMETER_EVENT))));
-			if(iwc.isParameterSet(PARAMETER_RENT_TIMETRANSMITTER)){
-				raceParticipantInfo.setRentTimeTransmitter(true);
-			}else{
-				raceParticipantInfo.setRentTimeTransmitter(false);
-			}
-		}
-
-		if (iwc.isParameterSet(PARAMETER_EMAIL)) {
-			raceParticipantInfo.setEmail(iwc.getParameter(PARAMETER_EMAIL));
-		}
-		if (iwc.isParameterSet(PARAMETER_HOME_PHONE)) {
-			raceParticipantInfo.setHomePhone(iwc.getParameter(PARAMETER_HOME_PHONE));
-		}
-		if (iwc.isParameterSet(PARAMETER_MOBILE_PHONE)) {
-			raceParticipantInfo.setMobilePhone(iwc.getParameter(PARAMETER_MOBILE_PHONE));
-		}
-
-		if (iwc.isParameterSet(PARAMETER_AGREE)) {
-			raceParticipantInfo.setAgree(true);
-		}
-				
-		if (iwc.isParameterSet(PARAMETER_COMMENT)) {
-			raceParticipantInfo.setComment(iwc.getParameter(PARAMETER_COMMENT));
-		}
-
-		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
-			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
-		}
-
-		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
-			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
-		}
-		
-
-		saveRaceParticipantInfo(iwc, raceParticipantInfo);
-	}
-
-	private void fillParticipantInfoWithUserSettings(IWContext iwc) {
 		try {
-			RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(this.raceParticipantInfo.getUser());
+			RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(user);
 			if (settings != null) {
 				if (this.raceParticipantInfo.getRace() != null) {
 					if (this.raceParticipantInfo.getRace().getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
@@ -1032,9 +1060,11 @@ public class Registration extends RaceBlock {
 							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());																				
 						}
 					}
-				}				
+				}
+
 				this.raceParticipantInfo.setRaceVehicle(settings.getVehicleType());
 				this.raceParticipantInfo.setSponsors(settings.getSponsor());
+
 				if (settings.getTransponderNumber() != null && !"".equals(settings.getTransponderNumber())) {
 					this.raceParticipantInfo.setChipNumber(settings.getTransponderNumber());
 					this.raceParticipantInfo.setOwnChip(true);
@@ -1047,19 +1077,47 @@ public class Registration extends RaceBlock {
 				this.raceParticipantInfo.setModel(settings.getModel());
 				this.raceParticipantInfo.setTeam(settings.getTeam());
 			}
-		} catch (RemoteException e) {
-		}
-	}
+		} catch (RemoteException e) {}
 
-	private int parseAction(IWContext iwc) throws RemoteException,
-			NumberFormatException, FinderException {
-		int action = ACTION_STEP_PERSONALDETAILS;
-
-		if (iwc.isParameterSet(PARAMETER_ACTION)) {
-			action = Integer.parseInt(iwc.getParameter(PARAMETER_ACTION));
+		if (iwc.isParameterSet(PARAMETER_EVENT)) {
+			raceParticipantInfo.setEvent(ConverterUtility.getInstance()
+					.convertGroupToRaceEvent(new Integer(iwc.getParameter(PARAMETER_EVENT))));
+			if (iwc.isParameterSet(PARAMETER_RENT_TIMETRANSMITTER)) {
+				raceParticipantInfo.setRentTimeTransmitter(true);
+			} else {
+				raceParticipantInfo.setRentTimeTransmitter(false);
+			}
 		}
-		
-		collectValues(iwc);
+
+		if (iwc.isParameterSet(PARAMETER_EMAIL)) {
+			raceParticipantInfo.setEmail(iwc.getParameter(PARAMETER_EMAIL));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_HOME_PHONE)) {
+			raceParticipantInfo.setHomePhone(iwc.getParameter(PARAMETER_HOME_PHONE));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_MOBILE_PHONE)) {
+			raceParticipantInfo.setMobilePhone(iwc.getParameter(PARAMETER_MOBILE_PHONE));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_AGREE)) {
+			raceParticipantInfo.setAgree(true);
+		}
+
+		if (iwc.isParameterSet(PARAMETER_COMMENT)) {
+			raceParticipantInfo.setComment(iwc.getParameter(PARAMETER_COMMENT));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
+			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
+		}
+
+		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
+			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
+		}
+
+		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, raceParticipantInfo);
 
 		if (action == ACTION_STEP_DISCLAIMER) {
 			if (this.raceParticipantInfo.getEvent().getTeamCount() > 1) {
@@ -1074,16 +1132,8 @@ public class Registration extends RaceBlock {
 				}				
 			}
 		}
-		
+
 		return action;
-	}
-	
-	private RaceParticipantInfo getRaceParticipantInfo(IWContext iwc) {
-		return (RaceParticipantInfo) iwc.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
-	}
-	
-	private void saveRaceParticipantInfo(IWContext iwc, RaceParticipantInfo raceParticipantInfo) {
-		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, raceParticipantInfo);
 	}
 	
 	private void removeRaceParticipantInfo(IWContext iwc) {
