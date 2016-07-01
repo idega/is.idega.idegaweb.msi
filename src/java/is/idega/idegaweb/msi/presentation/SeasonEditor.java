@@ -3,17 +3,20 @@ package is.idega.idegaweb.msi.presentation;
 
 import is.idega.idegaweb.msi.business.ConverterUtility;
 import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.util.MSIConstants;
+import is.idega.idegaweb.msi.data.SeasonHome;
 
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
 import com.idega.presentation.Table2;
@@ -29,6 +32,7 @@ import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.data.Group;
+import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 
 public class SeasonEditor extends RaceBlock {
@@ -41,6 +45,17 @@ public class SeasonEditor extends RaceBlock {
 	private static final int ACTION_VIEW = 1;
 	private static final int ACTION_NEW = 2;
 	private static final int ACTION_SAVE = 3;
+
+	private SeasonHome getSeasonHome() {
+		try {
+			return (SeasonHome) IDOLookup.getHome(Season.class);
+		} catch (IDOLookupException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+					"Failed to get " + SeasonHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
 	
 	public void main(IWContext iwc) throws Exception {
 		init(iwc);
@@ -136,17 +151,12 @@ public class SeasonEditor extends RaceBlock {
 		add(form);
 	}
 
-	public void save(IWContext iwc) throws java.rmi.RemoteException, CreateException, FinderException {
-		String seasonName = iwc.getParameter(PARAMETER_SEASON);
-		Group parent = getGroupBiz(iwc).getGroupByGroupID(1430);
-		Season season = ConverterUtility.getInstance().convertGroupToSeason(getGroupBiz(iwc).createGroup(seasonName, "", MSIConstants.GROUP_TYPE_SEASON, -1, -1, false, parent));
-		
-		if (season != null) {
-			season.setSeasonBeginDate(new IWTimestamp(iwc.getParameter(PARAMETER_SEASON_START)).getTimestamp());
-			season.setSeasonEndDate(new IWTimestamp(iwc.getParameter(PARAMETER_SEASON_END)).getTimestamp());
-			season.store();
-		}
-
+	public void save(IWContext iwc) {
+		getSeasonHome().update(null, 
+				iwc.getParameter(PARAMETER_SEASON), 
+				CoreConstants.EMPTY, 
+				new IWTimestamp(iwc.getParameter(PARAMETER_SEASON_START)).getTimestamp(), 
+				new IWTimestamp(iwc.getParameter(PARAMETER_SEASON_END)).getTimestamp());
 	}
 	
 	private int parseAction(IWContext iwc) {

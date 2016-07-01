@@ -23,6 +23,8 @@ import com.idega.util.IWTimestamp;
  */
 public class SeasonBMPBean extends GroupBMPBean implements Season, Group {
 
+	private static final long serialVersionUID = -5070457419534037129L;
+
 	public static final String METADATA_SEASON_BEGIN = "season_begin";
 
 	public static final String METADATA_SEASON_END = "season_end";
@@ -31,31 +33,33 @@ public class SeasonBMPBean extends GroupBMPBean implements Season, Group {
 	public Timestamp getSeasonBeginDate() {
 		String date = getMetaData(METADATA_SEASON_BEGIN);
 		if (date != null) {
-			IWTimestamp stamp = new IWTimestamp(date);
-			return stamp.getTimestamp();
+			return new IWTimestamp(date).getTimestamp();
 		}
+
 		return null;
 	}
 
 	public Timestamp getSeasonEndDate() {
 		String date = getMetaData(METADATA_SEASON_END);
 		if (date != null) {
-			IWTimestamp stamp = new IWTimestamp(date);
-			return stamp.getTimestamp();
+			return new IWTimestamp(date).getTimestamp();
 		}
+
 		return null;
 	}
 
 	// setters
 	public void setSeasonBeginDate(Timestamp date) {
-		IWTimestamp stamp = new IWTimestamp(date);
-		setMetaData(METADATA_SEASON_BEGIN, stamp.toSQLString(),
+		setMetaData(
+				METADATA_SEASON_BEGIN, 
+				new IWTimestamp(date).toSQLString(),
 				"java.sql.Timestamp");
 	}
 
 	public void setSeasonEndDate(Timestamp date) {
-		IWTimestamp stamp = new IWTimestamp(date);
-		setMetaData(METADATA_SEASON_END, stamp.toSQLString(),
+		setMetaData(
+				METADATA_SEASON_END, 
+				new IWTimestamp(date).toSQLString(),
 				"java.sql.Timestamp");
 	}
 }
