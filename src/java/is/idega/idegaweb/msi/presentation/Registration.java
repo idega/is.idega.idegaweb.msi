@@ -12,8 +12,11 @@ package is.idega.idegaweb.msi.presentation;
 import is.idega.idegaweb.msi.business.ConverterUtility;
 import is.idega.idegaweb.msi.business.RaceParticipantInfo;
 import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
 import is.idega.idegaweb.msi.data.RaceEvent;
 import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
@@ -554,12 +557,30 @@ public class Registration extends RaceBlock {
 		add(form);
 	}
 
+	private RaceCategory getRaceCategory(RaceParticipantInfo info) {
+		Race race = getRace(info);
+		if (race != null) {
+			return race.getRaceCategory();
+		}
+
+		return null;
+	}
+
+	private String getRaceCategoryKey(RaceParticipantInfo info) {
+		RaceCategory raceCategory = getRaceCategory(info);
+		if (raceCategory != null) {
+			return raceCategory.getCategoryKey();
+		}
+
+		return null;
+	}
+
 	private boolean canRegister(IWContext iwc) {
 		if (iwc.isSuperAdmin()) {
 			return true;
 		}
 
-		if (this.raceParticipantInfo.getRace().getRaceCategory().getCategoryKey().equals(MSIConstants.ICELANDIC_CHAMPIONSHIP)) {
+		if (MSIConstants.ICELANDIC_CHAMPIONSHIP.equals(getRaceCategoryKey(this.raceParticipantInfo))) {
 			if (this.raceParticipantInfo.getRaceNumber() == null) {
 				return false;
 			}
@@ -1026,6 +1047,32 @@ public class Registration extends RaceBlock {
 		removeRaceParticipantInfo(iwc);
 	}
 
+	private Race getRace(RaceParticipantInfo info) {
+		if (info != null) {
+			return info.getRace();
+		}
+
+		return null;
+	}
+
+	private RaceType getRaceType(RaceParticipantInfo info) {
+		Race race = getRace(info);
+		if (race != null) {
+			return race.getRaceType();
+		}
+
+		return null;
+	}
+
+	private String getRaceTypeKey(RaceParticipantInfo info) {
+		RaceType raceType = getRaceType(info);
+		if (raceType != null) {
+			return raceType.getRaceType();
+		}
+
+		return null;
+	}
+
 	private int parseAction(IWContext iwc) throws RemoteException,
 			NumberFormatException, FinderException {
 		int action = ACTION_STEP_PERSONALDETAILS;
@@ -1051,11 +1098,11 @@ public class Registration extends RaceBlock {
 			RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(user);
 			if (settings != null) {
 				if (this.raceParticipantInfo.getRace() != null) {
-					if (this.raceParticipantInfo.getRace().getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
+					if (MSIConstants.RACE_TYPE_MX_AND_ENDURO.equals(getRaceTypeKey(this.raceParticipantInfo))) {
 						if (settings.getRaceNumberMX() != null && settings.getRaceNumberMX().getApprovedDate() != null) {
 							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberMX().getRaceNumber());
 						}
-					} else if (this.raceParticipantInfo.getRace().getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
+					} else if (MSIConstants.RACE_TYPE_SNOCROSS.equals(getRaceTypeKey(this.raceParticipantInfo))) {
 						if (settings.getRaceNumberSnocross() != null && settings.getRaceNumberSnocross().getApprovedDate() != null) {
 							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());																				
 						}
