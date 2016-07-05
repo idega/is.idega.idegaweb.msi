@@ -1090,8 +1090,13 @@ public class Registration extends RaceBlock {
 		}
 
 		if (iwc.isParameterSet(PARAMETER_RACE)) {
-			raceParticipantInfo.setRace(ConverterUtility.getInstance().convertGroupToRace(
-					new Integer(iwc.getParameter(PARAMETER_RACE))));
+			try {
+				raceParticipantInfo.setRace(ConverterUtility.getInstance().convertGroupToRace(
+						new Integer(iwc.getParameter(PARAMETER_RACE))));
+			} catch(NumberFormatException e) {
+				e.printStackTrace();
+			}
+
 		}
 
 		this.raceParticipantInfo.setUser(user);
