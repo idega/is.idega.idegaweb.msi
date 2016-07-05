@@ -22,6 +22,7 @@ import com.idega.business.IBOLookupException;
 import com.idega.business.IBORuntimeException;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWBundle;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.Block;
 import com.idega.presentation.IWContext;
@@ -65,6 +66,19 @@ public class RaceBlock extends Block {
 	
 	private IWResourceBundle iwrb = null;
 	private IWBundle iwb = null;
+
+	private IWBundle sportUnionBundle;
+
+	protected IWBundle getSportUnionBundle() {
+		if (this.sportUnionBundle == null) {
+			IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+			if (application != null) {
+				this.sportUnionBundle = application.getBundle("com.idega.sport.union");
+			}
+		}
+
+		return this.sportUnionBundle;
+	}
 
 	public void _main(IWContext iwc)throws Exception{
 		setResourceBundle(getResourceBundle(iwc));
@@ -204,8 +218,14 @@ public class RaceBlock extends Block {
 	 * @return Image	The edit icon.
 	 */
 	protected Image getEditIcon(String toolTip) {
-		Image editImage = this.iwb.getImage("shared/edit.gif", 12, 12);
-		editImage.setToolTip(toolTip);
+		Image editImage = null;
+		if (getSportUnionBundle() != null) {
+			editImage = getSportUnionBundle().getImage("shared/edit.gif");
+		} else {
+			editImage = this.iwb.getImage("shared/edit.gif", 12, 12);
+		}
+
+		editImage.setTitle(toolTip);
 		return editImage;
 	}
 
