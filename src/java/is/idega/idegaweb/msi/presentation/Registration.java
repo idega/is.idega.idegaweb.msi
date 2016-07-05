@@ -169,6 +169,7 @@ public class Registration extends RaceBlock {
 			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/select.css"));
 			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/button.css"));
 			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/textarea.css"));
+			styles.add(getBundle().getVirtualPathWithFileNameString("style/race-registration.css"));
 			PresentationUtil.addStyleSheetsToHeader(iwc, styles);
 		}
 	}
@@ -961,6 +962,7 @@ public class Registration extends RaceBlock {
 		table.setCellpadding(0);
 		table.setCellspacing(0);
 		table.setWidth(Table.HUNDRED_PERCENT);
+		table.setStyleClass("receiptTable");
 		int row = 1;
 		iwc.setSessionAttribute(SESSION_ATTRIBUTE_AMOUNT, new Double(amount));
 		iwc.setSessionAttribute(SESSION_ATTRIBUTE_CARD_NUMBER, cardNumber);

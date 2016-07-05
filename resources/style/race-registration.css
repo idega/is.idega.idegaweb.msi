@@ -1,0 +1,75 @@
+form table {
+	margin-left: 10px;
+}
+
+td {
+	overflow: hidden;
+	padding-bottom: 10px;
+	width: 400px;
+}
+
+td .msi_Header {
+	float: left;
+	font-weight: bold;
+	line-height: 2em;
+	padding-bottom: 0px;
+}
+
+td .msi_Text {
+	line-height: 2em;
+	float: left;
+	width: 200px;
+}
+
+td .msi_InterfaceButton {
+	margin-left: 10px;
+	margin-bottom: 25px;
+}
+
+td input[type="text"] {
+	border: 1px #d4d4d4 solid;
+	border-radius: 3px;
+	color: #696969;
+	width: 350px;
+	padding: 5px 8px;
+	box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+	font-size: 125% !important;
+	height: auto;
+	float: left;
+	clear: left;
+	display: inline;
+}
+
+td[align] > span {
+	margin-top: 10px;
+	width: 95%;
+}
+
+td[align="left"] > span {
+	margin-top: 0px;
+}
+
+select[name="prm_expires_month"] {
+	width: 110px;
+	float: left;
+}
+
+select[name="prm_expires_year"] {
+	width: 110px;
+	margin-left: -195px;
+}
+
+td input[size="4"] {
+	width: 60px;
+	float: left;
+	clear: right;
+	margin-top: -18px;
+}
+
+td[align="right"] > span {
+	margin-left: -20px;
+}
+
+.receiptTable tbody {
+	text-indent: 20px;
+}
