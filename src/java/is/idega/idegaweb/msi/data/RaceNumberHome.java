@@ -2,6 +2,7 @@ package is.idega.idegaweb.msi.data;
 
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
@@ -22,7 +23,12 @@ public interface RaceNumberHome extends IDOHome {
 	public Collection getMxInUseWithoutUser(int start, int max);
 	public Collection getSnocrossInUseWithoutUser(int start, int max);
 
-	public Collection findAllByType(RaceType raceType) throws FinderException;
+	/**
+	 * 
+	 * @param raceType to search by, not <code>null</code>;
+	 * @return entities of {@link Collections#emptyList()} on failure;
+	 */
+	public Collection<RaceNumber> findAllByType(RaceType raceType);
 
 	public RaceNumber findByRaceNumber(int raceNumber, RaceType raceType)
 			throws FinderException;

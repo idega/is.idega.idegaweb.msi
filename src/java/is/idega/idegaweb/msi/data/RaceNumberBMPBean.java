@@ -4,7 +4,10 @@ import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ejb.FinderException;
 
@@ -184,14 +187,27 @@ public class RaceNumberBMPBean extends GenericEntity implements RaceNumber {
 		return idoFindPKsByQuery(query, max, start);
 	}
 
-	public Collection ejbFindAllByType(RaceType raceType) throws FinderException {
+	/**
+	 * 
+	 * @param raceType to find by, not <code>null</code>;
+	 * @return {@link Collection} of {@link RaceNumber#getPrimaryKey()}s 
+	 * or {@link Collections#emptyList()} on failure;
+	 */
+	public Collection<Integer> ejbFindAllByType(RaceType raceType) {
 		Table table = new Table(this);
-		
+
 		SelectQuery query = new SelectQuery(table);
 		query.addColumn(new WildCardColumn());
 		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_TYPE), MatchCriteria.EQUALS, raceType));
-				
-		return idoFindPKsBySQL(query.toString());
+
+		try {
+			return idoFindPKsBySQL(query.toString());
+		} catch (FinderException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+					"Failed to get primary keys by query: " + query);
+		}
+
+		return Collections.emptyList();
 	}
 
 	

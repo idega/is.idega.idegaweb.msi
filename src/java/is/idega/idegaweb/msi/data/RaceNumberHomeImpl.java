@@ -82,12 +82,23 @@ public class RaceNumberHomeImpl extends IDOFactory implements RaceNumberHome {
 		return 0;
 	}
 
-	public Collection findAllByType(RaceType raceType) throws FinderException {
-		IDOEntity entity = this.idoCheckOutPooledEntity();
-		Collection ids = ((RaceNumberBMPBean) entity)
-				.ejbFindAllByType(raceType);
-		this.idoCheckInPooledEntity(entity);
-		return this.getEntityCollectionForPrimaryKeys(ids);
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.RaceNumberHome#findAllByType(is.idega.idegaweb.msi.data.RaceType)
+	 */
+	@Override
+	public Collection<RaceNumber> findAllByType(RaceType raceType) {
+		RaceNumberBMPBean entity = (RaceNumberBMPBean) idoCheckOutPooledEntity();
+		Collection<Integer> ids = entity.ejbFindAllByType(raceType);
+
+		try {
+			return getEntityCollectionForPrimaryKeys(ids);
+		} catch (FinderException e) {
+			getLog().log(Level.WARNING, 
+					"Failed to get entities by primary keys: " + ids);
+		}
+
+		return Collections.emptyList();
 	}
 
 	public RaceNumber findByRaceNumber(int raceNumber, RaceType raceType)
