@@ -145,7 +145,7 @@ public class RaceNumberEditor extends RaceBlock {
 	protected void showList(IWContext iwc) throws RemoteException, FinderException {
 		String styleSheets = getBundle().getVirtualPathWithFileNameString("msiEditor.css");
 		if (!StringUtil.isEmpty(styleSheets)) {
-			this.getParentPage().addStyleSheetURL(styleSheets);
+			PresentationUtil.addStyleSheetToHeader(iwc, styleSheets);
 		}
 
 		Form form = new Form();
