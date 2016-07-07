@@ -658,6 +658,7 @@ public class Registration extends RaceBlock {
 		table.setCellpadding(0);
 		table.setCellspacing(0);
 		table.setWidth(Table.HUNDRED_PERCENT);
+		table.setStyleClass("paymentTable");
 		form.add(table);
 		int row = 1;
 

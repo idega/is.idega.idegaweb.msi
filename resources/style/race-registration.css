@@ -11,12 +11,12 @@ td {
 td .msi_Header {
 	float: left;
 	font-weight: bold;
-	line-height: 2em;
+	line-height: 1em;
 	padding-bottom: 0px;
 }
 
 td .msi_Text {
-	line-height: 2em;
+	line-height: 1em;
 	float: left;
 	width: 200px;
 }
@@ -50,7 +50,7 @@ td[align="left"] > span {
 }
 
 select[name="prm_expires_month"] {
-	width: 110px;
+	width: 120px;
 	float: left;
 }
 
@@ -72,4 +72,25 @@ td[align="right"] > span {
 
 .receiptTable tbody {
 	text-indent: 20px;
+}
+
+.msi_CheckBox {
+	margin-left: -830px;
+	margin-top: 0px;
+}
+
+.paymentTable td .msi_Text {
+	line-height: 2em;
+}
+
+.paymentTable td .msi_Header {
+	line-height: 2em;
+}
+
+.receiptTable td .msi_Text {
+	line-height: 2em;
+}
+
+.receiptTable td .msi_Header {
+	line-height: 2em;
 }
