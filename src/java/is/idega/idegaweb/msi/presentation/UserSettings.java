@@ -10,6 +10,7 @@ import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.data.RaceVehicleType;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -17,6 +18,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
+import javax.faces.context.FacesContext;
 
 import com.idega.business.IBOLookup;
 import com.idega.core.builder.data.ICPage;
@@ -44,6 +46,7 @@ import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
 import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.business.UserBusiness;
+import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
 
 /**
@@ -156,6 +159,15 @@ public class UserSettings extends RaceBlock {
 	}
 
 	public UserSettings() {}
+
+	@Override
+	public void encodeBegin(FacesContext fc) throws IOException {
+		super.encodeBegin(fc);
+		
+		PresentationUtil.addJavaScriptSourceLineToHeader(
+				IWContext.getIWContext(fc), 
+				getBundle().getVirtualPathWithFileNameString("javascript/user-settings-helper.js"));
+	}
 
 	public void main(IWContext iwc) {
 		if (!iwc.isLoggedOn()) {
@@ -564,23 +576,34 @@ public class UserSettings extends RaceBlock {
 		layer = new Layer(Layer.DIV);
 		layer.setID("raceNumber");
 		section.add(layer);
+
+		Paragraph info = new Paragraph();
+		info.setClass("race_number_info");
+		info.add(new Text(localize("msi.race_number_information_text", 
+				"Úthlutun númera frá 0-99 er háð samþykki Msí sbr. reglur um "
+				+ "keppnisnúmer - sjá nánar undir Reglur "
+				+ "(<a href=\"http://msisport.is/pages/reglur/\">http://msisport.is/pages/reglur/</a>)")));
 		
-		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");
 		label = new Label(
 				localize(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX), 
 				(InterfaceObject) tiRaceNumberMX);
-		formItem.add(label);
-		formItem.add(tiRaceNumberMX);
-		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");
+		formItem.setStyleClass("formItem");		
+		formItem.add(label);
+		formItem.add(tiRaceNumberMX);
+		formItem.add(info);
+		layer.add(formItem);
+
 		label = new Label(
 				localize(KEY_RACE_NUMBER_SNOCROSS, DEFAULT_RACE_NUBMER_SNOCROSS), 
 				(InterfaceObject) tiRaceNumberSnocross);			
+		
+		formItem = new Layer(Layer.DIV);
+		formItem.setStyleClass("formItem");		
 		formItem.add(label);
 		formItem.add(tiRaceNumberSnocross);
+		formItem.add(info);
 		layer.add(formItem);
 
 		
