@@ -24,8 +24,11 @@ import com.idega.data.query.Table;
 import com.idega.data.query.WildCardColumn;
 
 public class RaceNumberBMPBean extends GenericEntity implements RaceNumber {
+
+	private static final long serialVersionUID = 1921008429569608574L;
+
 	private static final String ENTITY_NAME = "msi_race_number";
-	
+
 	private static final String COLUMN_RACE_NUMBER = "race_number";
 	private static final String COLUMN_RACE_TYPE = "race_type";
 	private static final String COLUMN_IN_USE = "in_use";
@@ -46,7 +49,7 @@ public class RaceNumberBMPBean extends GenericEntity implements RaceNumber {
 		addAttribute(COLUMN_APPLICATION_DATE, "Application date", Timestamp.class);
 		addAttribute(COLUMN_APPROVED_DATE, "Approved date", Timestamp.class);
 	}
-	
+
 	public void insertStartData() throws Exception {
 		RaceTypeHome typeHome = (RaceTypeHome) IDOLookup.getHome(RaceType.class);
 		RaceNumberHome home = (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
@@ -210,16 +213,24 @@ public class RaceNumberBMPBean extends GenericEntity implements RaceNumber {
 		return Collections.emptyList();
 	}
 
-	
-	public Object ejbFindByRaceNumber(int raceNumber, RaceType raceType) throws FinderException {
-		Table table = new Table(this);
-		
-		SelectQuery query = new SelectQuery(table);
-		query.addColumn(new WildCardColumn());
+	/**
+	 * 
+	 * @param raceNumber is {@link RaceNumber#getRaceNumber()}, not <code>null</code>;
+	 * @param raceTypeId is {@link RaceType#getRaceType()}, not <code>null</code>;
+	 * @return {@link RaceNumber#getPrimaryKey()} or <code>null</code> on failure;
+	 */
+	public Integer ejbFindByRaceNumber(int raceNumber, int raceTypeId) {
+		StringBuilder query = new StringBuilder();
+		query.append(" SELECT mrn.msi_race_number_id FROM msi_race_number mrn");
+		query.append(" WHERE mrn.race_number = ").append(raceNumber);
+		query.append(" AND mrn.race_type = ").append(raceTypeId);
 
-		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_NUMBER), MatchCriteria.EQUALS, raceNumber));
-		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_TYPE), MatchCriteria.EQUALS, raceType));
-		
-		return idoFindOnePKByQuery(query);
+		try {
+			return (Integer) idoFindOnePKBySQL(query.toString());
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get primary keys by: " + query);
+		}
+
+		return null;
 	}
 }
