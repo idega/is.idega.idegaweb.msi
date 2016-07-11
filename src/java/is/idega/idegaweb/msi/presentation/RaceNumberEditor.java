@@ -5,6 +5,7 @@ import is.idega.idegaweb.msi.data.RaceNumberHome;
 import is.idega.idegaweb.msi.data.RaceType;
 import is.idega.idegaweb.msi.data.RaceTypeHome;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.io.IOException;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
 import javax.faces.context.FacesContext;
 
@@ -47,10 +47,21 @@ public class RaceNumberEditor extends RaceBlock {
 
 	protected static final String PARAMETER_USER_SSN = "prm_user";
 
-	
 	private static final int ACTION_VIEW = 1;
 	private static final int ACTION_EDIT = 2;
 	private static final int ACTION_SAVE = 3;
+
+	private RaceUserSettingsHome getRaceUserSettingsHome() {
+		try {
+			return (RaceUserSettingsHome) IDOLookup.getHome(RaceUserSettings.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceUserSettingsHome.class + 
+					" cause of: ", e);
+		}
+
+		return null;
+	}
 
 	private RaceNumberHome getRaceNumberHome() {
 		try {
@@ -69,6 +80,20 @@ public class RaceNumberEditor extends RaceBlock {
 		} catch (IDOLookupException e) {
 			getLogger().log(Level.WARNING, 
 					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
+
+	private RaceUserSettings getRaceUserSettings(RaceNumber number) {
+		if (number != null) {
+			if (number.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
+				try {
+					return getRaceUserSettingsHome().findBySnocrossRaceNumber(number);
+				} catch (Exception e) {}
+			} else if (number.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
+				return getRaceUserSettingsHome().findByMXRaceNumber(number);
+			}
 		}
 
 		return null;
@@ -213,6 +238,8 @@ public class RaceNumberEditor extends RaceBlock {
 		if (numbers != null) {
 			for (RaceNumber number : numbers) {
 				row = group.createRow();
+				RaceUserSettings settings = getRaceUserSettings(number);
+
 				try {
 					Link edit = new Link(getEditIcon(number.getRaceNumber()));
 					edit.addParameter(PARAMETER_RACE_TYPE_PK, iwc.getParameter(PARAMETER_RACE_TYPE_PK));
@@ -251,17 +278,6 @@ public class RaceNumberEditor extends RaceBlock {
 
 					cell = row.createCell();
 					cell.setStyleClass("text");
-					RaceUserSettings settings = null;
-					if (number.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
-						try {
-							settings = getRaceBusiness(iwc).getRaceUserSettingsHome().findBySnocrossRaceNumber(number);
-						} catch (Exception e) {}
-					} else if (number.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
-						try {
-							settings = getRaceBusiness(iwc).getRaceUserSettingsHome().findByMXRaceNumber(number);
-						} catch (Exception e) {}
-					}
-
 					if (settings != null) {
 						User user = settings.getUser();
 						cell.add(new Text(user.getPersonalID()));
@@ -286,6 +302,10 @@ public class RaceNumberEditor extends RaceBlock {
 					row.setStyleClass("tableRow even evenRow");
 				} else {
 					row.setStyleClass("tableRow odd oddRow");
+				}
+
+				if (number.getApprovedDate() == null && number.getApplicationDate() != null) {
+					row.setStyleClass("red");
 				}
 
 				iRow++;
@@ -315,27 +335,19 @@ public class RaceNumberEditor extends RaceBlock {
 		form.maintainParameter(PARAMETER_RACE_TYPE_PK);
 		form.maintainParameter(PARAMETER_RACE_NUMBER_PK);
 		
-		RaceNumber eNumber = getRaceBusiness(iwc).getRaceNumberHome().findByPrimaryKey(Integer.valueOf(raceNumberID));
+		RaceNumber eNumber = getRaceNumberHome().findByPrimaryKey(Integer.valueOf(raceNumberID));
 		
 		TextInput number = new TextInput();
 		number.setValue(eNumber.getRaceNumber());
 		number.setDisabled(true);
 
 		TextInput type = new TextInput();
-		type.setValue(localize(eNumber.getRaceType().getRaceType(), eNumber.getRaceType().getRaceType()));
+		type.setValue(localize(
+				eNumber.getRaceType().getRaceType(), 
+				eNumber.getRaceType().getRaceType()));
 		type.setDisabled(true);
 
-		RaceUserSettings settings = null;
-		if (eNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
-			try {
-				settings = getRaceBusiness(iwc).getRaceUserSettingsHome().findBySnocrossRaceNumber(eNumber);
-			} catch (Exception e) {}
-		} else if (eNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
-			try {
-				settings = getRaceBusiness(iwc).getRaceUserSettingsHome().findByMXRaceNumber(eNumber);
-			} catch (Exception e) {}						
-		}
-		
+		RaceUserSettings settings = getRaceUserSettings(eNumber);
 		TextInput user = new TextInput(PARAMETER_USER_SSN);
 		if (settings != null) {
 			user.setValue(settings.getUser().getPersonalID());
@@ -397,13 +409,11 @@ public class RaceNumberEditor extends RaceBlock {
 	
 	private void save(IWContext iwc) throws java.rmi.RemoteException, FinderException {
 		String raceNumberID = iwc.getParameter(PARAMETER_RACE_NUMBER_PK);
-		RaceNumber number = getRaceBusiness(iwc).getRaceNumberHome().findByPrimaryKey(Integer.valueOf(raceNumberID));
-		
+		RaceNumber number = getRaceNumberHome().findByPrimaryKey(Integer.valueOf(raceNumberID));
+
 		if (number != null) {
 			String userSSN = iwc.getParameter(PARAMETER_USER_SSN);
-			
 			getRaceBusiness(iwc).updateRaceNumber(number, userSSN);
-			
 		}
 	}
 }
