@@ -184,27 +184,27 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				settings = getRaceUserSettingsHome().findBySnocrossRaceNumber(raceNumber);
 				settings.setRaceNumberSnocross(null);
 				settings.store();
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 		} else if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
 			try {
 				settings = getRaceUserSettingsHome().findByMXRaceNumber(raceNumber);
 				settings.setRaceNumberMX(null);
 				settings.store();
-			} catch (Exception e) {
-			}						
+			} catch (Exception e) {}						
 		}
 
 		if (userSSN == null || "".equals(userSSN)) {
 			if (raceNumber.getApplicationDate() != null && settings != null) {
 				try {
 					Email mail = getUserBiz().getUserMail(settings.getUser());
-					sendMessage(mail.getEmailAddress(), this.getBundle().getLocalizedString("number_mail_rejection_subject", "Application rejected"), this.getBundle().getLocalizedString("number_mail_rejection_body", "Your application for a race number has been rejected rejected"));
+					sendMessage(
+							mail.getEmailAddress(), 
+							this.getBundle().getLocalizedString("number_mail_rejection_subject", "Application rejected"), 
+							this.getBundle().getLocalizedString("number_mail_rejection_body", "Your application for a race number has been rejected rejected"));
 				} catch (IBOLookupException e) {
-				} catch (RemoteException e) {
-				}
+				} catch (RemoteException e) {}
 			}
-			
+
 			raceNumber.setApplicationDate(null);
 			raceNumber.setApprovedDate(null);
 			raceNumber.setIsApproved(false);
@@ -698,32 +698,38 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
-	public Collection getMXRaceNumbers() {
-		Collection numbers = null;
-		String type = MSIConstants.RACE_TYPE_MX_AND_ENDURO;
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#getMXRaceNumbers()
+	 */
+	@Override
+	public Collection<RaceNumber> getMXRaceNumbers() {
 		try {
-			RaceType typeEntry = ((RaceTypeHome) getIDOHome(RaceType.class)).findByRaceType(type);
-			RaceNumberHome home = (RaceNumberHome) getIDOHome(RaceNumber.class);
-			numbers = home.findAllNotInUseByType(typeEntry);
-		} catch (Exception e) {
-			e.printStackTrace();
-			numbers = null;
+			return getRaceNumberHome().findAllNotInUseByType(
+					getRaceTypeHome().findByRaceType(
+							MSIConstants.RACE_TYPE_MX_AND_ENDURO));
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get MX numbers");
 		}
-		return numbers;
+
+		return Collections.emptyList();
 	}
 
-	public Collection getSnocrossRaceNumbers() {
-		Collection numbers = null;
-		String type = MSIConstants.RACE_TYPE_SNOCROSS;
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#getSnocrossRaceNumbers()
+	 */
+	@Override
+	public Collection<RaceNumber> getSnocrossRaceNumbers() {
 		try {
-			RaceType typeEntry = ((RaceTypeHome) getIDOHome(RaceType.class)).findByRaceType(type);
-			RaceNumberHome home = (RaceNumberHome) getIDOHome(RaceNumber.class);
-			numbers = home.findAllNotInUseByType(typeEntry);
-		} catch (Exception e) {
-			e.printStackTrace();
-			numbers = null;
+			return getRaceNumberHome().findAllNotInUseByType(
+					getRaceTypeHome().findByRaceType(
+							MSIConstants.RACE_TYPE_SNOCROSS));
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get MX numbers");
 		}
-		return numbers;
+
+		return Collections.emptyList();
 	}
 
 	

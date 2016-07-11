@@ -154,18 +154,9 @@ public interface RaceBusiness extends IBOService {
 			throws RemoteException;
 
 	Collection<Group> getRuns();
-
 	Collection<Group> getSeasons();
-
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getMXRaceNumbers
-	 */
-	public Collection getMXRaceNumbers() throws RemoteException;
-
-	/**
-	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#getSnocrossRaceNumbers
-	 */
-	public Collection getSnocrossRaceNumbers() throws RemoteException;
+	public Collection<RaceNumber> getMXRaceNumbers();
+	public Collection<RaceNumber> getSnocrossRaceNumbers();
 
 	Collection<Country> getCountries();
 
