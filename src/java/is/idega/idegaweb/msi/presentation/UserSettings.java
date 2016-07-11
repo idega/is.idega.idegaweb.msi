@@ -3,11 +3,18 @@ package is.idega.idegaweb.msi.presentation;
 import is.idega.idegaweb.msi.business.RaceBusiness;
 import is.idega.idegaweb.msi.business.RaceParticipantInfo;
 import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceTypeHome;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.data.RaceVehicleType;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 
@@ -17,6 +24,8 @@ import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.presentation.ExceptionWrapper;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -29,12 +38,13 @@ import com.idega.presentation.text.Paragraph;
 import com.idega.presentation.text.Text;
 import com.idega.presentation.ui.DropdownMenu;
 import com.idega.presentation.ui.Form;
+import com.idega.presentation.ui.InterfaceObject;
 import com.idega.presentation.ui.Label;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
 import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.business.UserBusiness;
-import com.idega.util.IWTimestamp;
+import com.idega.util.StringUtil;
 
 /**
  * @author Pall Helgason
@@ -119,9 +129,33 @@ public class UserSettings extends RaceBlock {
 
 	private RaceParticipantInfo info = null;
 
+	private String allowedNumberChangeFrom = null;
 
-	public UserSettings() {
+	private String allowedNumberChangeTo = null;
+
+	private RaceNumberHome getRaceNumberHome() {
+		try {
+			return (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
+		}
+
+		return null;
 	}
+
+	private RaceTypeHome getRaceTypeHome() {
+		try {
+			return (RaceTypeHome) IDOLookup.getHome(RaceType.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
+
+	public UserSettings() {}
 
 	public void main(IWContext iwc) {
 		if (!iwc.isLoggedOn()) {
@@ -245,44 +279,55 @@ public class UserSettings extends RaceBlock {
 			tiHomePage.setContent(homePage);
 		}
 
-		boolean mxSelected = false;
-		PresentationObject tiRaceNumberMX = null;//new TextInput(PARAMETER_RACE_NUMBER_MX);
-		if (raceNumberMX != null) {
+		PresentationObject tiRaceNumberMX = null;
+		if (raceNumberMX != null && !isAllowedToChangeTheNumbers()) {
 			tiRaceNumberMX = new TextInput();
 			((TextInput)tiRaceNumberMX).setContent(raceNumberMX.getRaceNumber());
 			((TextInput)tiRaceNumberMX).setDisabled(true);
-			mxSelected = true;
 		} else {
-			Collection raceNumbers = getRaceBusiness(iwc).getMXRaceNumbers();
-			tiRaceNumberMX = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_MX)); 
+			tiRaceNumberMX = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_MX));
 			((DropdownMenu)tiRaceNumberMX).addMenuElement("", localize("race_editor.select_race_number","Select race number"));
-			if (raceNumbers != null) {
-				Iterator it = raceNumbers.iterator();
-				while (it.hasNext()) {
-					RaceNumber number = (RaceNumber) it.next();
-					((DropdownMenu)tiRaceNumberMX).addMenuElement(number.getPrimaryKey().toString(), number.getRaceNumber());
-				}
+
+			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc).getMXRaceNumbers();
+			for (RaceNumber number : raceNumbers) {
+				((DropdownMenu) tiRaceNumberMX).addMenuElement(
+						number.getPrimaryKey().toString(), 
+						number.getRaceNumber());
+			}
+
+			if (raceNumberMX != null) {
+				((DropdownMenu) tiRaceNumberMX).addMenuElement(
+						raceNumberMX.getPrimaryKey().toString(), 
+						raceNumberMX.getRaceNumber());
+				
+				((DropdownMenu) tiRaceNumberMX).setSelectedElement(
+						raceNumberMX.getPrimaryKey().toString());
 			}
 		}
 
-		boolean snocrossSelected = false;
 		PresentationObject tiRaceNumberSnocross = null;//new TextInput(PARAMETER_RACE_NUMBER_SNOCROSS);
-		if (raceNumberSnocross != null) {
+		if (raceNumberSnocross != null && !isAllowedToChangeTheNumbers()) {
 			tiRaceNumberSnocross = new TextInput();
 			((TextInput)tiRaceNumberSnocross).setContent(raceNumberSnocross.getRaceNumber());
 			((TextInput)tiRaceNumberSnocross).setDisabled(true);
-			snocrossSelected = true;
 		} else {
-			Collection raceNumbers = getRaceBusiness(iwc).getSnocrossRaceNumbers();
 			tiRaceNumberSnocross = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_SNOCROSS)); 
-			((DropdownMenu)tiRaceNumberSnocross).addMenuElement("", localize("race_editor.select_race_number","Select race number"));
+			((DropdownMenu) tiRaceNumberSnocross).addMenuElement("", localize("race_editor.select_race_number","Select race number"));
 
-			if (raceNumbers != null) {
-				Iterator it = raceNumbers.iterator();
-				while (it.hasNext()) {
-					RaceNumber number = (RaceNumber) it.next();
-					((DropdownMenu)tiRaceNumberSnocross).addMenuElement(number.getPrimaryKey().toString(), number.getRaceNumber());
-				}
+			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc).getSnocrossRaceNumbers();			
+			for (RaceNumber number : raceNumbers) {
+				((DropdownMenu) tiRaceNumberSnocross).addMenuElement(
+						number.getPrimaryKey().toString(), 
+						number.getRaceNumber());
+			}
+
+			if (raceNumberSnocross != null) {
+				((DropdownMenu) tiRaceNumberSnocross).addMenuElement(
+						raceNumberSnocross.getPrimaryKey().toString(), 
+						raceNumberSnocross.getRaceNumber());
+				
+				((DropdownMenu) tiRaceNumberSnocross).setSelectedElement(
+						raceNumberSnocross.getPrimaryKey().toString());
 			}
 		}
 
@@ -522,22 +567,18 @@ public class UserSettings extends RaceBlock {
 		
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		if (mxSelected) {
-			label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX), (TextInput)tiRaceNumberMX);
-		} else {
-			label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX), (DropdownMenu)tiRaceNumberMX);			
-		}
+		label = new Label(
+				localize(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX), 
+				(InterfaceObject) tiRaceNumberMX);
 		formItem.add(label);
 		formItem.add(tiRaceNumberMX);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		if (snocrossSelected) {
-			label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_RACE_NUMBER_SNOCROSS, DEFAULT_RACE_NUBMER_SNOCROSS), (TextInput)tiRaceNumberSnocross);			
-		} else {
-			label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_RACE_NUMBER_SNOCROSS, DEFAULT_RACE_NUBMER_SNOCROSS), (DropdownMenu)tiRaceNumberSnocross);
-		}
+		label = new Label(
+				localize(KEY_RACE_NUMBER_SNOCROSS, DEFAULT_RACE_NUBMER_SNOCROSS), 
+				(InterfaceObject) tiRaceNumberSnocross);			
 		formItem.add(label);
 		formItem.add(tiRaceNumberSnocross);
 		layer.add(formItem);
@@ -545,7 +586,7 @@ public class UserSettings extends RaceBlock {
 		
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItemAside");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_TRANSPONDER, DEFAULT_TRANSPONDER), tiTransponder);
+		label = new Label(localize(KEY_TRANSPONDER, DEFAULT_TRANSPONDER), tiTransponder);
 		formItem.add(label);
 		formItem.add(tiTransponder);
 		layer.add(formItem);
@@ -731,15 +772,16 @@ public class UserSettings extends RaceBlock {
 						name.append(settings.getUser().getFirstName());
 						name.append(" ");
 					}
+
 					if (settings.getUser().getMiddleName() != null) {
 						name.append(settings.getUser().getMiddleName());
 						name.append(" ");
 					}
+
 					if (settings.getUser().getLastName() != null) {
 						name.append(settings.getUser().getLastName());
 					}
 
-					
 					StringBuffer text = new StringBuffer();
 					text.append(name.toString());
 					text.append(", ");
@@ -763,18 +805,16 @@ public class UserSettings extends RaceBlock {
 					e.printStackTrace();
 				}				
 			}
-			
+
 			RaceVehicleType type = null;
 			try {
 				type = getRaceBusiness(iwc).getRaceVehicleTypeHome().findByPrimaryKey(new Integer(vehicleType));
-			}
-			catch (Exception e){
-			}
+			} catch (Exception e){}
+
 			RaceVehicleType subtype = null;
 			try {
 				subtype = getRaceBusiness(iwc).getRaceVehicleTypeHome().findByPrimaryKey(new Integer(vehicleSubType));
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 			
 			
 			settings.setVehicleType(type);
