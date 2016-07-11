@@ -1,11 +1,14 @@
 package is.idega.idegaweb.msi.data;
 
 
+import java.util.logging.Level;
+
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import com.idega.user.data.User;
+
 import com.idega.data.IDOEntity;
 import com.idega.data.IDOFactory;
+import com.idega.user.data.User;
 
 public class RaceUserSettingsHomeImpl extends IDOFactory implements
 		RaceUserSettingsHome {
@@ -17,8 +20,21 @@ public class RaceUserSettingsHomeImpl extends IDOFactory implements
 		return (RaceUserSettings) super.createIDO();
 	}
 
-	public RaceUserSettings findByPrimaryKey(Object pk) throws FinderException {
-		return (RaceUserSettings) super.findByPrimaryKeyIDO(pk);
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.RaceUserSettingsHome#findByPrimaryKey(java.lang.Object)
+	 */
+	@Override
+	public RaceUserSettings findByPrimaryKey(Object pk) {
+		if (pk != null) {
+			try {
+				return (RaceUserSettings) super.findByPrimaryKeyIDO(pk);
+			} catch (FinderException e) {
+				getLog().log(Level.WARNING, "Failed to get entity by primary key: " + pk);
+			}
+		}
+
+		return null;
 	}
 
 	public RaceUserSettings findByUser(User user) throws FinderException {
@@ -28,13 +44,14 @@ public class RaceUserSettingsHomeImpl extends IDOFactory implements
 		return this.findByPrimaryKey(pk);
 	}
 
-	public RaceUserSettings findByMXRaceNumber(RaceNumber number)
-			throws FinderException {
-		IDOEntity entity = this.idoCheckOutPooledEntity();
-		Object pk = ((RaceUserSettingsBMPBean) entity)
-				.ejbFindByMXRaceNumber(number);
-		this.idoCheckInPooledEntity(entity);
-		return this.findByPrimaryKey(pk);
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.RaceUserSettingsHome#findByMXRaceNumber(is.idega.idegaweb.msi.data.RaceNumber)
+	 */
+	@Override
+	public RaceUserSettings findByMXRaceNumber(RaceNumber number) {
+		RaceUserSettingsBMPBean entity = (RaceUserSettingsBMPBean) idoCheckOutPooledEntity();
+		return findByPrimaryKey(entity.ejbFindByMXRaceNumber(number));
 	}
 
 	public RaceUserSettings findBySnocrossRaceNumber(RaceNumber number)

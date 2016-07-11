@@ -1,5 +1,7 @@
 package is.idega.idegaweb.msi.data;
 
+import java.util.logging.Level;
+
 import javax.ejb.FinderException;
 
 import com.idega.data.GenericEntity;
@@ -219,7 +221,12 @@ public class RaceUserSettingsBMPBean extends GenericEntity implements
 		return idoFindOnePKByQuery(query);
 	}
 
-	public Object ejbFindByMXRaceNumber(RaceNumber number) throws FinderException {
+	/**
+	 * 
+	 * @param number
+	 * @return {@link RaceUserSettings#getPrimaryKey()} or <code>null</code> on failure;
+	 */
+	public Object ejbFindByMXRaceNumber(RaceNumber number) {
 		Table table = new Table(this);
 
 		SelectQuery query = new SelectQuery(table);
@@ -227,7 +234,13 @@ public class RaceUserSettingsBMPBean extends GenericEntity implements
 
 		query.addCriteria(new MatchCriteria(new Column(table, COLUMN_RACE_NUMBER_MX), MatchCriteria.EQUALS, number));
 
-		return idoFindOnePKByQuery(query);
+		try {
+			return idoFindOnePKByQuery(query);
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get primary keys by query: " + query.toString());
+		}
+
+		return null;
 	}
 
 	public Object ejbFindBySnocrossRaceNumber(RaceNumber number) throws FinderException {
