@@ -888,4 +888,50 @@ public class UserSettings extends RaceBlock {
 		return null;
 	}
 
+	public String getAllowedNumberChangeFrom() {
+		return allowedNumberChangeFrom;
+	}
+
+	public void setAllowedNumberChangeFrom(String allowedNumberChangeFrom) {
+		this.allowedNumberChangeFrom = allowedNumberChangeFrom;
+	}
+
+	public String getAllowedNumberChangeTo() {
+		return allowedNumberChangeTo;
+	}
+
+	public void setAllowedNumberChangeTo(String allowedNumberChangeTo) {
+		this.allowedNumberChangeTo = allowedNumberChangeTo;
+	}
+
+	private LocalDate getChangeDateFrom() {
+		if (!StringUtil.isEmpty(getAllowedNumberChangeFrom())) {
+			return LocalDate.parse(getAllowedNumberChangeFrom());
+		}
+
+		return null;
+	}
+
+	private LocalDate getChangeDateTo() {
+		if (!StringUtil.isEmpty(getAllowedNumberChangeTo())) {
+			return LocalDate.parse(getAllowedNumberChangeTo());
+		}
+
+		return null;
+	}
+
+	private boolean isAllowedToChangeTheNumbers() {
+		LocalDate dateFrom = getChangeDateFrom();
+		if (dateFrom == null) {
+			return Boolean.FALSE;
+		}
+
+		LocalDate dateTo = getChangeDateTo();
+		if (dateTo == null) {
+			return Boolean.FALSE;
+		}
+
+		LocalDate now = LocalDate.now();
+		return now.isAfter(dateFrom) && now.isBefore(dateTo);
+	}
 }
