@@ -1,5 +1,12 @@
 package is.idega.idegaweb.msi.importer;
 
+import is.idega.idegaweb.msi.business.RaceBusiness;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +22,8 @@ import com.idega.block.importer.business.ImportFileHandler;
 import com.idega.block.importer.data.ImportFile;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOServiceBean;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
@@ -24,12 +33,6 @@ import com.idega.util.ListUtil;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 
-import is.idega.idegaweb.msi.business.RaceBusiness;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements RaceNumberImportFileHandler, ImportFileHandler {
 
 	private static final long serialVersionUID = 8359598651557298882L;
@@ -37,6 +40,17 @@ public class RaceNumberImportFileHandlerBean extends IBOServiceBean implements R
 	private ImportFile importFile = null;
 	private List failedRecords;
 	private List successRecords;
+
+	private RaceNumberHome getRaceNumberHome() {
+		try {
+			return (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
 
 	@Override
 	public boolean handleRecords() throws RemoteException, RemoteException {

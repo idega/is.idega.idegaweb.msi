@@ -8,42 +8,60 @@ import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.idega.data.IDOLookup;
+import com.idega.util.ListUtil;
 
 public class GenerateNumbersListener implements ActionListener {
+
+	private RaceTypeHome getRaceTypeHome() {
+		try {
+			return (RaceTypeHome) IDOLookup.getHome(RaceType.class);
+		} catch (RemoteException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
+
+	private RaceNumberHome getRaceNumberHome() {
+		try {
+			return (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
+		} catch (RemoteException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
 
 	public void actionPerformed(ActionEvent event) {
 		if (!MSIConstants.NUMBERS_GENAROTOR_LISTENER_EVENT.equals(event.getActionCommand())) {
 			return;
 		}
+
 		try {
-			RaceTypeHome typeHome = (RaceTypeHome) IDOLookup.getHome(RaceType.class);
-			RaceNumberHome home = (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
-			Collection types = typeHome.findAll();
-			if((types == null)|| (types.size() < 1)){
+			Collection<RaceType> types = getRaceTypeHome().findAll();
+			if (ListUtil.isEmpty(types)){
 				return;
 			}
-			Iterator it = types.iterator();
-			while (it.hasNext()) {
-				RaceType type = (RaceType) it.next();
-				int count = home.countAllNotInUseByType(type);
+
+			for (RaceType type : types) {
+				int count = getRaceNumberHome().countAllNotInUseByType(type);
 				if(count > 200){
 					continue;
 				}
+
 				getLogger().info("Generating numbers for " + type.getRaceType());
-				int maxValue = home.getMaxNumberByType(type);
+				int maxValue = getRaceNumberHome().getMaxNumberByType(type);
 				for (int i = 0; i < 300; i++) {
-					RaceNumber number = home.create();
-					number.setRaceNumber(Integer.toString(++maxValue));
-					number.setRaceType(type);
-					number.setIsApproved(false);
-					number.setIsInUse(false);
-					number.store();
+					getRaceNumberHome().update(null, ++maxValue, null, null, 
+							Boolean.FALSE, Boolean.FALSE, type);
 				}
 			}
 			
@@ -51,6 +69,7 @@ public class GenerateNumbersListener implements ActionListener {
 			getLogger().log(Level.WARNING, "Error faled generating numbers for races", e);
 		}
 	}
+
 	private Logger getLogger(){
 		return Logger.getLogger(GenerateNumbersListener.class.getName());
 	}

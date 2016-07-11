@@ -202,17 +202,8 @@ public class RaceNumberEditor extends RaceBlock {
 			numbers = getRaceNumberHome().findAllByType(selectedRaceType); 
 			if (ListUtil.isEmpty(numbers)) {
 				for (int i = 0; i < 1000; i++) {
-					RaceNumber number;
-					try {
-						number = getRaceNumberHome().create();
-						number.setRaceNumber(Integer.toString(i));
-						number.setRaceType(selectedRaceType);
-						number.setIsApproved(false);
-						number.setIsInUse(false);
-						number.store();
-					} catch (CreateException e) {
-						e.printStackTrace();
-					}
+					getRaceNumberHome().update(null, i, null, null, 
+							Boolean.FALSE, Boolean.FALSE, selectedRaceType);
 				}
 
 				numbers = getRaceNumberHome().findAllByType(selectedRaceType);

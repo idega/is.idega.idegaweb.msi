@@ -663,16 +663,17 @@ public class UserSettings extends RaceBlock {
 			}
 
 			settings.setHomePage(homePage);
-			if (raceNumberMX != null && !"".equals(raceNumberMX)) {
+			if (!StringUtil.isEmpty(raceNumberMX)) {
+				RaceNumber number = getRaceNumberHome().findByPrimaryKey(Integer.parseInt(raceNumberMX));
+				number = getRaceNumberHome().update(Integer.parseInt(raceNumberMX), 
+						null, 
+						new Timestamp(System.currentTimeMillis()), 
+						Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(System.currentTimeMillis()) : null, 
+						Integer.valueOf(number.getRaceNumber()) >= 100, 
+						Boolean.TRUE,
+						getRaceTypeHome().findByRaceType(MSIConstants.RACE_TYPE_MX_AND_ENDURO));
+
 				try {
-					int raceNumber = Integer.parseInt(raceNumberMX);
-
-					RaceNumber number = this.getRaceBusiness(iwc).getRaceNumberHome().findByPrimaryKey(new Integer(raceNumber));
-					number.setApplicationDate(IWTimestamp.getTimestampRightNow());
-					number.setIsApproved(false);
-					number.setIsInUse(true);
-					number.store();
-
 					settings.setRaceNumberMX(number);
 					
 					StringBuffer name = new StringBuffer("");
@@ -712,16 +713,17 @@ public class UserSettings extends RaceBlock {
 				}				
 			}
 
-			if (raceNumberSnocross != null && !"".equals(raceNumberSnocross)) {
-				try {
-					int raceNumber = Integer.parseInt(raceNumberSnocross);
-					
-					RaceNumber number = this.getRaceBusiness(iwc).getRaceNumberHome().findByPrimaryKey(new Integer(raceNumber));
-					number.setApplicationDate(IWTimestamp.getTimestampRightNow());
-					number.setIsApproved(false);
-					number.setIsInUse(true);
-					number.store();
+			if (!StringUtil.isEmpty(raceNumberSnocross)) {
+				RaceNumber number = getRaceNumberHome().findByPrimaryKey(Integer.parseInt(raceNumberSnocross));
+				number = getRaceNumberHome().update(Integer.parseInt(raceNumberSnocross), 
+						null, 
+						new Timestamp(System.currentTimeMillis()), 
+						Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(System.currentTimeMillis()) : null, 
+						Integer.valueOf(number.getRaceNumber()) >= 100, 
+						Boolean.TRUE, 
+						getRaceTypeHome().findByRaceType(MSIConstants.RACE_TYPE_SNOCROSS));
 
+				try {
 					settings.setRaceNumberSnocross(number);
 
 					StringBuffer name = new StringBuffer("");

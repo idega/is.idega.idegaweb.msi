@@ -216,30 +216,33 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 				try {
 					try {
-					settings = getRaceUserSettingsHome().findByUser(user);
-					} 
-					catch (FinderException e) {
+						settings = getRaceUserSettingsHome().findByUser(user);
+					} catch (FinderException e) {
 						settings = null;
 					}
-					
+
 					if (settings == null) {
 						settings = getRaceUserSettingsHome().create();
 						settings.setUser(user);
 					}
-					
+
 					if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
 						settings.setRaceNumberSnocross(raceNumber);
 					} else if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_MX_AND_ENDURO)) {
 						settings.setRaceNumberMX(raceNumber);
 					}
+
 					settings.store();
-				} catch (Exception e) {
-				}
-				
-				raceNumber.setApprovedDate(IWTimestamp.getTimestampRightNow());
-				raceNumber.setIsApproved(true);
-				raceNumber.setIsInUse(true);
-				raceNumber.store();
+				} catch (Exception e) {}
+
+				getRaceNumberHome().update(
+						(Integer) raceNumber.getPrimaryKey(),
+						null,
+						null,
+						IWTimestamp.getTimestampRightNow(),
+						Boolean.TRUE,
+						Boolean.TRUE,
+						(Integer) null);
 			} catch (IBOLookupException e) {
 			} catch (RemoteException e) {
 			} catch (FinderException e) {
