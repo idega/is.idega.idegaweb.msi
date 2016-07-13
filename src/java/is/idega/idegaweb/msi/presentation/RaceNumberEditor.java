@@ -306,7 +306,9 @@ public class RaceNumberEditor extends RaceBlock {
 
 				if (number.getApprovedDate() == null && number.getApplicationDate() != null) {
 					row.setStyleClass("red");
+					row.setTitle(localize("not_accepted", "Ósamþykkt"));
 				}
+				
 
 				iRow++;
 			}
