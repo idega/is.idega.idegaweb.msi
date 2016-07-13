@@ -48,9 +48,6 @@
 	<script 
 		type="text/javascript"
 		src="#{iwResourceResolver['com.idega.block.web2.0']['javascript/fancybox/2.1.4/helpers/jquery.fancybox-media.js']}"/>
-	<script 
-        type="text/javascript"
-        src="#{iwResourceResolver['com.idega.sport.union']['javascript/viewer.js']}"/>
 
     <!-- DWR -->
     <script
@@ -59,6 +56,14 @@
     <script
         type="text/javascript"
         src="/dwr/util.js" />
+    <script
+        type="text/javascript"
+        src="/dwr/interface/ModificationPeriodDAO.js" />
+        
+   	<!-- Helper -->
+   	<script 
+   		type="text/javascript"
+   		src="#{iwResourceResolver['is.idega.idegaweb.msi']['javascript/ModificationPeriodViewerHelper.js']}"/>
 </head>
 <body>
 	<div
@@ -164,6 +169,7 @@
     				layout="block">
     				<h:graphicImage
     					url="#{iwResourceResolver['com.idega.sport.union']['shared/delete.gif']}"
+						onclick="ModificationPeriodViewerHelper.remove(this.parentNode.parentNode)"
     					alt="#{localizedStrings['com.idega.block.pdf']['delete']}"/>
     			</h:panelGroup>
     		</h:column>
