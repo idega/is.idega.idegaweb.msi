@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:c="http://xmlns.idega.com/com.idega.core">
+<head>
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/editor.css']}" />
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/button.css']}" />
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/input.css']}" />
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/label.css']}" />
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/select.css']}" />
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/textarea.css']}" />
+</head>
+<body>
+	<h:outputText
+		rendered="#{modificationPeriodBean.submitted}"
+		styleClass="savedText"
+		value="#{localizedStrings['com.idega.block.pdf']['saved']}" />
+	<h:form
+		rendered="#{not modificationPeriodBean.submitted}"
+		id="editorForm">
+		<h:panelGrid
+			columns="2"
+			styleClass="editorTable extendedTable">
+			<h:panelGroup>
+				<h:outputLabel
+					for="type"
+					value="#{localizedStrings['com.idega.sport.union']['tournement.type']}" />
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectOneMenu 
+					id="type"
+					value="#{modificationPeriodBean.typeId}">
+					<f:selectItem 
+						itemValue="#{null}" 
+						itemLabel="#{localizedStrings['com.idega.sport.union']['select']}" />
+					<f:selectItems value="#{modificationPeriodTypesBean.modificationPeriodTypesMap}" />
+				</h:selectOneMenu>
+			</h:panelGroup>
+
+			<h:panelGroup>
+				<h:outputLabel
+					for="startingDate"
+					value="#{localizedStrings['com.idega.sport.union']['tournament.date']}" />
+			</h:panelGroup>
+			<h:panelGroup>
+				<c:datePicker
+					id="startingDate"
+					inputName="prm_date_starting_date"
+					initialDate="#{modificationPeriodBean.startingDate}"
+					showMonth="${true}"
+					showYear="${true}"
+					version="${'1.8.17'}"
+					useCurrent="${false}"
+					addJQueryUIFiles="true"
+					compositeId="startingDate"
+					imageURI="#{iwResourceResolver['com.idega.sport.union']['style/images/icons/calendar.png']}" />
+			</h:panelGroup>
+			
+			<h:panelGroup>
+				<h:outputLabel
+					for="startingDate"
+					value="#{localizedStrings['com.idega.sport.union']['tournament.date']}" />
+			</h:panelGroup>
+			<h:panelGroup>
+				<c:datePicker
+					id="endDate"
+					inputName="prm_date_end_date"
+					initialDate="#{modificationPeriodBean.endDate}"
+					showMonth="${true}"
+					showYear="${true}"
+					version="${'1.8.17'}"
+					useCurrent="${false}"
+					addJQueryUIFiles="true"
+					compositeId="endDate"
+					imageURI="#{iwResourceResolver['com.idega.sport.union']['style/images/icons/calendar.png']}" />
+			</h:panelGroup>
+		</h:panelGrid>
+
+		<h:inputHidden
+			id="prm_id"
+			value="#{modificationPeriodBean.id}" />
+		<h:commandButton
+			id="saveButton"
+			value="#{localizedStrings['com.idega.block.pdf']['save']}"
+			action="#{modificationPeriodBean.save}"
+			styleClass="button-blue" />
+	</h:form>
+</body>
+</html>
