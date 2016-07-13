@@ -7,4 +7,6 @@
     <entity class="is.idega.idegaweb.msi.data.bean.RaceEventGroup" />
     <entity class="is.idega.idegaweb.msi.data.bean.RaceGroup" />
     <entity class="is.idega.idegaweb.msi.data.bean.SeasonGroup" />
+    <entity class="is.idega.idegaweb.msi.data.bean.ModificationPeriodEntity" />
+    <entity class="is.idega.idegaweb.msi.data.bean.ModificationPeriodTypeEntity" />
 </entity-mappings>

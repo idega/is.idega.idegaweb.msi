@@ -11,4 +11,72 @@ version="1.2">
 		<managed-bean-scope>application</managed-bean-scope>
 	</managed-bean>
 
+	<managed-bean>
+		<managed-bean-name>modificationPeriodBean</managed-bean-name>
+		<managed-bean-class>is.idega.idegaweb.msi.presentation.bean.data.ModificationPeriodBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>modificationPeriodTypeBean</managed-bean-name>
+		<managed-bean-class>is.idega.idegaweb.msi.presentation.bean.data.ModificationPeriodTypeBean</managed-bean-class>
+		<managed-bean-scope>request</managed-bean-scope>
+	</managed-bean>
+	
+	<managed-bean>
+		<managed-bean-name>modificationPeriodTypesBean</managed-bean-name>
+		<managed-bean-class>is.idega.idegaweb.msi.presentation.bean.service.ModificationPeriodTypesBean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+
+	<managed-bean>
+		<managed-bean-name>modificationPeriodsBean</managed-bean-name>
+		<managed-bean-class>is.idega.idegaweb.msi.presentation.bean.service.ModificationPeriodsBean</managed-bean-class>
+		<managed-bean-scope>application</managed-bean-scope>
+	</managed-bean>
+
+	<component>
+		<component-type>Modification period editor</component-type>
+		<component-class>is.idega.idegaweb.msi.presentation.ModificationPeriodEditor</component-class>
+		<component-extension>
+			<idegaweb-info>
+        		<builder-visible>true</builder-visible>
+        		<object-type>jsf.uicomponent</object-type>
+      		</idegaweb-info>
+		</component-extension>
+	</component>
+
+	<component>
+		<component-type>Modification periods viewer</component-type>
+		<component-class>is.idega.idegaweb.msi.presentation.ModificationPeriodsViewer</component-class>
+		<component-extension>
+			<idegaweb-info>
+        		<builder-visible>true</builder-visible>
+        		<object-type>jsf.uicomponent</object-type>
+      		</idegaweb-info>
+		</component-extension>
+	</component>
+
+	<component>
+		<component-type>Modification period type editor</component-type>
+		<component-class>is.idega.idegaweb.msi.presentation.ModificationPeriodTypeEditor</component-class>
+		<component-extension>
+			<idegaweb-info>
+        		<builder-visible>true</builder-visible>
+        		<object-type>jsf.uicomponent</object-type>
+      		</idegaweb-info>
+		</component-extension>
+	</component>
+
+	<component>
+		<component-type>Modification period types viewer</component-type>
+		<component-class>is.idega.idegaweb.msi.presentation.ModificationPeriodTypesViewer</component-class>
+		<component-extension>
+			<idegaweb-info>
+        		<builder-visible>true</builder-visible>
+        		<object-type>jsf.uicomponent</object-type>
+      		</idegaweb-info>
+		</component-extension>
+	</component>
+
 </faces-config>

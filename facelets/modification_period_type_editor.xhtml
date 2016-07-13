@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core">
+    <link 
+        rel="stylesheet"
+        type="text/css"
+        href="#{iwResourceResolver['com.idega.block.pdf']['style/editor.css']}"/>
+    <link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/button.css']}"/>
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/input.css']}"/>
+	<link
+		rel="stylesheet"
+		type="text/css"
+		href="#{iwResourceResolver['com.idega.sport.union']['style/label.css']}"/>
+    <h:outputText
+		rendered="#{modificationPeriodTypeBean.submitted}"
+		styleClass="savedText"
+		value="#{localizedStrings['com.idega.block.pdf']['saved']}"/>
+	<h:form
+		rendered="#{not modificationPeriodTypeBean.submitted}"
+		id="editorForm">
+        <h:panelGrid
+			columns="2"
+			styleClass="editorTable">
+            <h:panelGroup>
+                <h:outputLabel
+                    for="name"
+                    value="#{localizedStrings['com.idega.block.pdf']['name']}"/>
+            </h:panelGroup>
+            <h:panelGroup>
+                <h:inputText
+                    id="name"
+                    value="#{modificationPeriodTypeBean.name}"/>
+            </h:panelGroup>
+		</h:panelGrid>
+        <h:inputHidden
+            id="prm_id"
+            value="#{modificationPeriodTypeBean.id}"/>
+        <h:commandButton
+            id="saveButton"
+            value="#{localizedStrings['com.idega.block.pdf']['save']}"
+            action="#{modificationPeriodTypeBean.save}"
+            styleClass="button-blue"/>
+	</h:form>
+</div>
