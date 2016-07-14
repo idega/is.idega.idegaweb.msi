@@ -171,6 +171,22 @@ public class ModificationPeriodTypeDAOImpl extends GenericDaoImpl implements
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO#findBySystemName(java.lang.String)
+	 */
+	@Override
+	public ModificationPeriodTypeEntity findBySystemName(String name) {
+		if (!StringUtil.isEmpty(name)) {
+			return getSingleResult(
+					ModificationPeriodTypeEntity.FIND_BY_SYSTEM_NAME, 
+					ModificationPeriodTypeEntity.class, 
+					new Param(ModificationPeriodTypeEntity.SYSTEM_NAME_PROP, name));
+		}
+
+		return null;
+	}
+
 	/* (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO#findAll()
 	 */

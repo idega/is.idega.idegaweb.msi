@@ -113,6 +113,8 @@ public interface ModificationPeriodTypeDAO extends GenericDao {
 	 */
 	ModificationPeriodTypeEntity findByName(String name);
 
+	ModificationPeriodTypeEntity findBySystemName(String name);
+
 	/**
 	 * 
 	 * @return entities or {@link Collections#emptyList()} on failure;

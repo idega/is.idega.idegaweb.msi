@@ -113,6 +113,10 @@ import javax.persistence.Table;
 			query = "FROM ModificationPeriodTypeEntity s " +
 					"WHERE s.name = :" + ModificationPeriodTypeEntity.NAME_PROP),
 	@NamedQuery(
+			name = ModificationPeriodTypeEntity.FIND_BY_SYSTEM_NAME,
+			query = "FROM ModificationPeriodTypeEntity s " +
+					"WHERE s.systemName = :" + ModificationPeriodTypeEntity.SYSTEM_NAME_PROP),
+	@NamedQuery(
 			name = ModificationPeriodTypeEntity.FIND_ALL,
 			query = "FROM ModificationPeriodTypeEntity s")
 })
@@ -124,6 +128,7 @@ public class ModificationPeriodTypeEntity implements Serializable {
 	public static final String TABLE_NAME = "msi_modification_period_type";
 	public static final String FIND_BY_ID = "modificationPeriodTypeEntity.findById";
 	public static final String FIND_BY_NAME = "modificationPeriodTypeEntity.findByName";
+	public static final String FIND_BY_SYSTEM_NAME = "modificationPeriodTypeEntity.findBySystemName";
 	public static final String FIND_ALL = "modificationPeriodTypeEntity.findAll";
 
 	public static final String ID_PROP = "id";
@@ -134,6 +139,11 @@ public class ModificationPeriodTypeEntity implements Serializable {
 	public static final String COLUMN_NAME = "name";
 	@Column(name = COLUMN_NAME, unique = true, nullable = false)
 	private String name;
+
+	public static final String SYSTEM_NAME_PROP = "systemName";
+	public static final String COLUMN_SYSTEM_NAME = "system_name";
+	@Column(name = COLUMN_SYSTEM_NAME)
+	private String systemName;
 
 	public Long getId() {
 		return id;
@@ -149,5 +159,13 @@ public class ModificationPeriodTypeEntity implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getSystemName() {
+		return systemName;
+	}
+
+	public void setSystemName(String systemName) {
+		this.systemName = systemName;
 	}
 }
