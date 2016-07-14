@@ -94,3 +94,7 @@ td[align="right"] > span {
 .receiptTable td .msi_Header {
 	line-height: 2em;
 }
+
+.formItem label {
+	display:	none;
+}

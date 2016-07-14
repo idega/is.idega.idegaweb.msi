@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
 import com.idega.data.IDOCreateException;
+import com.idega.facelets.ui.FaceletComponent;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWResourceBundle;
@@ -105,6 +107,7 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_PARTNER2 = "prm_partner2";
 	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
+	private static final int ACTION_STEP_UNION = 6;
 	private static final int ACTION_STEP_PERSONALDETAILS = 1;
 	private static final int ACTION_STEP_DISCLAIMER = 2;
 	private static final int ACTION_STEP_PAYMENT_INFO = 3;
@@ -224,12 +227,21 @@ public class Registration extends RaceBlock {
 		return eventsLayer;
 	}
 
+	public IWBundle getBundle(FacesContext ctx, String bundleIdentifier) {
+    	IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
+		return iwma.getBundle(bundleIdentifier);
+    }
+
+	protected static IWMainApplication getIWMainApplication(FacesContext context){
+		return IWMainApplication.getIWMainApplication(context);
+	}
+
 	private void stepPersonalDetails(IWContext iwc) throws RemoteException, FinderException {
 		Form form = new Form();
 		form.maintainParameter(PARAMETER_RACE);
 		form.addParameter(PARAMETER_ACTION, "-1");
 		form.addParameter(PARAMETER_FROM_ACTION, ACTION_STEP_PERSONALDETAILS);
-
+		
 		Table table = new Table();
 		table.setCellpadding(0);
 		table.setCellspacing(0);
@@ -270,6 +282,22 @@ public class Registration extends RaceBlock {
 
 		DropdownMenu eventsDropdown = getEventsMenu(iwc);
 		choiceTable.add(eventsDropdown, 3, iRow++);
+
+		/*
+		 * Union
+		 */
+		choiceTable.add(getHeader(localize("msi.club", "Club")), 1, iRow);
+		choiceTable.add(redStar, 1, iRow++);
+		
+		UIComponent facelet = getIWMainApplication(iwc)
+				.createComponent(FaceletComponent.COMPONENT_TYPE);		
+		if (facelet instanceof FaceletComponent) {
+			((FaceletComponent) facelet).setFaceletURI(getBundle(
+					iwc, "com.idega.sport.union"
+					).getFaceletURI("club/main_union_editor.xhtml"));
+		}
+
+		choiceTable.add(facelet, 1, iRow++);
 
 		choiceTable.setHeight(iRow++, 12);
 		Layer useTT = new Layer();
