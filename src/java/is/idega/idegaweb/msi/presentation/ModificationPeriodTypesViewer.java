@@ -103,7 +103,7 @@ import com.idega.presentation.IWContext;
 public class ModificationPeriodTypesViewer extends IWBaseComponent {
 
 	public static final String FACELET_FILENAME = "modification_period_types_viewer.xhtml";
-
+	
 	@Override
 	protected void initializeComponent(FacesContext context) {
 		super.initializeComponent(context);

@@ -97,6 +97,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.faces.presentation.service.ManagedBeanService;
+import com.idega.util.ListUtil;
 import com.idega.util.expression.ELUtil;
 
 /**
@@ -149,7 +150,7 @@ public class ModificationPeriodsBean extends ManagedBeanService<ModificationPeri
 		if (type != null) {
 			List<ModificationPeriodEntity> period = getModificationPeriodDAO().findByDateAndType(
 					new Date(System.currentTimeMillis()), type.getId());
-			if (period != null) {
+			if (!ListUtil.isEmpty(period)) {
 				return Boolean.TRUE;
 			}
 		}
