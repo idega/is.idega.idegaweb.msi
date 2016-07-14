@@ -83,12 +83,15 @@
 package is.idega.idegaweb.msi.presentation.bean.service;
 
 import is.idega.idegaweb.msi.data.bean.ModificationPeriodEntity;
+import is.idega.idegaweb.msi.data.bean.ModificationPeriodTypeEntity;
 import is.idega.idegaweb.msi.data.dao.ModificationPeriodDAO;
+import is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO;
 import is.idega.idegaweb.msi.presentation.ModificationPeriodEditor;
 import is.idega.idegaweb.msi.presentation.bean.data.ModificationPeriodBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +112,17 @@ public class ModificationPeriodsBean extends ManagedBeanService<ModificationPeri
 	@Autowired
 	private ModificationPeriodDAO modificationPeriodDAO;
 
+	@Autowired
+	private ModificationPeriodTypeDAO modificationPeriodTypeDAO;
+
+	private ModificationPeriodTypeDAO getModificationPeriodTypeDAO() {
+		if (this.modificationPeriodTypeDAO == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return this.modificationPeriodTypeDAO;
+	}
+
 	private ModificationPeriodDAO getModificationPeriodDAO() {
 		if (this.modificationPeriodDAO == null) {
 			ELUtil.getInstance().autowire(this);
@@ -128,5 +142,18 @@ public class ModificationPeriodsBean extends ManagedBeanService<ModificationPeri
 		}
 
 		return beans;
+	}
+
+	public boolean isUnionsModificationAllowed() {
+		ModificationPeriodTypeEntity type = getModificationPeriodTypeDAO().findBySystemName("unions_type");
+		if (type != null) {
+			List<ModificationPeriodEntity> period = getModificationPeriodDAO().findByDateAndType(
+					new Date(System.currentTimeMillis()), type.getId());
+			if (period != null) {
+				return Boolean.TRUE;
+			}
+		}
+
+		return Boolean.FALSE;
 	}
 }
