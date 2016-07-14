@@ -8,17 +8,25 @@ import is.idega.idegaweb.msi.data.RaceType;
 import is.idega.idegaweb.msi.data.RaceTypeHome;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.data.RaceVehicleType;
+import is.idega.idegaweb.msi.data.bean.ModificationPeriodEntity;
+import is.idega.idegaweb.msi.data.bean.ModificationPeriodTypeEntity;
+import is.idega.idegaweb.msi.data.dao.ModificationPeriodDAO;
+import is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.ejb.FinderException;
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.business.IBOLookup;
 import com.idega.core.builder.data.ICPage;
@@ -28,6 +36,9 @@ import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
+import com.idega.facelets.ui.FaceletComponent;
+import com.idega.idegaweb.IWBundle;
+import com.idega.idegaweb.IWMainApplication;
 import com.idega.presentation.ExceptionWrapper;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Layer;
@@ -48,6 +59,7 @@ import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.business.UserBusiness;
 import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
+import com.idega.util.expression.ELUtil;
 
 /**
  * @author Pall Helgason
@@ -132,9 +144,36 @@ public class UserSettings extends RaceBlock {
 
 	private RaceParticipantInfo info = null;
 
-	private String allowedNumberChangeFrom = null;
+	@Autowired
+	private ModificationPeriodDAO modificationPeriodDAO;
 
-	private String allowedNumberChangeTo = null;
+	@Autowired
+	private ModificationPeriodTypeDAO modificationPeriodTypeDAO;
+
+	public IWBundle getBundle(FacesContext ctx, String bundleIdentifier) {
+    	IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
+		return iwma.getBundle(bundleIdentifier);
+    }
+
+	protected static IWMainApplication getIWMainApplication(FacesContext context){
+		return IWMainApplication.getIWMainApplication(context);
+	}
+
+	private ModificationPeriodDAO getModificationPeriodDAO() {
+		if (this.modificationPeriodDAO == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return this.modificationPeriodDAO;
+	}
+
+	private ModificationPeriodTypeDAO getModificationPeriodTypeDAO() {
+		if (this.modificationPeriodTypeDAO == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+
+		return this.modificationPeriodTypeDAO;
+	}
 
 	private RaceNumberHome getRaceNumberHome() {
 		try {
@@ -572,7 +611,21 @@ public class UserSettings extends RaceBlock {
 		layer.add(formItem);
 
 		section.add(clearLayer);
+		
+		layer = new Layer(Layer.DIV);
+		layer.setID("unionLayer");
+		section.add(layer);
+	
+		UIComponent facelet = getIWMainApplication(iwc)
+				.createComponent(FaceletComponent.COMPONENT_TYPE);		
+		if (facelet instanceof FaceletComponent) {
+			((FaceletComponent) facelet).setFaceletURI(getBundle(
+					iwc, "com.idega.sport.union"
+					).getFaceletURI("club/main_union_editor.xhtml"));
+		}
 
+		layer.add(facelet);
+		
 		layer = new Layer(Layer.DIV);
 		layer.setID("raceNumber");
 		section.add(layer);
@@ -603,9 +656,8 @@ public class UserSettings extends RaceBlock {
 		formItem.setStyleClass("formItem");		
 		formItem.add(label);
 		formItem.add(tiRaceNumberSnocross);
-		formItem.add(info);
+		formItem.add(info.clone());
 		layer.add(formItem);
-
 		
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItemAside");
@@ -674,7 +726,7 @@ public class UserSettings extends RaceBlock {
 		formItem.add(tiSponsor);
 		layer.add(formItem);
 
-		section.add(clearLayer);
+		section.add(clearLayer.clone());
 
 		Layer buttonLayer = new Layer(Layer.DIV);
 		buttonLayer.setStyleClass("buttonLayer");
@@ -911,50 +963,16 @@ public class UserSettings extends RaceBlock {
 		return null;
 	}
 
-	public String getAllowedNumberChangeFrom() {
-		return allowedNumberChangeFrom;
-	}
-
-	public void setAllowedNumberChangeFrom(String allowedNumberChangeFrom) {
-		this.allowedNumberChangeFrom = allowedNumberChangeFrom;
-	}
-
-	public String getAllowedNumberChangeTo() {
-		return allowedNumberChangeTo;
-	}
-
-	public void setAllowedNumberChangeTo(String allowedNumberChangeTo) {
-		this.allowedNumberChangeTo = allowedNumberChangeTo;
-	}
-
-	private LocalDate getChangeDateFrom() {
-		if (!StringUtil.isEmpty(getAllowedNumberChangeFrom())) {
-			return LocalDate.parse(getAllowedNumberChangeFrom());
-		}
-
-		return null;
-	}
-
-	private LocalDate getChangeDateTo() {
-		if (!StringUtil.isEmpty(getAllowedNumberChangeTo())) {
-			return LocalDate.parse(getAllowedNumberChangeTo());
-		}
-
-		return null;
-	}
-
 	private boolean isAllowedToChangeTheNumbers() {
-		LocalDate dateFrom = getChangeDateFrom();
-		if (dateFrom == null) {
-			return Boolean.FALSE;
+		ModificationPeriodTypeEntity type = getModificationPeriodTypeDAO().findBySystemName("race_numbers_type");
+		if (type != null) {
+			List<ModificationPeriodEntity> period = getModificationPeriodDAO().findByDateAndType(
+					new Date(System.currentTimeMillis()), type.getId());
+			if (period != null) {
+				return Boolean.TRUE;
+			}
 		}
 
-		LocalDate dateTo = getChangeDateTo();
-		if (dateTo == null) {
-			return Boolean.FALSE;
-		}
-
-		LocalDate now = LocalDate.now();
-		return now.isAfter(dateFrom) && now.isBefore(dateTo);
+		return Boolean.FALSE;
 	}
 }
