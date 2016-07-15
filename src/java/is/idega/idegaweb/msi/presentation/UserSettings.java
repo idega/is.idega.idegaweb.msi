@@ -57,6 +57,8 @@ import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
 import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.business.UserBusiness;
+import com.idega.user.data.User;
+import com.idega.user.data.UserHome;
 import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
@@ -141,8 +143,9 @@ public class UserSettings extends RaceBlock {
 	private final static String DEFAULT_BODY_NUMBER = "Body number";
 
 	private final static String DEFAULT_PREFERENCES_SAVED = "Your preferences has been saved.";
-
+	
 	private RaceParticipantInfo info = null;
+	private boolean isSelectedUser = false;
 
 	@Autowired
 	private ModificationPeriodDAO modificationPeriodDAO;
@@ -214,7 +217,7 @@ public class UserSettings extends RaceBlock {
 		}
 		
 		info = getRaceParticipantInfo(iwc);
-		info.setUser(iwc.getCurrentUser());
+		info.setUser(getUser(iwc));
 		
 		try {
 			int action = parseAction(iwc);
@@ -727,23 +730,24 @@ public class UserSettings extends RaceBlock {
 		layer.add(formItem);
 
 		section.add(clearLayer.clone());
-
-		Layer buttonLayer = new Layer(Layer.DIV);
-		buttonLayer.setStyleClass("buttonLayer");
-		contents.add(buttonLayer);
-
-		/*Layer span = new Layer(Layer.SPAN);
-		span.add(new Text(this.getResourceBundle(iwc).getLocalizedString(KEY_UPDATE, DEFAULT_UPDATE)));
-		Link send = new Link(span);
-		send.setToFormSubmit(form);*/
 		
-		SubmitButton submit = (SubmitButton) getButton(new SubmitButton(localize(
-				KEY_UPDATE, DEFAULT_UPDATE)));
-		submit
-				.setValueOnClick(PARAMETER_FORM_SUBMIT, Boolean.TRUE.toString());
-		
-		buttonLayer.add(submit);
-
+		if(!isSelectedUser) {
+			Layer buttonLayer = new Layer(Layer.DIV);
+			buttonLayer.setStyleClass("buttonLayer");
+			contents.add(buttonLayer);
+	
+			/*Layer span = new Layer(Layer.SPAN);
+			span.add(new Text(this.getResourceBundle(iwc).getLocalizedString(KEY_UPDATE, DEFAULT_UPDATE)));
+			Link send = new Link(span);
+			send.setToFormSubmit(form);*/
+			
+			SubmitButton submit = (SubmitButton) getButton(new SubmitButton(localize(
+					KEY_UPDATE, DEFAULT_UPDATE)));
+			submit
+					.setValueOnClick(PARAMETER_FORM_SUBMIT, Boolean.TRUE.toString());
+			
+			buttonLayer.add(submit);
+		}
 		add(form);
 	}
 
@@ -942,8 +946,11 @@ public class UserSettings extends RaceBlock {
 	private Address getMainAddress(IWContext iwc) {
 		try {
 			UserBusiness ub = (UserBusiness) IBOLookup.getServiceInstance(iwc, UserBusiness.class);
-
-			return ub.getUsersMainAddress(info.getUser());
+			if(info.getUser() == null) {
+				return null;
+			}
+			String userId = info.getUser().getPrimaryKey().toString();
+			return ub.getUsersMainAddress(Integer.parseInt(userId));
 		}
 		catch (Exception e) {
 			super.add(new ExceptionWrapper(e, this));
@@ -954,8 +961,11 @@ public class UserSettings extends RaceBlock {
 	private Address getCoAddress(IWContext iwc) {
 		try {
 			UserBusiness ub = (UserBusiness) IBOLookup.getServiceInstance(iwc, UserBusiness.class);
-
-			return ub.getUsersCoAddress(info.getUser());
+			if(info.getUser() == null) {
+				return null;
+			}
+			String userId = info.getUser().getPrimaryKey().toString();
+			return ub.getUsersCoAddress(Integer.parseInt(userId));
 		}
 		catch (Exception e) {
 			super.add(new ExceptionWrapper(e, this));
@@ -974,5 +984,21 @@ public class UserSettings extends RaceBlock {
 		}
 
 		return Boolean.FALSE;
+	}
+	
+	private User getUser(IWContext iwc) {
+		isSelectedUser = false;
+		String userId = (String) iwc.getSessionAttribute("member_id");
+		if(StringUtil.isEmpty(userId)) {
+			return iwc.getCurrentUser();
+		}
+		try {
+			isSelectedUser = true;
+			return ((UserHome) IDOLookup.getHomeLegacy(User.class)).findByPrimaryKey(userId);
+		} catch (FinderException e) {
+			isSelectedUser = false;
+			getLogger().warning("" + e);
+		}
+		return null;
 	}
 }
