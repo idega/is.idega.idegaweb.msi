@@ -16,6 +16,7 @@ public class MSIConstants {
 	public final static String NUMBERS_GENAROTOR_LISTENER_EVENT = "number-generator-listener-event";
 	public static final String PROPERTY_MERCHANT_PK = "merchant_pk";
 	public static final String PROPERTY_STAFF_GROUP_ID = "staff_group_id";
+	public static final String PROPERTY_SEASON_PRICE = "msi.season_price";
 
 	public static final String GROUP_TYPE_RACE = "iwma_race";
 	public static final String GROUP_TYPE_SEASON = "iwma_season";
