@@ -131,6 +131,17 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	private SeasonHome getSeasonHome() {
+		try {
+			return (SeasonHome) IDOLookup.getHome(Season.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + SeasonHome.class + " cause of: ", e);
+		}
+
+		return null;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.business.RaceBusiness#createRace(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -689,13 +700,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.business.RaceBusiness#getSeasons()
+	 */
+	@Override
 	public Collection<Group> getSeasons() {
-		String[] type = { MSIConstants.GROUP_TYPE_SEASON };
-		try {
-			return getGroupBiz().getGroups(type, true);
-		} catch (Exception e) {}
-
-		return null;
+		return getSeasonHome().findAllGroups();
 	}
 
 	/*

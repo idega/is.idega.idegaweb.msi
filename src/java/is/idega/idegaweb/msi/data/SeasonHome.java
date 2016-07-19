@@ -2,9 +2,12 @@ package is.idega.idegaweb.msi.data;
 
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import com.idega.data.IDOHome;
+import com.idega.user.data.Group;
 
 public interface SeasonHome extends IDOHome {
 
@@ -74,4 +77,16 @@ public interface SeasonHome extends IDOHome {
 			String description,
 			Date begin,
 			Date end);
+
+	/**
+	 * 
+	 * @return entities or {@link Collections#emptyList()} on failure;
+	 */
+	Collection<Season> findAll();
+
+	/**
+	 * 
+	 * @return entities or {@link Collections#emptyList()} on failure;
+	 */
+	Collection<Group> findAllGroups();
 }

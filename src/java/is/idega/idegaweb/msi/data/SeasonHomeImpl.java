@@ -8,8 +8,10 @@ import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -248,5 +250,50 @@ public class SeasonHomeImpl extends IDOFactory implements SeasonHome {
 	@Override
 	public Season getCurrentSeason() {
 		return getSeason(new Date(System.currentTimeMillis()));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.SeasonHome#findAllGroups()
+	 */
+	@Override
+	public Collection<Group> findAllGroups() {
+		try {
+			return getGroupHome().findAllGroups(
+					new String[]{MSIConstants.GROUP_TYPE_SEASON}, 
+					true);
+		} catch (FinderException e) {
+			getLog().log(Level.WARNING, "Failed to get season groups");
+		}
+
+		return Collections.emptyList();
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see is.idega.idegaweb.msi.data.SeasonHome#findAll()
+	 */
+	@Override
+	public Collection<Season> findAll() {
+		ArrayList<Season> seasons = new ArrayList<Season>();
+
+		Collection<Group> seasonGroups = findAllGroups();
+		for (Group seasonGroup : seasonGroups) {
+			Season season = null;
+
+			try {
+				season = ConverterUtility.getInstance().convertGroupToSeason(seasonGroup);
+			} catch (FinderException e) {
+				getLog().log(Level.WARNING, 
+						"Failed to convert group to season, cause of:", e);
+			}
+
+			if (season != null) {
+				seasons.add(season);
+			}
+		}
+
+		return seasons;
 	}
 }
