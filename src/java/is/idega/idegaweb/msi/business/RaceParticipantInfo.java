@@ -36,6 +36,7 @@ public class RaceParticipantInfo {
 	private String mobilePhone;
 	private boolean agree;
 	private float amount;
+	private float seasonPrice = 0;
 	
 	private boolean rentChip = false;
 	private boolean ownChip = false;
@@ -250,5 +251,13 @@ public class RaceParticipantInfo {
 
 	public void setPartner2(String partner2) {
 		this.partner2 = partner2;
+	}
+
+	public float getSeasonPrice() {
+		return seasonPrice;
+	}
+
+	public void setSeasonPrice(float seasonPrice) {
+		this.seasonPrice = seasonPrice;
 	}
 }
