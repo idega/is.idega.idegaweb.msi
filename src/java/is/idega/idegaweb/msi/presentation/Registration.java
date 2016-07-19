@@ -18,6 +18,8 @@ import is.idega.idegaweb.msi.data.RaceEvent;
 import is.idega.idegaweb.msi.data.RaceNumber;
 import is.idega.idegaweb.msi.data.RaceType;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.io.IOException;
@@ -42,9 +44,12 @@ import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
 import com.idega.data.IDOCreateException;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.facelets.ui.FaceletComponent;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
+import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Image;
@@ -87,6 +92,7 @@ public class Registration extends RaceBlock {
 
 	public static final String PARAMETER_RACE = "prm_race";
 	private static final String PARAMETER_EVENT = "prm_event";
+	private static final String PARAMETER_SEASON = "prm_season";
 
 	private static final String PARAMETER_EMAIL = "prm_email";
 	private static final String PARAMETER_HOME_PHONE = "prm_home_phone";
@@ -107,7 +113,6 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_PARTNER2 = "prm_partner2";
 	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
-	private static final int ACTION_STEP_UNION = 6;
 	private static final int ACTION_STEP_PERSONALDETAILS = 1;
 	private static final int ACTION_STEP_DISCLAIMER = 2;
 	private static final int ACTION_STEP_PAYMENT_INFO = 3;
@@ -116,8 +121,30 @@ public class Registration extends RaceBlock {
 
 	private RaceParticipantInfo raceParticipantInfo;
 
+	private boolean membershipFee;
+
 	@Autowired
 	private Web2Business web2Business;
+
+	public boolean isMembershipFeePayed() {
+		return membershipFee;
+	}
+
+	public void setMembershipFeePayed(boolean membershipFee) {
+		this.membershipFee = membershipFee;
+	}
+
+	protected SeasonHome getSeasonHome() {
+		try {
+			return (SeasonHome) IDOLookup.getHome(Season.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, 
+					"Failed to get " + SeasonHome.class + 
+					" cause of: ", e);
+		}
+
+		return null;
+	}
 
 	protected IWBundle getBundle() {
 		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
@@ -147,6 +174,24 @@ public class Registration extends RaceBlock {
 		}
 
 		return this.web2Business;
+	}
+
+	private IWMainApplicationSettings getSettings() {
+		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
+		if (iwma != null) {
+			return iwma.getSettings();
+		}
+
+		return null;
+	}
+
+	private String getApplicationProperty(String key, String value) {
+		IWMainApplicationSettings settings = getSettings();
+		if (settings != null) {
+			return settings.getProperty(key, value);
+		}
+
+		return null;
 	}
 
 	/*
@@ -197,6 +242,29 @@ public class Registration extends RaceBlock {
 		}
 	}
 
+	private DropdownMenu getSeasonsMenu() {
+		DropdownMenu seasonsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_SEASON));
+		seasonsDropdown.setAsNotEmpty(localize(
+				"race_editor.select_season", 
+				"Select season"));
+
+		Collection<Season> seasons = getSeasonHome().findAll();
+		for (Season season : seasons) {
+			seasonsDropdown.addOption(new SelectOption(
+					season.getName(), 
+					season.getPrimaryKey().toString()));
+		}
+
+		Season season = getSeasonHome().getCurrentSeason();
+		if (season != null) {
+			seasonsDropdown.setSelectedElement(season.getPrimaryKey().toString());
+		}
+
+		seasonsDropdown.setDisabled(Boolean.TRUE);
+
+		return seasonsDropdown;
+	}
+
 	private DropdownMenu getEventsMenu(IWContext iwc) {
 		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_EVENT));
 		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance", "You have to select a distance"));
@@ -219,12 +287,15 @@ public class Registration extends RaceBlock {
 		return eventsDropdown;
 	}
 
-	private Layer getEventsMenuLayer(IWContext iwc) {
-		DropdownMenu eventsMenu = getEventsMenu(iwc);
-		
-		Layer eventsLayer = new Layer();
-		eventsLayer.setStyleClass("formItem");
-		return eventsLayer;
+	private Text getRaceName() {
+		if (this.raceParticipantInfo != null) {
+			Race race = this.raceParticipantInfo.getRace();
+			if (race != null) {
+				return new Text(race.getName());
+			}
+		}
+
+		return new Text("-");
 	}
 
 	public IWBundle getBundle(FacesContext ctx, String bundleIdentifier) {
@@ -272,22 +343,34 @@ public class Registration extends RaceBlock {
 		Text redStar = getHeader("*");
 		redStar.setFontColor("#ff0000");
 
+		/*
+		 * Tournament name and event name
+		 */
 		choiceTable.add(getHeader(localize("race_reg.race_name", "Race name")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.event_name", "Event name")), 3, iRow);
-		choiceTable.add(redStar, 3, iRow++);
-		if (this.raceParticipantInfo.getRace() != null) {
-			choiceTable.add(this.raceParticipantInfo.getRace().getName(), 1, iRow);
-		}
 
-		DropdownMenu eventsDropdown = getEventsMenu(iwc);
-		choiceTable.add(eventsDropdown, 3, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.event_name", "Event name")), 3, iRow);
+		choiceTable.add(redStar, 3, iRow);
+
+		iRow++;
+
+		choiceTable.add(getRaceName(), 1, iRow);
+		choiceTable.add(getEventsMenu(iwc), 3, iRow);
+
+		iRow++;
 
 		/*
-		 * Union
+		 * Union and season payment
 		 */
 		choiceTable.add(getHeader(localize("msi.club", "Club")), 1, iRow);
-		choiceTable.add(redStar, 1, iRow++);
+		choiceTable.add(redStar, 1, iRow);
+
+		if (!isMembershipFeePayed()) {
+			choiceTable.add(getHeader(localize("msi_seasons", "Seasons")), 3, iRow);
+			choiceTable.add(redStar, 3, iRow);
+		}
+
+		iRow++;
 		
 		UIComponent facelet = getIWMainApplication(iwc)
 				.createComponent(FaceletComponent.COMPONENT_TYPE);		
@@ -297,22 +380,39 @@ public class Registration extends RaceBlock {
 					).getFaceletURI("club/main_union_editor.xhtml"));
 		}
 
-		choiceTable.add(facelet, 1, iRow++);
+		choiceTable.add(facelet, 1, iRow);
+
+		if (!isMembershipFeePayed()) {
+			choiceTable.add(getSeasonsMenu(), 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add(":", 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add("ISK", 3, iRow);
+		}
+
+		iRow++;
 
 		choiceTable.setHeight(iRow++, 12);
+
 		Layer useTT = new Layer();
 		choiceTable.add(useTT,3, iRow++);
 //		choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
 		CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
+
 		Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
 		useTT.add(isRentTimeTransmitterLabel);
 		useTT.add(isRentTimeTransmitter);
+
 		Layer priceText = new Layer("label");
 		useTT.add(priceText);
 		priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
+
 		Layer priceTextContainer = new Layer();
 		priceText.add(priceTextContainer);
 		priceTextContainer.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
+
 		Layer priceValue = new Layer("span");
 		priceTextContainer.add(priceValue);
 		priceValue.setStyleClass("tt-price");
@@ -678,6 +778,110 @@ public class Registration extends RaceBlock {
 		add(form);
 	}
 
+	private TextInput getCCVInput() {
+		TextInput ccv = (TextInput) getStyledInterface(new TextInput(
+				PARAMETER_CCV));
+		ccv.setLength(3);
+		ccv.setMaxlength(3);
+		ccv.setAsIntegers(localize(
+				"race_reg.not_valid_ccv",
+				"Not a valid CCV number"));
+		ccv.setAsNotEmpty(localize(
+				"race_reg.must_supply_ccv",
+				"You must enter the CCV number"));
+		ccv.keepStatusOnAction(true);
+		ccv.setAutoComplete(false);
+		return ccv;
+	}
+
+	private DropdownMenu getExpirationMonthMenu() {
+		DropdownMenu month = (DropdownMenu) getStyledInterface(new DropdownMenu(
+				PARAMETER_EXPIRES_MONTH));
+		for (int a = 1; a <= 12; a++) {
+			month.addMenuElement(a < 10 ? "0" + a : String.valueOf(a),
+					a < 10 ? "0" + a : String.valueOf(a));
+		}
+		month.keepStatusOnAction(true);
+		month.addFirstOption(new SelectOption(localize("race_reg.select_month",""), "-1"));
+		return month;
+	}
+
+	private DropdownMenu getExpirationYearMenu() {
+		IWTimestamp stamp = new IWTimestamp();
+
+		DropdownMenu year = (DropdownMenu) getStyledInterface(new DropdownMenu(
+				PARAMETER_EXPIRES_YEAR));
+		for (int a = stamp.getYear(); a <= stamp.getYear() + 8; a++) {
+			year.addMenuElement(String.valueOf(a).substring(2), String
+					.valueOf(a));
+		}
+		year.keepStatusOnAction(true);
+		year.addFirstOption(new SelectOption(localize("race_reg.select_year",""), "-1"));
+		return year;
+	}
+
+	private TextInput getCardHolderNameInput() {
+		TextInput nameField = (TextInput) getStyledInterface(new TextInput(
+				PARAMETER_NAME_ON_CARD));
+		nameField.setAutoComplete(false);
+		nameField.setAsNotEmpty(localize(
+				"race_reg.must_supply_card_holder_name",
+				"You must supply card holder name"));
+		nameField.keepStatusOnAction(true);
+		return nameField;
+	}
+
+	private TextInput getCardHolderEmailInput() {
+		TextInput emailField = (TextInput) getStyledInterface(new TextInput(
+				PARAMETER_CARD_HOLDER_EMAIL));
+		emailField.setAsEmail(localize("race_reg.email_err_msg",
+				"Not a valid email address"));
+		emailField.keepStatusOnAction(true);
+		return emailField;
+	}
+
+	private Layer getCreditCardNumberInput() {
+		Layer layer = new Layer(Layer.DIV);
+		
+		TextInput lastNumber = null;
+		for (int a = 1; a <= 4; a++) {
+			TextInput cardNumber = (TextInput) getStyledInterface(new TextInput(
+					PARAMETER_CARD_NUMBER + "_" + a));
+			if (a < 4) {
+				cardNumber.setLength(4);
+				cardNumber.setMaxlength(4);
+				if (a > 1) {
+					lastNumber.setNextInput(cardNumber);
+				}
+
+				lastNumber = cardNumber;
+			} else {
+				cardNumber.setLength(4);
+				cardNumber.setMaxlength(7);
+				lastNumber.setNextInput(cardNumber);
+			}
+
+			cardNumber.setMininumLength(4, localize(
+					"race_reg.not_valid_card_number",
+					"Not a valid card number"));
+			cardNumber.setAsIntegers(localize(
+					"race_reg.not_valid_card_number",
+					"Not a valid card number"));
+			cardNumber.setAsNotEmpty(localize(
+					"race_reg.must_supply_card_number",
+					"You must enter the credit card number"));
+			cardNumber.keepStatusOnAction(true);
+			cardNumber.setAutoComplete(false);
+
+			layer.add(cardNumber);
+			if (a != 4) {
+				layer.add(Text.getNonBrakingSpace());
+			}
+		}
+
+		return layer;
+	}
+
 	private void stepPaymentInfo(IWContext iwc) throws RemoteException {
 		Form form = new Form();
 		form.addParameter(PARAMETER_ACTION, "-1");
@@ -695,15 +899,16 @@ public class Registration extends RaceBlock {
 		table.setHeight(row++, 12);
 
 		table.add(getInformationTable(localize(
-				"race_reg.information_text_step_4", "Information text 4...")),
+				"race_reg.information_text_step_4", 
+				"Information text 4...")),
 				1, row++);
 		table.setHeight(row++, 18);
 
+		/*
+		 * Price table
+		 */
 		Table runnerTable = new Table();
-		runnerTable.setWidth(Table.HUNDRED_PERCENT);
-		runnerTable.setCellspacing(0);
-		runnerTable.add(getHeader(localize("race_reg.participant_name",
-				"Participant name")), 1, 1);
+		runnerTable.add(getHeader(localize("race_reg.participant_name", "Participant name")), 1, 1); 
 		runnerTable.add(getHeader(localize("race_reg.race", "Race")), 2, 1);
 		runnerTable.add(getHeader(localize("race_reg.event", "Event")), 3, 1);
 		runnerTable.add(getHeader(localize("race_reg.price", "Price")), 4, 1);
@@ -711,7 +916,6 @@ public class Registration extends RaceBlock {
 		table.setHeight(row++, 18);
 		int runRow = 2;
 
-		float totalAmount = 0;
 		if (this.raceParticipantInfo.getUser() != null) {
 			runnerTable.add(getText(this.raceParticipantInfo.getUser().getName()), 1, runRow);
 		} else {
@@ -720,7 +924,8 @@ public class Registration extends RaceBlock {
 		runnerTable.add(getText(this.raceParticipantInfo.getRace().getName()), 2, runRow);
 		runnerTable.add(getText(this.raceParticipantInfo.getEvent().getEventID()), 3, runRow);
 		float runPrice = getRaceBusiness(iwc).getEventPriceForRunner(this.raceParticipantInfo);
-		totalAmount += runPrice;
+		
+		float totalAmount = runPrice;
 		runnerTable.add(getText(formatAmount(runPrice)), 4, runRow++);
 		
 		if(this.raceParticipantInfo.isRentTimeTransmitter()){
@@ -728,28 +933,53 @@ public class Registration extends RaceBlock {
 			if(ttPrice < 0){
 				ttPrice = 0;
 			}
+
 			runnerTable.add(getText(localize("race_reg.rent_time_transmitter2", "Rent time transmitter")),3,runRow);
-			runnerTable.add(formatAmount(ttPrice),4,runRow);
+			runnerTable.add(getText(formatAmount(ttPrice)),4,runRow);
 			runRow++;
 			totalAmount += ttPrice;
 		}
 
+		/*
+		 * Season
+		 */
+		if(!isMembershipFeePayed()){
+			String priceString = getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000");
+			float seasonPrice = Float.valueOf(priceString);
+			if(seasonPrice < 0) {
+				seasonPrice = 0;
+			}
+
+			runnerTable.add(getText(localize("season_editor.season", "Season")), 3, runRow);
+			runnerTable.add(getText(formatAmount(seasonPrice)), 4, runRow);
+			runRow++;
+			totalAmount += seasonPrice;
+			this.raceParticipantInfo.setSeasonPrice(seasonPrice);
+		}
+
 		this.raceParticipantInfo.setAmount(runPrice);
 
-			runnerTable.add(new HiddenInput(PARAMETER_REFERENCE_NUMBER,
-					this.raceParticipantInfo.getUser().getPersonalID().replaceAll("-", "")));
+		runnerTable.add(new HiddenInput(PARAMETER_REFERENCE_NUMBER,
+				this.raceParticipantInfo.getUser().getPersonalID().replaceAll("-", "")));
 
 		if (totalAmount == 0) {
 			save(iwc, false);
 			return;
 		}
 
+		/*
+		 * Total amount
+		 */
 		runnerTable.setHeight(runRow++, 12);
-		runnerTable.add(getHeader(localize("race_reg.total_amount",
+		runnerTable.add(getHeader(localize(
+				"race_reg.total_amount",
 				"Total amount")), 1, runRow);
 		runnerTable.add(getHeader(formatAmount(totalAmount)), 4, runRow);
 		runnerTable.setColumnAlignment(4, Table.HORIZONTAL_ALIGN_RIGHT);
 
+		/*
+		 * Credit card table
+		 */
 		Table creditCardTable = new Table();
 		creditCardTable.setWidth(Table.HUNDRED_PERCENT);
 		creditCardTable.setWidth(1, "50%");
@@ -763,130 +993,77 @@ public class Registration extends RaceBlock {
 		table.add(creditCardTable, 1, row++);
 		int creditRow = 1;
 
-		creditCardTable.add(
-				getHeader(localize("race_reg.credit_card_information",
-						"Credit card information")), 1, creditRow);
+		/*
+		 * Credit card header
+		 */
+		creditCardTable.add(getHeader(localize(
+				"race_reg.credit_card_information",
+				"Credit card information")), 1, creditRow);
+		
+		/*
+		 * Credit card types
+		 */
 		creditCardTable.add(getRaceBusiness(iwc).getAvailableCardTypes(
 				this.getResourceBundle()), 3, creditRow);
 		creditCardTable.add(Text.getNonBrakingSpace(), 3, creditRow);
-		Collection images = getRaceBusiness(iwc).getCreditCardImages();
+		Collection<Image> images = getRaceBusiness(iwc).getCreditCardImages();
 		if (images != null) {
-			Iterator iterator = images.iterator();
+			Iterator<Image> iterator = images.iterator();
 			while (iterator.hasNext()) {
-				Image image = (Image) iterator.next();
-				creditCardTable.add(image, 3, creditRow);
+				creditCardTable.add(iterator.next(), 3, creditRow);
 				if (iterator.hasNext()) {
-					creditCardTable
-							.add(Text.getNonBrakingSpace(), 3, creditRow);
+					creditCardTable.add(Text.getNonBrakingSpace(), 3, creditRow);
 				}
 			}
 		}
 		creditCardTable.setHeight(creditRow++, 12);
 
-		TextInput nameField = (TextInput) getStyledInterface(new TextInput(
-				PARAMETER_NAME_ON_CARD));
-		nameField.setAutoComplete(false);
-		nameField.setAsNotEmpty(localize(
-				"race_reg.must_supply_card_holder_name",
-				"You must supply card holder name"));
-		nameField.keepStatusOnAction(true);
-
-		TextInput ccv = (TextInput) getStyledInterface(new TextInput(
-				PARAMETER_CCV));
-		ccv.setLength(3);
-		ccv.setMaxlength(3);
-		ccv.setAsIntegers(localize("race_reg.not_valid_ccv",
-				"Not a valid CCV number"));
-		ccv.setAsNotEmpty(localize("race_reg.must_supply_ccv",
-				"You must enter the CCV number"));
-		ccv.keepStatusOnAction(true);
-		ccv.setAutoComplete(false);
-
-		IWTimestamp stamp = new IWTimestamp();
-		DropdownMenu month = (DropdownMenu) getStyledInterface(new DropdownMenu(
-				PARAMETER_EXPIRES_MONTH));
-		for (int a = 1; a <= 12; a++) {
-			month.addMenuElement(a < 10 ? "0" + a : String.valueOf(a),
-					a < 10 ? "0" + a : String.valueOf(a));
-		}
-		month.keepStatusOnAction(true);
-		month.addFirstOption(new SelectOption(localize("race_reg.select_month",""), "-1"));
-		
-		DropdownMenu year = (DropdownMenu) getStyledInterface(new DropdownMenu(
-				PARAMETER_EXPIRES_YEAR));
-		for (int a = stamp.getYear(); a <= stamp.getYear() + 8; a++) {
-			year.addMenuElement(String.valueOf(a).substring(2), String
-					.valueOf(a));
-		}
-		year.keepStatusOnAction(true);
-		year.addFirstOption(new SelectOption(localize("race_reg.select_year",""), "-1"));
-
-		creditCardTable.add(getHeader(localize("race_reg.card_holder",
+		/*
+		 * Card holder and card number
+		 */
+		creditCardTable.add(getHeader(localize(
+				"race_reg.card_holder",
 				"Card holder")), 1, creditRow);
-		creditCardTable.add(getHeader(localize("race_reg.card_number",
+		creditCardTable.add(getHeader(localize(
+				"race_reg.card_number",
 				"Card number")), 3, creditRow++);
-		creditCardTable.add(nameField, 1, creditRow);
-		TextInput lastNumber = null;
-		for (int a = 1; a <= 4; a++) {
-			TextInput cardNumber = (TextInput) getStyledInterface(new TextInput(
-					PARAMETER_CARD_NUMBER + "_" + a));
-			if (a < 4) {
-				cardNumber.setLength(4);
-				cardNumber.setMaxlength(4);
-				if (a > 1) {
-					lastNumber.setNextInput(cardNumber);
-				}
-				lastNumber = cardNumber;
-			} else {
-				cardNumber.setLength(4);
-				cardNumber.setMaxlength(7);
-				lastNumber.setNextInput(cardNumber);
-			}
-			cardNumber.setMininumLength(4,
-					localize("race_reg.not_valid_card_number",
-							"Not a valid card number"));
-			cardNumber.setAsIntegers(localize("race_reg.not_valid_card_number",
-					"Not a valid card number"));
-			cardNumber.setAsNotEmpty(localize(
-					"race_reg.must_supply_card_number",
-					"You must enter the credit card number"));
-			cardNumber.keepStatusOnAction(true);
-			cardNumber.setAutoComplete(false);
 
-			creditCardTable.add(cardNumber, 3, creditRow);
-			if (a != 4) {
-				creditCardTable.add(Text.getNonBrakingSpace(), 3, creditRow);
-			}
-		}
+		creditCardTable.add(getCardHolderNameInput(), 1, creditRow);
+		creditCardTable.add(getCreditCardNumberInput(), 3, creditRow);
 		creditRow++;
+
 		creditCardTable.setHeight(creditRow++, 3);
 
-		creditCardTable.add(getHeader(localize("race_reg.card_expires",
+		/*
+		 * Card expiration date and card CCV
+		 */
+		creditCardTable.add(getHeader(localize(
+				"race_reg.card_expires",
 				"Card expires")), 1, creditRow);
-		creditCardTable.add(getHeader(localize("race_reg.ccv_number",
+		creditCardTable.add(getHeader(localize(
+				"race_reg.ccv_number",
 				"CCV number")), 3, creditRow++);
-		creditCardTable.add(month, 1, creditRow);
+		creditCardTable.add(getExpirationMonthMenu(), 1, creditRow);
 		creditCardTable.add(getText("/"), 1, creditRow);
-		creditCardTable.add(year, 1, creditRow);
-		creditCardTable.add(ccv, 3, creditRow++);
-
-		TextInput emailField = (TextInput) getStyledInterface(new TextInput(
-				PARAMETER_CARD_HOLDER_EMAIL));
-		emailField.setAsEmail(localize("race_reg.email_err_msg",
-				"Not a valid email address"));
-		emailField.keepStatusOnAction(true);
+		creditCardTable.add(getExpirationYearMenu(), 1, creditRow);
+		creditCardTable.add(getCCVInput(), 3, creditRow++);
 
 		creditCardTable.setHeight(creditRow++, 3);
 		creditCardTable.mergeCells(3, creditRow, 3, creditRow + 1);
-		creditCardTable
-				.add(
-						getText(localize(
-								"race_reg.ccv_explanation_text",
-								"A CCV number is a three digit number located on the back of all major credit cards.")),
-						3, creditRow);
-		creditCardTable.add(getHeader(localize("race_reg.card_holder_email",
+		creditCardTable.add(getText(localize(
+				"race_reg.ccv_explanation_text",
+				"A CCV number is a three digit number located on the back of all major credit cards.")),
+				3, creditRow);
+		
+		/*
+		 * Card holder email
+		 */
+		creditCardTable.add(getHeader(localize(
+				"race_reg.card_holder_email",
 				"Cardholder email")), 1, creditRow++);
-		creditCardTable.add(emailField, 1, creditRow++);
+		creditCardTable.add(getCardHolderEmailInput(), 1, creditRow++);
+
+		
 		creditCardTable.add(new HiddenInput(PARAMETER_AMOUNT, String
 				.valueOf(totalAmount)));
 		creditCardTable.setHeight(creditRow++, 18);
@@ -946,22 +1123,34 @@ public class Registration extends RaceBlock {
 				expiresYear = iwc.getParameter(PARAMETER_EXPIRES_YEAR);
 				ccVerifyNumber = iwc.getParameter(PARAMETER_CCV);
 				email = iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
-				amount = getRaceBusiness(iwc).getPriceForRunner(this.raceParticipantInfo);//Double.parseDouble(iwc.getParameter(PARAMETER_AMOUNT));
+				amount = getRaceBusiness(iwc).getPriceForRunner(this.raceParticipantInfo);
+				amount = amount + this.raceParticipantInfo.getSeasonPrice();
 				referenceNumber = iwc.getParameter(PARAMETER_REFERENCE_NUMBER);
 			}
 
 			String properties = null;
 			if (doPayment) {
-				properties = getRaceBusiness(iwc).authorizePayment(nameOnCard,
-						cardNumber, expiresMonth, expiresYear, ccVerifyNumber,
-						amount, "ISK", referenceNumber);
+				properties = getRaceBusiness(iwc).authorizePayment(
+						nameOnCard,
+						cardNumber, 
+						expiresMonth, 
+						expiresYear, 
+						ccVerifyNumber,
+						amount, 
+						"ISK", 
+						referenceNumber);
 			}
+
 			Participant participant = getRaceBusiness(iwc).saveParticipant(
 					this.raceParticipantInfo, email, hiddenCardNumber, amount, paymentStamp,
 					iwc.getCurrentLocale());
 			if (doPayment) {
 				getRaceBusiness(iwc).finishPayment(properties);
+				if (!isMembershipFeePayed()) {
+					setMembershipFeePayed(Boolean.TRUE);
+				}
 			}
+
 			iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 
 			showReceipt(iwc, participant, amount, hiddenCardNumber,
