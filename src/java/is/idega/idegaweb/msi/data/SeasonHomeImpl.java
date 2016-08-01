@@ -82,11 +82,13 @@ public class SeasonHomeImpl extends IDOFactory implements SeasonHome {
 	}
 
 	public Season findByPrimaryKey(Object pk) {
-		try {
-			return (Season) super.findByPrimaryKeyIDO(pk);
-		} catch (FinderException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
-					"Failed to get entity by priamary key:" + pk);
+		if (pk != null) {
+			try {
+				return (Season) super.findByPrimaryKeyIDO(pk);
+			} catch (FinderException e) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+						"Failed to get entity by priamary key:" + pk);
+			}
 		}
 
 		return null;
