@@ -334,9 +334,11 @@ public class UserSettings extends RaceBlock {
 		}
 
 		PresentationObject tiRaceNumberMX = null;
-		if (raceNumberMX != null && !isAllowedToChangeTheNumbers()) {
+		if ((raceNumberMX != null && !isAllowedToChangeTheNumbers()) || !isTournamentNumberSelectEnabled(iwc)) {
 			tiRaceNumberMX = new TextInput();
-			((TextInput)tiRaceNumberMX).setContent(raceNumberMX.getRaceNumber());
+			if(raceNumberMX != null) {
+				((TextInput)tiRaceNumberMX).setContent(raceNumberMX.getRaceNumber());
+			}
 			((TextInput)tiRaceNumberMX).setDisabled(true);
 		} else {
 			tiRaceNumberMX = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_MX));
@@ -360,9 +362,11 @@ public class UserSettings extends RaceBlock {
 		}
 
 		PresentationObject tiRaceNumberSnocross = null;//new TextInput(PARAMETER_RACE_NUMBER_SNOCROSS);
-		if (raceNumberSnocross != null && !isAllowedToChangeTheNumbers()) {
+		if ((raceNumberSnocross != null && !isAllowedToChangeTheNumbers()) || !isTournamentNumberSelectEnabled(iwc)) {
 			tiRaceNumberSnocross = new TextInput();
-			((TextInput)tiRaceNumberSnocross).setContent(raceNumberSnocross.getRaceNumber());
+			if(raceNumberSnocross != null) {
+				((TextInput)tiRaceNumberSnocross).setContent(raceNumberSnocross.getRaceNumber());
+			}
 			((TextInput)tiRaceNumberSnocross).setDisabled(true);
 		} else {
 			tiRaceNumberSnocross = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_SNOCROSS)); 
@@ -1000,5 +1004,13 @@ public class UserSettings extends RaceBlock {
 			getLogger().warning("" + e);
 		}
 		return null;
+	}
+	
+	private boolean isTournamentNumberSelectEnabled(IWContext iwc) {
+		String enabled = iwc.getApplicationSettings().getProperty("tournament_number_select_enabled", "false");
+		if(enabled.equals("true")) {
+			return true;
+		}
+		return false;
 	}
 }
