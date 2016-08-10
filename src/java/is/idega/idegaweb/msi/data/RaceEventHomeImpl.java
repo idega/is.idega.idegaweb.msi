@@ -5,6 +5,7 @@ import is.idega.idegaweb.msi.business.ConverterUtility;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -152,6 +153,45 @@ public class RaceEventHomeImpl extends IDOFactory implements RaceEventHome {
 		}
 
 		return null;
+	}
+
+	@Override
+	public Collection<RaceEvent> findAllByRace(Race race) {
+		ConverterUtility converter = ConverterUtility.getInstance();
+		
+		ArrayList<RaceEvent> raceEvents = new ArrayList<RaceEvent>();
+		
+		if (race != null) {
+			com.idega.user.data.Group raceGroup = null;
+			try {
+				raceGroup = converter.convertRaceToGroup(race);
+			} catch (FinderException e) {
+				getLog().log(Level.WARNING, "Failed ot get race group, cause of", e);
+			}
+
+			if (raceGroup != null) {
+				String[] types = {MSIConstants.GROUP_TYPE_RACE_EVENT};
+				Collection<com.idega.user.data.Group> eventGroups = null;
+				try {
+					eventGroups = getGroupBusiness()
+							.getChildGroups(raceGroup, types, true);
+				} catch (RemoteException e) {
+					getLog().log(Level.WARNING, "Failed to get race event groups, cause of", e);
+				}
+
+				if (!ListUtil.isEmpty(eventGroups)) {
+					for (com.idega.user.data.Group eventGroup : eventGroups) {
+						try {
+							raceEvents.add(converter.convertGroupToRaceEvent(eventGroup));
+						} catch (FinderException e) {
+							getLog().log(Level.WARNING, "Failed to add race event, cause of: ", e);
+						}
+					}
+				}
+			}
+		}
+
+		return raceEvents;
 	}
 
 	/*

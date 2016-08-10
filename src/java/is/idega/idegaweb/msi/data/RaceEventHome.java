@@ -3,6 +3,8 @@ package is.idega.idegaweb.msi.data;
 
 import is.idega.idegaweb.msi.events.RaceEventUpdatedAction;
 
+import java.util.Collection;
+
 import com.idega.core.user.data.User;
 import com.idega.data.IDOHome;
 
@@ -60,4 +62,11 @@ public interface RaceEventHome extends IDOHome {
 	 * @return entity or <code>null</code> on failure;
 	 */
 	RaceEvent findByRaceAndEvent(Integer raceId, String eventId);
+
+	/**
+	 * 
+	 * @param race
+	 * @return
+	 */
+	Collection<RaceEvent> findAllByRace(Race race);
 }
