@@ -3,13 +3,17 @@
  */
 package is.idega.idegaweb.msi.data;
 
+import is.idega.idegaweb.msi.events.ParticipantUpdatedAction;
+
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import com.idega.data.GenericEntity;
+import com.idega.data.IDOStoreException;
 import com.idega.data.query.Column;
 import com.idega.data.query.MatchCriteria;
 import com.idega.data.query.SelectQuery;
@@ -17,6 +21,7 @@ import com.idega.data.query.Table;
 import com.idega.data.query.WildCardColumn;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.expression.ELUtil;
 
 /**
  * Description: <br>
@@ -26,6 +31,8 @@ import com.idega.user.data.User;
  * @author birna
  */
 public class ParticipantBMPBean extends GenericEntity implements Participant {
+
+	private static final long serialVersionUID = -4127402857174589109L;
 
 	private static final String ENTITY_NAME = "msi_participant";
 
@@ -51,6 +58,8 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	private static final String COLUMN_CREATED = "created_date";
 	public static final String COLUMN_RENTS_TIME_TRANSMITTER = "RENTS_TIME_TRANSMITTER";
 
+	private boolean publishEvent = Boolean.TRUE;
+	
 	public ParticipantBMPBean() {
 		super();
 	}
@@ -299,7 +308,7 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		setColumn(COLUMN_CREATED, created);
 	}
 
-	public Collection ejbFindAll() throws FinderException {
+	public Collection<Integer> ejbFindAll() throws FinderException {
 		Table table = new Table(this);
 
 		SelectQuery query = new SelectQuery(table);
@@ -308,7 +317,7 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return idoFindPKsBySQL(query.toString());
 	}
 
-	public Collection ejbFindAllByRace(Group race) throws FinderException {
+	public Collection<Integer> ejbFindAllByRace(Group race) throws FinderException {
 		Table table = new Table(this);
 
 		SelectQuery query = new SelectQuery(table);
@@ -324,4 +333,34 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return "ID: " + getPrimaryKey();
 	}
 
+	@Override
+	public void setNotification(boolean publishEvent) {
+		this.publishEvent = publishEvent;
+	}
+	
+	@Override
+	public void store() throws IDOStoreException {
+		super.store();
+		
+		if (this.publishEvent) {
+			ParticipantUpdatedAction event = new ParticipantUpdatedAction(this);
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	@Override
+	public void remove() throws RemoveException {
+		ParticipantUpdatedAction event = new ParticipantUpdatedAction(this);
+		event.setRemoved(Boolean.TRUE);
+
+		super.remove();
+
+		if (this.publishEvent) {
+			ELUtil.getInstance().publishEvent(event);
+		}
+	}
+
+	public Collection<Integer> ejbFindAll(Integer raceId, Integer userId) {
+		throw new UnsupportedOperationException();
+	}
 }

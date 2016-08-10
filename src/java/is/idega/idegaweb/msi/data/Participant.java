@@ -190,4 +190,10 @@ public interface Participant extends IDOEntity {
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setCreatedDate
 	 */
 	public void setCreatedDate(Timestamp created);
+
+	/**
+	 * 
+	 * @param publishEvent <code>true</code> when update event should be published
+	 */
+	void setNotification(boolean publishEvent);
 }
