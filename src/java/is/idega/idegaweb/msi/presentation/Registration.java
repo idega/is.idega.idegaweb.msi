@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.block.creditcard.business.CreditCardAuthorizationException;
 import com.idega.block.web2.business.Web2Business;
+import com.idega.builder.business.BuilderLogic;
 import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
@@ -51,6 +52,7 @@ import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWMainApplicationSettings;
 import com.idega.idegaweb.IWResourceBundle;
+import com.idega.idegaweb.UnavailableIWContext;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Image;
 import com.idega.presentation.Layer;
@@ -64,6 +66,7 @@ import com.idega.presentation.ui.HiddenInput;
 import com.idega.presentation.ui.SelectOption;
 import com.idega.presentation.ui.SubmitButton;
 import com.idega.presentation.ui.TextInput;
+import com.idega.servlet.filter.IWAuthenticator;
 import com.idega.user.business.NoEmailFoundException;
 import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.data.Group;
@@ -223,6 +226,18 @@ public class Registration extends RaceBlock {
 	}
 
 	public void main(IWContext iwc) throws Exception {
+		if(!iwc.isLoggedOn()) {
+			String registrationLink = iwc.getRequestURI();
+			String loginPageUrl = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, "msi_login", false);
+			try {
+				String redirectUrl = loginPageUrl + CoreConstants.QMARK + IWAuthenticator.PARAMETER_REDIRECT_URI_ONLOGON + CoreConstants.EQ + registrationLink;
+				getResponse().sendRedirect(redirectUrl);
+			} catch (UnavailableIWContext e) {
+				getLogger().warning("" + e);
+			} catch (IOException e) {
+				getLogger().warning("" + e);
+			}
+		}
 		switch (parseAction(iwc)) {
 		case ACTION_STEP_PERSONALDETAILS:
 			stepPersonalDetails(iwc);
@@ -1411,4 +1426,5 @@ public class Registration extends RaceBlock {
 	private void removeRaceParticipantInfo(IWContext iwc) {
 		iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 	}
+	
 }
