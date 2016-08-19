@@ -9,19 +9,6 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -77,9 +64,22 @@ import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
- * 
+ *
  * @author <a href="mailto:laddi@idega.com">laddi</a>
  * @version $Revision: 1.4 $
  */
@@ -110,7 +110,7 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_AMOUNT = "prm_amount";
 	private static final String PARAMETER_CARD_HOLDER_EMAIL = "prm_card_holder_email";
 	private static final String PARAMETER_REFERENCE_NUMBER = "prm_reference_number";
-	
+
 	private static final String PARAMETER_COMMENT = "prm_comment";
 	private static final String PARAMETER_PARTNER1 = "prm_partner1";
 	private static final String PARAMETER_PARTNER2 = "prm_partner2";
@@ -141,14 +141,15 @@ public class Registration extends RaceBlock {
 		try {
 			return (SeasonHome) IDOLookup.getHome(Season.class);
 		} catch (IDOLookupException e) {
-			getLogger().log(Level.WARNING, 
-					"Failed to get " + SeasonHome.class + 
+			getLogger().log(Level.WARNING,
+					"Failed to get " + SeasonHome.class +
 					" cause of: ", e);
 		}
 
 		return null;
 	}
 
+	@Override
 	protected IWBundle getBundle() {
 		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
 		if (application != null) {
@@ -158,6 +159,7 @@ public class Registration extends RaceBlock {
 		return null;
 	}
 
+	@Override
 	protected IWBundle getSportUnionBundle() {
 		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
 		if (application != null) {
@@ -204,7 +206,7 @@ public class Registration extends RaceBlock {
 	@Override
 	public void encodeBegin(FacesContext fc) throws IOException {
 		super.encodeBegin(fc);
-		
+
 		IWContext iwc = IWContext.getIWContext(fc);
 		ArrayList<String> scripts = new ArrayList<String>();
 		scripts.add(getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
@@ -225,6 +227,7 @@ public class Registration extends RaceBlock {
 		}
 	}
 
+	@Override
 	public void main(IWContext iwc) throws Exception {
 		if(!iwc.isLoggedOn()) {
 			String registrationLink = iwc.getRequestURI();
@@ -260,13 +263,13 @@ public class Registration extends RaceBlock {
 	private DropdownMenu getSeasonsMenu() {
 		DropdownMenu seasonsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_SEASON));
 		seasonsDropdown.setAsNotEmpty(localize(
-				"race_editor.select_season", 
+				"race_editor.select_season",
 				"Select season"));
 
 		Collection<Season> seasons = getSeasonHome().findAll();
 		for (Season season : seasons) {
 			seasonsDropdown.addOption(new SelectOption(
-					season.getName(), 
+					season.getName(),
 					season.getPrimaryKey().toString()));
 		}
 
@@ -289,12 +292,12 @@ public class Registration extends RaceBlock {
 			events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
 		} catch (RemoteException | FinderException e) {
 			getLogger().log(
-					Level.WARNING, 
+					Level.WARNING,
 					"Failed to get events for race, cause of: ", e);
 		}
 
 		for (String key : events.keySet()) {
-			RaceEvent event = (RaceEvent) events.get(key);
+			RaceEvent event = events.get(key);
 			String pk = event.getPrimaryKey().toString();
 			eventsDropdown.addOption(new SelectOption(event.getEventID(), pk));
 		}
@@ -327,7 +330,7 @@ public class Registration extends RaceBlock {
 		form.maintainParameter(PARAMETER_RACE);
 		form.addParameter(PARAMETER_ACTION, "-1");
 		form.addParameter(PARAMETER_FROM_ACTION, ACTION_STEP_PERSONALDETAILS);
-		
+
 		Table table = new Table();
 		table.setCellpadding(0);
 		table.setCellspacing(0);
@@ -386,9 +389,9 @@ public class Registration extends RaceBlock {
 		}
 
 		iRow++;
-		
+
 		UIComponent facelet = getIWMainApplication(iwc)
-				.createComponent(FaceletComponent.COMPONENT_TYPE);		
+				.createComponent(FaceletComponent.COMPONENT_TYPE);
 		if (facelet instanceof FaceletComponent) {
 			((FaceletComponent) facelet).setFaceletURI(getBundle(
 					iwc, "com.idega.sport.union"
@@ -397,14 +400,16 @@ public class Registration extends RaceBlock {
 
 		choiceTable.add(facelet, 1, iRow);
 
-		if (!isMembershipFeePayed()) {
-			choiceTable.add(getSeasonsMenu(), 3, iRow);
-			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-			choiceTable.add(":", 3, iRow);
-			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-			choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
-			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-			choiceTable.add("ISK", 3, iRow);
+		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
+			if (!isMembershipFeePayed()) {
+				choiceTable.add(getSeasonsMenu(), 3, iRow);
+				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+				choiceTable.add(":", 3, iRow);
+				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+				choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
+				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+				choiceTable.add("ISK", 3, iRow);
+			}
 		}
 
 		iRow++;
@@ -434,20 +439,20 @@ public class Registration extends RaceBlock {
 		priceTextContainer.add(" kr. ");
 		priceTextContainer.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
 		priceTextContainer.setStyleAttribute("width:450px;");
-			
+
 		Layer script = new Layer("script");
 		useTT.add(script);
 		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
 			.append("RaceRegistrationHelper.ttPricesActions(null);})");
 		script.add(actions.toString());
-		
-		Text nameField = (Text) getText("");
+
+		Text nameField = getText("");
 		nameField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getUser() != null) {
 			nameField.setText(this.raceParticipantInfo.getUser().getName());
 		}
 
-		Text emailField = (Text) getText("");
+		Text emailField = getText("");
 		emailField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getEmail() != null) {
 			emailField.setText(this.raceParticipantInfo.getEmail());
@@ -471,12 +476,12 @@ public class Registration extends RaceBlock {
 		choiceTable.add(emailField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		Text ssnISField = (Text) getText("");
+		Text ssnISField = getText("");
 		if (this.raceParticipantInfo.getUser() != null) {
 			ssnISField.setText(this.raceParticipantInfo.getUser().getPersonalID());
 		}
 
-		Text telField = (Text) getText("");
+		Text telField = getText("");
 		telField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getHomePhone() != null) {
 			telField.setText(this.raceParticipantInfo.getHomePhone());
@@ -500,7 +505,7 @@ public class Registration extends RaceBlock {
 		choiceTable.add(telField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		Text addressField = (Text) getText("");
+		Text addressField = getText("");
 		addressField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getUser() != null) {
 			Address address = getUserBusiness(iwc).getUsersMainAddress(
@@ -510,7 +515,7 @@ public class Registration extends RaceBlock {
 			}
 		}
 
-		Text mobileField = (Text) getText("");
+		Text mobileField = getText("");
 		mobileField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getMobilePhone() != null) {
 			mobileField.setText(this.raceParticipantInfo.getMobilePhone());
@@ -535,7 +540,7 @@ public class Registration extends RaceBlock {
 		choiceTable.add(mobileField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		Text postalField = (Text) getText("");
+		Text postalField = getText("");
 		if (this.raceParticipantInfo.getUser() != null) {
 			Address address = getUserBusiness(iwc).getUsersMainAddress(
 					this.raceParticipantInfo.getUser());
@@ -547,11 +552,11 @@ public class Registration extends RaceBlock {
 			}
 		}
 
-		Text raceNumberField = (Text) getText("");
+		Text raceNumberField = getText("");
 		if (this.raceParticipantInfo.getRaceNumber() != null) {
 			raceNumberField.setText(this.raceParticipantInfo.getRaceNumber());
 		}
-		
+
 		choiceTable.add(getHeader(localize(MSIConstants.RR_POSTAL,
 				"Postal Code")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
@@ -563,12 +568,12 @@ public class Registration extends RaceBlock {
 		choiceTable.setHeight(iRow++, 3);
 
 
-		Text raceVehicleField = (Text) getText("");
+		Text raceVehicleField = getText("");
 		if (this.raceParticipantInfo.getRaceVehicle() != null) {
 			raceVehicleField.setText(this.raceParticipantInfo.getRaceVehicle().getLocalizationKey());
 		}
 
-		Text raceVehicleSubtypeField = (Text) getText("");
+		Text raceVehicleSubtypeField = getText("");
 		raceVehicleSubtypeField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getRaceVehicleSubtype() != null) {
 			raceVehicleSubtypeField.setText(this.raceParticipantInfo.getRaceVehicleSubtype().getLocalizationKey());
@@ -582,12 +587,12 @@ public class Registration extends RaceBlock {
 		choiceTable.add(raceVehicleSubtypeField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		Text engineField = (Text) getText("");
+		Text engineField = getText("");
 		if (this.raceParticipantInfo.getEngine() != null) {
 			engineField.setText(this.raceParticipantInfo.getEngine());
 		}
 
-		Text engineCCField = (Text) getText("");
+		Text engineCCField = getText("");
 		engineCCField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getEngineCC() != null) {
 			engineCCField.setText(this.raceParticipantInfo.getEngineCC());
@@ -601,12 +606,12 @@ public class Registration extends RaceBlock {
 		choiceTable.add(engineCCField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		Text bodyNumberField = (Text) getText("");
+		Text bodyNumberField = getText("");
 		if (this.raceParticipantInfo.getBodyNumber() != null) {
 			bodyNumberField.setText(this.raceParticipantInfo.getBodyNumber());
 		}
 
-		Text modelField = (Text) getText("");
+		Text modelField = getText("");
 		modelField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getModel() != null) {
 			modelField.setText(this.raceParticipantInfo.getModel());
@@ -619,9 +624,9 @@ public class Registration extends RaceBlock {
 		choiceTable.add(bodyNumberField, 1, iRow);
 		choiceTable.add(modelField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
-		
-		//new		
-		Text chipField = (Text) getText("");
+
+		//new
+		Text chipField = getText("");
 		chipField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getChipNumber() != null) {
 			chipField.setText(this.raceParticipantInfo.getChipNumber());
@@ -631,13 +636,13 @@ public class Registration extends RaceBlock {
 				"Chip number")), 1, iRow++);
 		choiceTable.add(chipField, 1, iRow++);
 		choiceTable.setHeight(iRow++, 3);
-		
-		Text teamField = (Text) getText("");
+
+		Text teamField = getText("");
 		if (this.raceParticipantInfo.getTeam() != null) {
 			teamField.setText(this.raceParticipantInfo.getTeam());
 		}
 
-		Text sponsorsField = (Text) getText("");
+		Text sponsorsField = getText("");
 		sponsorsField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getSponsors() != null) {
 			sponsorsField.setText(this.raceParticipantInfo.getSponsors());
@@ -650,8 +655,8 @@ public class Registration extends RaceBlock {
 		choiceTable.add(teamField, 1, iRow);
 		choiceTable.add(sponsorsField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
-		
-		
+
+
 		/*TextArea commentField = (TextArea) getStyledInterface(new TextArea(
 				PARAMETER_COMMENT));
 		commentField.setWidth(Table.HUNDRED_PERCENT);
@@ -682,13 +687,13 @@ public class Registration extends RaceBlock {
 		choiceTable.setHeight(iRow++, 3);
 
 		boolean canRegister = canRegister(iwc);
-		
+
 		if (canRegister) {
 			SubmitButton next = (SubmitButton) getButton(new SubmitButton(localize(
 					"next", "Next")));
 			next.setValueOnClick(PARAMETER_ACTION, String
 					.valueOf(ACTION_STEP_DISCLAIMER));
-	
+
 			table.setHeight(row++, 18);
 			table.add(next, 1, row);
 			table.setAlignment(1, row, Table.HORIZONTAL_ALIGN_RIGHT);
@@ -696,7 +701,7 @@ public class Registration extends RaceBlock {
 			table.setHeight(row++, 18);
 			table.add(getHeader(localize("race_reg.cant_register",
 				"Can't register in a national tournament without a valid race number")), 1, row);
-			table.setAlignment(1, row, Table.HORIZONTAL_ALIGN_RIGHT);			
+			table.setAlignment(1, row, Table.HORIZONTAL_ALIGN_RIGHT);
 		}
 		add(form);
 	}
@@ -741,7 +746,7 @@ public class Registration extends RaceBlock {
 
 		return true;
 	}
-	
+
 	private void stepDisclaimer(IWContext iwc) {
 		Form form = new Form();
 		form.addParameter(PARAMETER_ACTION, "-1");
@@ -857,7 +862,7 @@ public class Registration extends RaceBlock {
 
 	private Layer getCreditCardNumberInput() {
 		Layer layer = new Layer(Layer.DIV);
-		
+
 		TextInput lastNumber = null;
 		for (int a = 1; a <= 4; a++) {
 			TextInput cardNumber = (TextInput) getStyledInterface(new TextInput(
@@ -914,7 +919,7 @@ public class Registration extends RaceBlock {
 		table.setHeight(row++, 12);
 
 		table.add(getInformationTable(localize(
-				"race_reg.information_text_step_4", 
+				"race_reg.information_text_step_4",
 				"Information text 4...")),
 				1, row++);
 		table.setHeight(row++, 18);
@@ -923,7 +928,7 @@ public class Registration extends RaceBlock {
 		 * Price table
 		 */
 		Table runnerTable = new Table();
-		runnerTable.add(getHeader(localize("race_reg.participant_name", "Participant name")), 1, 1); 
+		runnerTable.add(getHeader(localize("race_reg.participant_name", "Participant name")), 1, 1);
 		runnerTable.add(getHeader(localize("race_reg.race", "Race")), 2, 1);
 		runnerTable.add(getHeader(localize("race_reg.event", "Event")), 3, 1);
 		runnerTable.add(getHeader(localize("race_reg.price", "Price")), 4, 1);
@@ -939,10 +944,10 @@ public class Registration extends RaceBlock {
 		runnerTable.add(getText(this.raceParticipantInfo.getRace().getName()), 2, runRow);
 		runnerTable.add(getText(this.raceParticipantInfo.getEvent().getEventID()), 3, runRow);
 		float runPrice = getRaceBusiness(iwc).getEventPriceForRunner(this.raceParticipantInfo);
-		
+
 		float totalAmount = runPrice;
 		runnerTable.add(getText(formatAmount(runPrice)), 4, runRow++);
-		
+
 		if(this.raceParticipantInfo.isRentTimeTransmitter()){
 			float ttPrice = raceParticipantInfo.getEvent().getTimeTransmitterPrice();
 			if(ttPrice < 0){
@@ -1014,7 +1019,7 @@ public class Registration extends RaceBlock {
 		creditCardTable.add(getHeader(localize(
 				"race_reg.credit_card_information",
 				"Credit card information")), 1, creditRow);
-		
+
 		/*
 		 * Credit card types
 		 */
@@ -1069,7 +1074,7 @@ public class Registration extends RaceBlock {
 				"race_reg.ccv_explanation_text",
 				"A CCV number is a three digit number located on the back of all major credit cards.")),
 				3, creditRow);
-		
+
 		/*
 		 * Card holder email
 		 */
@@ -1078,7 +1083,7 @@ public class Registration extends RaceBlock {
 				"Cardholder email")), 1, creditRow++);
 		creditCardTable.add(getCardHolderEmailInput(), 1, creditRow++);
 
-		
+
 		creditCardTable.add(new HiddenInput(PARAMETER_AMOUNT, String
 				.valueOf(totalAmount)));
 		creditCardTable.setHeight(creditRow++, 18);
@@ -1147,12 +1152,12 @@ public class Registration extends RaceBlock {
 			if (doPayment) {
 				properties = getRaceBusiness(iwc).authorizePayment(
 						nameOnCard,
-						cardNumber, 
-						expiresMonth, 
-						expiresYear, 
+						cardNumber,
+						expiresMonth,
+						expiresYear,
 						ccVerifyNumber,
-						amount, 
-						"ISK", 
+						amount,
+						"ISK",
 						referenceNumber);
 			}
 
@@ -1344,7 +1349,7 @@ public class Registration extends RaceBlock {
 						}
 					} else if (MSIConstants.RACE_TYPE_SNOCROSS.equals(getRaceTypeKey(this.raceParticipantInfo))) {
 						if (settings.getRaceNumberSnocross() != null && settings.getRaceNumberSnocross().getApprovedDate() != null) {
-							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());																				
+							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());
 						}
 					}
 				}
@@ -1356,7 +1361,7 @@ public class Registration extends RaceBlock {
 					this.raceParticipantInfo.setChipNumber(settings.getTransponderNumber());
 					this.raceParticipantInfo.setOwnChip(true);
 				}
-				
+
 				this.raceParticipantInfo.setRaceVehicleSubtype(settings.getVehicleSubType());
 				this.raceParticipantInfo.setEngine(settings.getEngine());
 				this.raceParticipantInfo.setEngineCC(settings.getEngineCC());
@@ -1411,20 +1416,20 @@ public class Registration extends RaceBlock {
 				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
 					action = ACTION_STEP_PERSONALDETAILS;
 				}
-				
+
 				if (this.raceParticipantInfo.getEvent().getTeamCount() > 2) {
 					if (this.raceParticipantInfo.getPartner2() == null || "".equals(this.raceParticipantInfo.getPartner2().trim())) {
 						action = ACTION_STEP_PERSONALDETAILS;
-					}	
-				}				
+					}
+				}
 			}
 		}
 
 		return action;
 	}
-	
+
 	private void removeRaceParticipantInfo(IWContext iwc) {
 		iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 	}
-	
+
 }
