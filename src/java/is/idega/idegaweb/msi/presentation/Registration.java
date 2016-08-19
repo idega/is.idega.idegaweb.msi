@@ -9,6 +9,19 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -63,19 +76,6 @@ import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
-
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -385,7 +385,7 @@ public class Registration extends RaceBlock {
 
 		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
 			if (!isMembershipFeePayed()) {
-				choiceTable.add(getHeader(localize("msi_seasons", "Seasons")), 3, iRow);
+				choiceTable.add(getHeader(localize("msi_membership_fee", "Seasons")), 3, iRow);
 				choiceTable.add(redStar, 3, iRow);
 			}
 		}
@@ -411,6 +411,13 @@ public class Registration extends RaceBlock {
 				choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
 				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
 				choiceTable.add("ISK", 3, iRow);
+				Layer explanation = new Layer("span");
+				explanation.setStyleClass("dropdownExplanationText");
+				explanation.add(new Text(
+				localize(
+						"seasons_menu_explanation",
+						"If you have not paid membership fees in your company, you can pay for the year by checking here. MSI does so up to the club.")));
+				choiceTable.add(explanation, 3, iRow);
 			}
 		}
 
