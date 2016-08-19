@@ -383,9 +383,11 @@ public class Registration extends RaceBlock {
 		choiceTable.add(getHeader(localize("msi.club", "Club")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
 
-		if (!isMembershipFeePayed()) {
-			choiceTable.add(getHeader(localize("msi_seasons", "Seasons")), 3, iRow);
-			choiceTable.add(redStar, 3, iRow);
+		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
+			if (!isMembershipFeePayed()) {
+				choiceTable.add(getHeader(localize("msi_seasons", "Seasons")), 3, iRow);
+				choiceTable.add(redStar, 3, iRow);
+			}
 		}
 
 		iRow++;
@@ -963,18 +965,20 @@ public class Registration extends RaceBlock {
 		/*
 		 * Season
 		 */
-		if(!isMembershipFeePayed()){
-			String priceString = getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000");
-			float seasonPrice = Float.valueOf(priceString);
-			if(seasonPrice < 0) {
-				seasonPrice = 0;
-			}
+		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
+			if(!isMembershipFeePayed()){
+				String priceString = getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000");
+				float seasonPrice = Float.valueOf(priceString);
+				if(seasonPrice < 0) {
+					seasonPrice = 0;
+				}
 
-			runnerTable.add(getText(localize("season_editor.season", "Season")), 3, runRow);
-			runnerTable.add(getText(formatAmount(seasonPrice)), 4, runRow);
-			runRow++;
-			totalAmount += seasonPrice;
-			this.raceParticipantInfo.setSeasonPrice(seasonPrice);
+				runnerTable.add(getText(localize("season_editor.season", "Season")), 3, runRow);
+				runnerTable.add(getText(formatAmount(seasonPrice)), 4, runRow);
+				runRow++;
+				totalAmount += seasonPrice;
+				this.raceParticipantInfo.setSeasonPrice(seasonPrice);
+			}
 		}
 
 		this.raceParticipantInfo.setAmount(runPrice);
