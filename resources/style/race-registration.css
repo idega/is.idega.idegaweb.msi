@@ -104,3 +104,8 @@ td[align="right"] > span {
 	margin-top: 5px;
 	max-width: 300px;
 }
+
+td div input[name="prm_rent_tt"] {
+	margin-top: 0px;
+	width: 30px;
+}

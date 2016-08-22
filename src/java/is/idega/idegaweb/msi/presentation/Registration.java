@@ -341,8 +341,12 @@ public class Registration extends RaceBlock {
 		form.add(table);
 		int row = 1;
 
+		/*
 		table.add(getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
 				"race_reg.registration", "Registration"), 1, row++);
+		*/
+		table.add(getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
+				CoreConstants.EMPTY, CoreConstants.EMPTY), 1, row++);
 		table.setHeight(row++, 12);
 
 		table.add(getInformationTable(localize(
@@ -439,7 +443,7 @@ public class Registration extends RaceBlock {
 
 		Layer priceText = new Layer("label");
 		useTT.add(priceText);
-		priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
+		//priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
 
 		Layer priceTextContainer = new Layer();
 		priceText.add(priceTextContainer);
