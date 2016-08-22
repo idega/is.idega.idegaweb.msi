@@ -231,6 +231,9 @@ public class Registration extends RaceBlock {
 	public void main(IWContext iwc) throws Exception {
 		if(!iwc.isLoggedOn()) {
 			String registrationLink = iwc.getRequestURI();
+			if(iwc.isParameterSet(PARAMETER_RACE)) {
+				registrationLink = registrationLink + CoreConstants.QMARK + PARAMETER_RACE + CoreConstants.EQ + iwc.getParameter(PARAMETER_RACE);
+			}
 			String loginPageUrl = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, "msi_login", false);
 			try {
 				String redirectUrl = loginPageUrl + CoreConstants.QMARK + IWAuthenticator.PARAMETER_REDIRECT_URI_ONLOGON + CoreConstants.EQ + registrationLink;
