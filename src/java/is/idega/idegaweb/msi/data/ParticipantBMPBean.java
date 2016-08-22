@@ -8,11 +8,15 @@ import is.idega.idegaweb.msi.events.ParticipantUpdatedAction;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
 
 import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import com.idega.data.GenericEntity;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
 import com.idega.data.IDOStoreException;
 import com.idega.data.query.Column;
 import com.idega.data.query.MatchCriteria;
@@ -21,6 +25,7 @@ import com.idega.data.query.Table;
 import com.idega.data.query.WildCardColumn;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.CoreConstants;
 import com.idega.util.expression.ELUtil;
 
 /**
@@ -174,6 +179,50 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		return (RaceVehicleType) getColumnValue(COLUMN_RACE_VEHICLE);
 	}
 
+	@Override
+	public String getVehicle() {
+		RaceUserSettingsHome home = null;
+		try {
+			home = (RaceUserSettingsHome) IDOLookup.getHome(RaceUserSettings.class);
+		} catch (IDOLookupException e) {
+			getLogger().log(Level.WARNING, "Failed to get " + RaceUserSettingsHome.class + " cause of: ", e);
+		}
+
+		if (home != null) {
+			RaceUserSettings settings = null;
+			try {
+				settings = home.findByUser(getUser());
+			} catch (FinderException e) {
+				getLogger().log(Level.WARNING, "Failed to get " + RaceUserSettings.class);
+			}
+
+			if (settings != null) {
+				StringBuilder sb = new StringBuilder();
+				if (settings.getVehicleType() != null) {
+					sb.append(settings.getVehicleType().getLocalizationKey());
+					sb.append(CoreConstants.SPACE);
+				}
+
+				if (settings.getEngineCC() != null) {
+					sb.append(settings.getEngineCC());
+				}
+
+				if (settings.getVehicleSubType() != null) {
+					sb.append(settings.getVehicleSubType().getLocalizationKey());
+					sb.append(CoreConstants.SPACE);
+				}
+				
+				if (settings.getModel() != null) {
+					sb.append(settings.getModel());
+					sb.append(CoreConstants.SPACE);
+				}
+
+				return sb.toString();
+			}
+		}
+
+		return null;
+	}
 	
 	public String getSponsors() {
 		return getStringColumnValue(COLUMN_SPONSORS);
@@ -361,6 +410,33 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	}
 
 	public Collection<Integer> ejbFindAll(Integer raceId, Integer userId) {
-		throw new UnsupportedOperationException();
+		if (raceId == null || userId == null) {
+			return Collections.emptyList();
+		}
+		
+		StringBuilder query = new StringBuilder("SELECT p.MSI_PARTICIPANT_ID ");
+		query.append("FROM MSI_PARTICIPANT p ");
+
+		if (raceId != null) {
+			query.append("WHERE p.GRP_RACE = ").append(raceId).append(" ");
+		}
+
+		if (userId != null) {
+			if (query.indexOf("WHERE") > 0) {
+				query.append("AND ");
+			} else {
+				query.append("WHERE ");
+			}
+
+			query.append("p.IC_USER_ID = ").append(userId);
+		}
+
+		try {
+			return idoFindPKsBySQL(query.toString());
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get primary keys by query: " + query.toString());
+		}
+
+		return Collections.emptyList();
 	}
 }

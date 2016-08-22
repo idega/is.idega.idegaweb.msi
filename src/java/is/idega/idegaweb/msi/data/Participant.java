@@ -196,4 +196,5 @@ public interface Participant extends IDOEntity {
 	 * @param publishEvent <code>true</code> when update event should be published
 	 */
 	void setNotification(boolean publishEvent);
+	String getVehicle();
 }
