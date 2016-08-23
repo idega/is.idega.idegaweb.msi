@@ -263,12 +263,13 @@ public class Registration extends RaceBlock {
 		}
 	}
 
-	private DropdownMenu getSeasonsMenu() {
+	private DropdownMenu getSeasonsMenu(IWContext iwc) {
 		DropdownMenu seasonsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_SEASON));
+		/*
 		seasonsDropdown.setAsNotEmpty(localize(
 				"race_editor.select_season",
 				"Select season"));
-
+		*/
 		Collection<Season> seasons = getSeasonHome().findAll();
 		for (Season season : seasons) {
 			seasonsDropdown.addOption(new SelectOption(
@@ -281,7 +282,7 @@ public class Registration extends RaceBlock {
 			seasonsDropdown.setSelectedElement(season.getPrimaryKey().toString());
 		}
 
-		seasonsDropdown.setDisabled(Boolean.TRUE);
+		seasonsDropdown.setDisabled(!iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false));
 
 		return seasonsDropdown;
 	}
@@ -390,11 +391,9 @@ public class Registration extends RaceBlock {
 		choiceTable.add(getHeader(localize("msi.club", "Club")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
 
-		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
-			if (!isMembershipFeePayed()) {
-				choiceTable.add(getHeader(localize("msi_membership_fee", "Seasons")), 3, iRow);
-				choiceTable.add(redStar, 3, iRow);
-			}
+		if (!isMembershipFeePayed()) {
+			choiceTable.add(getHeader(localize("msi_membership_fee", "Seasons")), 3, iRow);
+			//choiceTable.add(redStar, 3, iRow);
 		}
 
 		iRow++;
@@ -409,23 +408,21 @@ public class Registration extends RaceBlock {
 
 		choiceTable.add(facelet, 1, iRow);
 
-		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
-			if (!isMembershipFeePayed()) {
-				choiceTable.add(getSeasonsMenu(), 3, iRow);
-				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-				choiceTable.add(":", 3, iRow);
-				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-				choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
-				choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-				choiceTable.add("ISK", 3, iRow);
-				Layer explanation = new Layer("span");
-				explanation.setStyleClass("dropdownExplanationText");
-				explanation.add(new Text(
-				localize(
-						"seasons_menu_explanation",
-						"If you have not paid membership fees in your company, you can pay for the year by checking here. MSI does so up to the club.")));
-				choiceTable.add(explanation, 3, iRow);
-			}
+		if (!isMembershipFeePayed()) {
+			choiceTable.add(getSeasonsMenu(iwc), 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add(":", 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
+			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
+			choiceTable.add("ISK", 3, iRow);
+			Layer explanation = new Layer("span");
+			explanation.setStyleClass("dropdownExplanationText");
+			explanation.add(new Text(
+			localize(
+					"seasons_menu_explanation",
+					"If you have not paid membership fees in your company, you can pay for the year by checking here. MSI does so up to the club.")));
+			choiceTable.add(explanation, 3, iRow);
 		}
 
 		iRow++;
