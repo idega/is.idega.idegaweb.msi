@@ -4,6 +4,7 @@ package is.idega.idegaweb.msi.data;
 import is.idega.idegaweb.msi.events.RaceEventUpdatedAction;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.idega.core.user.data.User;
 import com.idega.data.IDOHome;
@@ -69,4 +70,12 @@ public interface RaceEventHome extends IDOHome {
 	 * @return
 	 */
 	Collection<RaceEvent> findAllByRace(Race race);
+
+	/**
+	 * 
+	 * @param eventId is {@link Event#getPrimaryKey()}
+	 * @return Collection of {@link RaceEvent#getPrimaryKey()} 
+	 * or {@link Collections#emptyList()} on failure;
+	 */
+	Collection<Integer> findByEventId(String eventId);
 }

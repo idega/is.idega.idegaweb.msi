@@ -22,11 +22,13 @@ import com.idega.data.IDOFactory;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.data.IDOStoreException;
+import com.idega.data.SimpleQuerier;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.user.business.GroupBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.GroupHome;
 import com.idega.user.data.UserHome;
+import com.idega.util.ArrayUtil;
 import com.idega.util.ListUtil;
 
 public class RaceEventHomeImpl extends IDOFactory implements RaceEventHome {
@@ -117,6 +119,33 @@ public class RaceEventHomeImpl extends IDOFactory implements RaceEventHome {
 		}
 
 		return null;
+	}
+
+	@Override
+	public Collection<Integer> findByEventId(String eventId) {
+		ArrayList<Integer> primaryKeys = new ArrayList<Integer>();
+		if (eventId != null) {
+			StringBuilder query = new StringBuilder();
+			query.append("SELECT icgicm.IC_GROUP_ID ");
+			query.append("FROM ic_group_ic_metadata icgicm ");
+			query.append("JOIN ic_metadata icm ");
+			query.append("ON icm.METADATA_NAME = 'event_id' ");
+			query.append("AND icm.METADATA_VALUE = '").append(eventId).append("' ");
+			query.append("AND icgicm.IC_METADATA_ID = icm.IC_METADATA_ID;");
+
+			try {
+				String[] results = SimpleQuerier.executeStringQuery(query.toString());
+				if (!ArrayUtil.isEmpty(results)) {
+					for (String result : results) {
+						primaryKeys.add(Integer.valueOf(result));
+					}
+				}
+			} catch (Exception e) {
+				getLog().log(Level.WARNING, "Failed to execute query: " + query);
+			}
+		}
+
+		return primaryKeys;
 	}
 
 	/*
