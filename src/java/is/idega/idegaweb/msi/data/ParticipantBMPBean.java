@@ -211,11 +211,6 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 					sb.append(settings.getVehicleSubType().getLocalizationKey());
 					sb.append(CoreConstants.SPACE);
 				}
-				
-				if (settings.getModel() != null) {
-					sb.append(settings.getModel());
-					sb.append(CoreConstants.SPACE);
-				}
 
 				return sb.toString();
 			}
