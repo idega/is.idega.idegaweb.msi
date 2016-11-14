@@ -1166,12 +1166,18 @@ public class Registration extends RaceBlock {
 						ccVerifyNumber,
 						amount,
 						"ISK",
-						referenceNumber);
+						referenceNumber
+				);
 			}
 
 			Participant participant = getRaceBusiness(iwc).saveParticipant(
-					this.raceParticipantInfo, email, hiddenCardNumber, amount, paymentStamp,
-					iwc.getCurrentLocale());
+					this.raceParticipantInfo,
+					email,
+					hiddenCardNumber,
+					amount,
+					paymentStamp,
+					iwc.getCurrentLocale()
+			);
 			if (doPayment) {
 				getRaceBusiness(iwc).finishPayment(properties);
 				if (!isMembershipFeePayed()) {
@@ -1183,19 +1189,18 @@ public class Registration extends RaceBlock {
 
 			showReceipt(iwc, participant, amount, hiddenCardNumber, paymentStamp, doPayment);
 		} catch (IDOCreateException ice) {
-			getParentPage()
-					.setAlertOnLoad(
-							localize(
+			getParentPage().setOnLoad(
+					"alert('" + localize(
 									"race_reg.save_failed",
-									"There was an error when trying to finish registration.  Please contact the msisport.is office."));
+									"There was an error when trying to finish registration.  Please contact the msisport.is office.")
+					+ "')"
+			);
 			ice.printStackTrace();
 			stepPaymentInfo(iwc);
 		} catch (CreditCardAuthorizationException ccae) {
-			IWResourceBundle creditCardBundle = iwc.getIWMainApplication()
-					.getBundle("com.idega.block.creditcard").getResourceBundle(
-							iwc.getCurrentLocale());
-			getParentPage().setAlertOnLoad(
-					ccae.getLocalizedMessage(creditCardBundle));
+			IWResourceBundle creditCardBundle = iwc.getIWMainApplication().getBundle("com.idega.block.creditcard").getResourceBundle(iwc.getCurrentLocale());
+			getParentPage().setOnLoad("alert('" + ccae.getLocalizedMessage(creditCardBundle) + "')");
+
 			ccae.printStackTrace();
 			stepPaymentInfo(iwc);
 		}
