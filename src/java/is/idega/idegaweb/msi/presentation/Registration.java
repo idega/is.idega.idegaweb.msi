@@ -31,7 +31,6 @@ import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
-import com.idega.data.IDOCreateException;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.facelets.ui.FaceletComponent;
@@ -1126,8 +1125,9 @@ public class Registration extends RaceBlock {
 	}
 
 	private void save(IWContext iwc, boolean doPayment) throws RemoteException {
+		String nameOnCard = null;
+		double amount = 0;
 		try {
-			String nameOnCard = null;
 			String cardNumber = null;
 			String hiddenCardNumber = "XXXX-XXXX-XXXX-XXXX";
 			String email = this.raceParticipantInfo.getEmail();
@@ -1135,7 +1135,6 @@ public class Registration extends RaceBlock {
 			String expiresYear = null;
 			String ccVerifyNumber = null;
 			String referenceNumber = null;
-			double amount = 0;
 			IWTimestamp paymentStamp = new IWTimestamp();
 
 			if (doPayment) {
@@ -1188,20 +1187,18 @@ public class Registration extends RaceBlock {
 			iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 
 			showReceipt(iwc, participant, amount, hiddenCardNumber, paymentStamp, doPayment);
-		} catch (IDOCreateException ice) {
-			getParentPage().setOnLoad(
-					"alert('" + localize(
-									"race_reg.save_failed",
-									"There was an error when trying to finish registration.  Please contact the msisport.is office.")
-					+ "')"
-			);
-			ice.printStackTrace();
-			stepPaymentInfo(iwc);
-		} catch (CreditCardAuthorizationException ccae) {
-			IWResourceBundle creditCardBundle = iwc.getIWMainApplication().getBundle("com.idega.block.creditcard").getResourceBundle(iwc.getCurrentLocale());
-			getParentPage().setOnLoad("alert('" + ccae.getLocalizedMessage(creditCardBundle) + "')");
+		} catch (Exception  e) {
+			String error = "Failed to execute payment for " + nameOnCard + ", amount: " + amount;
+			getLogger().log(Level.WARNING, error, e);
+			CoreUtil.sendExceptionNotification(error, e);
 
-			ccae.printStackTrace();
+			String message = localize("race_reg.save_failed", "There was an error when trying to finish registration. Please contact the msisport.is office.");
+			if (e instanceof CreditCardAuthorizationException) {
+				IWResourceBundle creditCardBundle = iwc.getIWMainApplication().getBundle("com.idega.block.creditcard").getResourceBundle(iwc.getCurrentLocale());
+				message = ((CreditCardAuthorizationException) e).getLocalizedMessage(creditCardBundle);
+			}
+
+			getParentPage().setOnLoad("alert('" + message + "')");
 			stepPaymentInfo(iwc);
 		}
 	}
