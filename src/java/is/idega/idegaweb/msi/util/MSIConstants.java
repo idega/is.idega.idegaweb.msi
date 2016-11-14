@@ -7,11 +7,11 @@ package is.idega.idegaweb.msi.util;
  * Description: <br>
  * Copyright: Idega Software 2004 <br>
  * Company: Idega Software <br>
- * 
+ *
  * @author birna
  */
 public class MSIConstants {
-	
+
 	public final static String IW_BUNDLE_IDENTIFIER = "is.idega.idegaweb.msi";
 	public final static String NUMBERS_GENAROTOR_LISTENER_EVENT = "number-generator-listener-event";
 	public static final String PROPERTY_MERCHANT_PK = "merchant_pk";
@@ -102,13 +102,11 @@ public class MSIConstants {
 	public static final int RYSDD_GROUPS = 2;
 	public static final int RYSDD_GROUPS_COMP = 3;
 
-	public static final String PROPERTY_SEND_EMAILS = "send_emails";
-	
 	public static final String RACE_TYPE_MX_AND_ENDURO = "MX og Enduro";
 	public static final String RACE_TYPE_SNOCROSS = "Snocross";
-	
+
 	public static final String VEHICLE_TYPES[] = {"GasGas", "Husaberg", "Kawasaki", "KTM", "Honda", "Suzuki", "TM", "Yamaha"};
-	
+
 	public static final String ICELANDIC_CHAMPIONSHIP = "race_category.icelandic_championship";
-	
+
 }

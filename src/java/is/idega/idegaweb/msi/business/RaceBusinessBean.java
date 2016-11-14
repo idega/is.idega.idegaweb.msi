@@ -3,6 +3,56 @@
  */
 package is.idega.idegaweb.msi.business;
 
+import java.rmi.RemoteException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.ejb.CreateException;
+import javax.ejb.FinderException;
+import javax.mail.MessagingException;
+import javax.transaction.UserTransaction;
+
+import com.idega.block.creditcard.business.CreditCardAuthorizationException;
+import com.idega.block.creditcard.business.CreditCardBusiness;
+import com.idega.block.creditcard.business.CreditCardClient;
+import com.idega.block.creditcard.data.CreditCardMerchant;
+import com.idega.block.creditcard.data.KortathjonustanMerchant;
+import com.idega.block.creditcard.data.KortathjonustanMerchantHome;
+import com.idega.block.trade.data.CreditCardInformation;
+import com.idega.block.trade.data.CreditCardInformationHome;
+import com.idega.business.IBOLookup;
+import com.idega.business.IBOLookupException;
+import com.idega.business.IBORuntimeException;
+import com.idega.business.IBOServiceBean;
+import com.idega.core.contact.data.Email;
+import com.idega.core.location.data.Country;
+import com.idega.core.location.data.CountryHome;
+import com.idega.core.messaging.MessagingSettings;
+import com.idega.data.IDOCreateException;
+import com.idega.data.IDOLookup;
+import com.idega.data.IDOLookupException;
+import com.idega.idegaweb.IWResourceBundle;
+import com.idega.presentation.ui.DropdownMenu;
+import com.idega.user.business.GroupBusiness;
+import com.idega.user.business.UserBusiness;
+import com.idega.user.data.Group;
+import com.idega.user.data.User;
+import com.idega.util.ArrayUtil;
+import com.idega.util.EmailValidator;
+import com.idega.util.IWTimestamp;
+import com.idega.util.SendMail;
+import com.idega.util.StringUtil;
+import com.idega.util.datastructures.map.MapUtil;
+
 import is.idega.idegaweb.msi.bean.TimeTransmitterRentProperties;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.EventHome;
@@ -26,58 +76,11 @@ import is.idega.idegaweb.msi.data.Season;
 import is.idega.idegaweb.msi.data.SeasonHome;
 import is.idega.idegaweb.msi.util.MSIConstants;
 
-import java.rmi.RemoteException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import javax.transaction.UserTransaction;
-
-import com.idega.block.creditcard.business.CreditCardAuthorizationException;
-import com.idega.block.creditcard.business.CreditCardBusiness;
-import com.idega.block.creditcard.business.CreditCardClient;
-import com.idega.block.creditcard.data.CreditCardMerchant;
-import com.idega.block.creditcard.data.KortathjonustanMerchant;
-import com.idega.block.creditcard.data.KortathjonustanMerchantHome;
-import com.idega.block.trade.data.CreditCardInformation;
-import com.idega.block.trade.data.CreditCardInformationHome;
-import com.idega.business.IBOLookup;
-import com.idega.business.IBOLookupException;
-import com.idega.business.IBORuntimeException;
-import com.idega.business.IBOServiceBean;
-import com.idega.core.contact.data.Email;
-import com.idega.core.location.data.Country;
-import com.idega.core.location.data.CountryHome;
-import com.idega.data.IDOCreateException;
-import com.idega.data.IDOLookup;
-import com.idega.data.IDOLookupException;
-import com.idega.idegaweb.IWBundle;
-import com.idega.idegaweb.IWResourceBundle;
-import com.idega.presentation.ui.DropdownMenu;
-import com.idega.user.business.GroupBusiness;
-import com.idega.user.business.UserBusiness;
-import com.idega.user.data.Group;
-import com.idega.user.data.User;
-import com.idega.util.ArrayUtil;
-import com.idega.util.IWTimestamp;
-import com.idega.util.StringUtil;
-import com.idega.util.datastructures.map.MapUtil;
-
 /**
  * Description: Business bean (service) for run... <br>
  * Copyright: Idega Software 2004 <br>
  * Company: Idega Software <br>
- * 
+ *
  * @author birna
  */
 public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
@@ -86,23 +89,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 	private final static String IW_BUNDLE_IDENTIFIER = MSIConstants.IW_BUNDLE_IDENTIFIER;
 
-	private static String DEFAULT_SMTP_MAILSERVER = "mail.agurait.com";
-
-	private static String PROP_SYSTEM_SMTP_MAILSERVER = "messagebox_smtp_mailserver";
-	private static String PROP_CC_ADDRESS = "messagebox_cc_address";
-
-	private static String PROP_MESSAGEBOX_FROM_ADDRESS = "messagebox_from_mailaddress";
-
-	private static String DEFAULT_MESSAGEBOX_FROM_ADDRESS = "messagebox@idega.com";
-	private static String DEFAULT_CC_ADDRESS = "hjordis@ibr.is";
-
 	public static final String PROPERTY_INFO_PK = "cc_info_pk";
 
 	private EventHome getEventHome() {
 		try {
 			return (EventHome) IDOLookup.getHome(Event.class);
 		} catch (IDOLookupException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+			Logger.getLogger(getClass().getName()).log(Level.WARNING,
 					"Failed to get " + EventHome.class + "cause of: ", e);
 		}
 
@@ -113,7 +106,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceHome) IDOLookup.getHome(Race.class);
 		} catch (IDOLookupException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+			Logger.getLogger(getClass().getName()).log(Level.WARNING,
 					"Failed to get " + RaceHome.class + "cause of: ", e);
 		}
 
@@ -124,7 +117,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (RaceEventHome) IDOLookup.getHome(RaceEvent.class);
 		} catch (IDOLookupException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+			Logger.getLogger(getClass().getName()).log(Level.WARNING,
 					"Failed to get " + RaceEventHome.class + "cause of: ", e);
 		}
 
@@ -135,7 +128,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		try {
 			return (SeasonHome) IDOLookup.getHome(Season.class);
 		} catch (IDOLookupException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + SeasonHome.class + " cause of: ", e);
 		}
 
@@ -148,23 +141,23 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	 */
 	@Override
 	public Race createRace(
-			String seasonID, 
-			String raceName, 
+			String seasonID,
+			String raceName,
 			String raceDate,
-			String lastRegistration, 
-			String lastRegistrationPrice1, 
-			String type, 
+			String lastRegistration,
+			String lastRegistrationPrice1,
+			String type,
 			String category) {
 		return getRaceHome().update(
-				null, 
-				Integer.valueOf(seasonID), 
-				raceName, 
-				raceName, 
-				new IWTimestamp(raceDate).getTimestamp(), 
-				new IWTimestamp(lastRegistration).getTimestamp(), 
-				new IWTimestamp(lastRegistrationPrice1).getTimestamp(), 
-				type, 
-				category, 
+				null,
+				Integer.valueOf(seasonID),
+				raceName,
+				raceName,
+				new IWTimestamp(raceDate).getTimestamp(),
+				new IWTimestamp(lastRegistration).getTimestamp(),
+				new IWTimestamp(lastRegistrationPrice1).getTimestamp(),
+				type,
+				category,
 				null, false);
 	}
 
@@ -174,20 +167,21 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	 */
 	@Override
 	public void updateRace(
-			Race race, 
-			String raceDate, 
-			String lastRegistration, 
-			String lastRegistrationPrice1, 
-			String type, 
+			Race race,
+			String raceDate,
+			String lastRegistration,
+			String lastRegistrationPrice1,
+			String type,
 			String category) {
-		getRaceHome().update((Integer) race.getPrimaryKey(), 
-				null, null, null, 
-				new IWTimestamp(raceDate).getTimestamp(), 
-				new IWTimestamp(lastRegistration).getTimestamp(), 
-				new IWTimestamp(lastRegistrationPrice1).getTimestamp(), 
+		getRaceHome().update((Integer) race.getPrimaryKey(),
+				null, null, null,
+				new IWTimestamp(raceDate).getTimestamp(),
+				new IWTimestamp(lastRegistration).getTimestamp(),
+				new IWTimestamp(lastRegistrationPrice1).getTimestamp(),
 				type, category, null, true);
 	}
 
+	@Override
 	public void updateRaceNumber(RaceNumber raceNumber, String userSSN) {
 		RaceUserSettings settings = null;
 		if (raceNumber.getRaceType().getRaceType().equals(MSIConstants.RACE_TYPE_SNOCROSS)) {
@@ -201,7 +195,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				settings = getRaceUserSettingsHome().findByMXRaceNumber(raceNumber);
 				settings.setRaceNumberMX(null);
 				settings.store();
-			} catch (Exception e) {}						
+			} catch (Exception e) {}
 		}
 
 		if (userSSN == null || "".equals(userSSN)) {
@@ -209,8 +203,8 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				try {
 					Email mail = getUserBiz().getUserMail(settings.getUser());
 					sendMessage(
-							mail.getEmailAddress(), 
-							this.getBundle().getLocalizedString("number_mail_rejection_subject", "Application rejected"), 
+							mail.getEmailAddress(),
+							this.getBundle().getLocalizedString("number_mail_rejection_subject", "Application rejected"),
 							this.getBundle().getLocalizedString("number_mail_rejection_body", "Your application for a race number has been rejected rejected"));
 				} catch (IBOLookupException e) {
 				} catch (RemoteException e) {}
@@ -265,11 +259,12 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.business.RaceBusiness#addEventsToRace(is.idega.idegaweb.msi.data.Race, java.lang.String[], java.util.Map, java.util.Map, java.util.Map, java.util.Map)
 	 */
+	@Override
 	public boolean addEventsToRace(
-			Race race, 
-			String events[], 
+			Race race,
+			String events[],
 			Map<String, String> price,
-			Map<String, String> price2, 
+			Map<String, String> price2,
 			Map<String, String> teamCount,
 			Map<String, TimeTransmitterRentProperties> timeTransmitterPrices) {
 		if (race != null && !ArrayUtil.isEmpty(events)) {
@@ -280,13 +275,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				}
 
 				if (getRaceEventHome().update(
-						null, 
-						(Integer) race.getPrimaryKey(), 
-						eventId, 
-						getEventPrice(price, eventId), 
-						getEventPrice(price2, eventId), 
-						getTeamCount(teamCount, eventId), 
-						properties != null ? Float.parseFloat(properties.getPrice()) : null, 
+						null,
+						(Integer) race.getPrimaryKey(),
+						eventId,
+						getEventPrice(price, eventId),
+						getEventPrice(price2, eventId),
+						getTeamCount(teamCount, eventId),
+						properties != null ? Float.parseFloat(properties.getPrice()) : null,
 						properties != null ? properties.isRentOn() : null, true) == null) {
 					return Boolean.FALSE;
 				}
@@ -300,18 +295,19 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.business.RaceBusiness#addEventsToRace(is.idega.idegaweb.msi.data.Race, java.lang.String[], java.util.Map, java.util.Map, java.util.Map)
 	 */
+	@Override
 	public boolean addEventsToRace(
-			Race race, 
-			String events[], 
+			Race race,
+			String events[],
 			Map<String, String> price,
-			Map<String, String> price2, 
+			Map<String, String> price2,
 			Map<String, String> teamCount) {
 		return addEventsToRace(race, events, price, price2, teamCount, null);
 	}
 
 	private float getEventPrice(Map<String, String> prices, String key) {
 		if (!MapUtil.isEmpty(prices) && prices.containsKey(key)) {
-			String value = (String) prices.get(key);
+			String value = prices.get(key);
 			if (!StringUtil.isEmpty(value)) {
 				try {
 					return Float.parseFloat(value);
@@ -326,7 +322,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 	private int getTeamCount(Map<String, String> teamCount, String key) {
 		if (teamCount.containsKey(key)) {
-			String value = (String) teamCount.get(key);
+			String value = teamCount.get(key);
 			if (!StringUtil.isEmpty(value)) {
 				try {
 					return Integer.parseInt(value);
@@ -339,6 +335,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return 0;
 	}
 
+	@Override
 	public Map<String, RaceEvent> getEventsForRace(Race race) throws FinderException,
 			IBOLookupException, RemoteException {
 		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
@@ -360,6 +357,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	@Override
 	public boolean isRegisteredInRun(int runID, int userID) {
 		try {
 			User user = getUserBiz().getUserHome().findByPrimaryKey(
@@ -374,14 +372,17 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return false;
 	}
 
+	@Override
 	public Collection<Event> getEvents() {
 		return getEventHome().findAll();
 	}
 
+	@Override
 	public Collection<RaceType> getRaceTypes() {
 		return getRaceTypeHome().findAll();
 	}
 
+	@Override
 	public Collection<RaceCategory> getRaceCategories() {
 		try {
 			return ((RaceCategoryHome) IDOLookup.getHome(RaceCategory.class)).findAll();
@@ -392,10 +393,12 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	@Override
 	public boolean createEvent(String name) {
 		return getEventHome().update(name, Boolean.TRUE, Boolean.TRUE) != null;
 	}
 
+	@Override
 	public boolean isRegisteredInRun(int runID, String personalID) {
 		try {
 			User user = getUserBiz().getUserHome().findByPersonalID(personalID);
@@ -410,12 +413,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 
+	@Override
 	public Participant saveParticipant(
 			RaceParticipantInfo raceParticipantInfo,
-			String email, 
-			String hiddenCardNumber, 
+			String email,
+			String hiddenCardNumber,
 			double amount,
-			IWTimestamp date, 
+			IWTimestamp date,
 			Locale locale) throws IDOCreateException {
 		Participant retParticipant = null;
 
@@ -518,6 +522,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return retParticipant;
 	}
 
+	@Override
 	public void finishPayment(String properties)
 			throws CreditCardAuthorizationException {
 		try {
@@ -533,6 +538,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
+	@Override
 	public String authorizePayment(String nameOnCard, String cardNumber,
 			String monthExpires, String yearExpires, String ccVerifyNumber,
 			double amount, String currency, String referenceNumber)
@@ -552,22 +558,24 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
+	@Override
 	public float getEventPriceForRunner(RaceParticipantInfo raceParticipantInfo){
 		IWTimestamp now = IWTimestamp.RightNow();
 		float racePrice = 0.0f;
-		
+
 		IWTimestamp lastReg = new IWTimestamp(raceParticipantInfo.getRace().getLastRegistrationDatePrice1());
 		lastReg.addDays(1);
-		
+
 		if (now.isLaterThan(lastReg)) {
 			racePrice += raceParticipantInfo.getEvent().getPrice2();
 		} else {
-			racePrice += raceParticipantInfo.getEvent().getPrice();			
+			racePrice += raceParticipantInfo.getEvent().getPrice();
 		}
-		
+
 		return racePrice;
 	}
 
+	@Override
 	public float getPriceForRunner(RaceParticipantInfo raceParticipantInfo) {
 		float racePrice = getEventPriceForRunner(raceParticipantInfo);
 		if(raceParticipantInfo.isRentTimeTransmitter()){
@@ -579,6 +587,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return racePrice;
 	}
 
+	@Override
 	public Collection getCreditCardImages() {
 		try {
 			return getCreditCardBusiness().getCreditCardTypeImages(
@@ -624,6 +633,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		}
 	}
 
+	@Override
 	public DropdownMenu getAvailableCardTypes(IWResourceBundle iwrb) {
 		try {
 			CreditCardMerchant merchant = getCreditCardMerchant();
@@ -640,6 +650,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return new DropdownMenu();
 	}
 
+	@Override
 	public Season getSeasonByGroupId(Integer groupId) {
 		try {
 			SeasonHome seasonHome = (SeasonHome) getIDOHome(Season.class);
@@ -651,46 +662,38 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return null;
 	}
 
+	@Override
 	public void sendMessage(String email, String subject, String body) {
-
-		boolean sendEmail = true;
-		String sSendEmail = this.getIWMainApplication().getBundle(
-				IW_BUNDLE_IDENTIFIER).getProperty(
-				MSIConstants.PROPERTY_SEND_EMAILS);
-		if ("no".equalsIgnoreCase(sSendEmail)) {
-			sendEmail = false;
+		boolean sendEmail = StringUtil.isEmpty(email) ? false : true;
+		if (!sendEmail) {
+			getLogger().warning("Receiver not provided for message: subject: " + subject + ", text: " + body);
+			return;
 		}
 
-		if (sendEmail) {
-			String mailServer = DEFAULT_SMTP_MAILSERVER;
-			String fromAddress = DEFAULT_MESSAGEBOX_FROM_ADDRESS;
-			String cc = DEFAULT_CC_ADDRESS;
-			try {
-				IWBundle iwb = getIWApplicationContext().getIWMainApplication()
-						.getBundle(IW_BUNDLE_IDENTIFIER);
-				mailServer = iwb.getProperty(PROP_SYSTEM_SMTP_MAILSERVER,
-						DEFAULT_SMTP_MAILSERVER);
-				fromAddress = iwb.getProperty(PROP_MESSAGEBOX_FROM_ADDRESS,
-						DEFAULT_MESSAGEBOX_FROM_ADDRESS);
-				cc = iwb.getProperty(PROP_CC_ADDRESS, DEFAULT_CC_ADDRESS);
-			} catch (Exception e) {
-				System.err
-						.println("MessageBusinessBean: Error getting mail property from bundle");
-				e.printStackTrace();
-			}
+		email = email.trim();
+		sendEmail = EmailValidator.getInstance().isValid(email);
+		if (!sendEmail) {
+			getLogger().warning("Invalid receiver '" + email + "' of message: subject: " + subject + ", text: " + body);
+			return;
+		}
 
-			cc = "";
+		String fromAddress = "msi@msisport.is";
+		String bcc = null;
+		try {
+			fromAddress = getApplicationProperty(MessagingSettings.PROP_MESSAGEBOX_FROM_ADDRESS, fromAddress);
+			bcc = getApplicationProperty(MessagingSettings.PROP_SYSTEM_BCC_RECEIVER, bcc);
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting mail property from bundle " + IW_BUNDLE_IDENTIFIER, e);
+		}
 
-			try {
-				com.idega.util.SendMail.send(fromAddress, email.trim(), cc, "",
-						mailServer, subject, body);
-			} catch (javax.mail.MessagingException me) {
-				System.err.println("Error sending mail to address: " + email
-						+ " Message was: " + me.getMessage());
-			}
+		try {
+			SendMail.send(fromAddress, email, null, bcc, null, subject, body);
+		} catch (MessagingException me) {
+			getLogger().log(Level.WARNING, "Error sending mail to address: " + email + ". Message was: " + me.getMessage(), me);
 		}
 	}
 
+	@Override
 	public Collection<Group> getRuns() {
 		String[] type = { MSIConstants.GROUP_TYPE_RACE };
 		try {
@@ -743,13 +746,14 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return Collections.emptyList();
 	}
 
-	
+
 	/**
 	 * Gets all countries. This method is for example used when displaying a
 	 * dropdown menu of all countries
-	 * 
+	 *
 	 * @return Colleciton of all countries
 	 */
+	@Override
 	public Collection<Country> getCountries() {
 		Collection<Country> countries = null;
 		try {
@@ -762,26 +766,28 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	private GroupBusiness getGroupBiz() throws IBOLookupException {
-		return (GroupBusiness) IBOLookup.getServiceInstance(
-				getIWApplicationContext(), 
+		return IBOLookup.getServiceInstance(
+				getIWApplicationContext(),
 				GroupBusiness.class);
 	}
 
 	private CreditCardBusiness getCreditCardBusiness() {
 		try {
-			return (CreditCardBusiness) IBOLookup.getServiceInstance(
+			return IBOLookup.getServiceInstance(
 					getIWApplicationContext(), CreditCardBusiness.class);
 		} catch (IBOLookupException ile) {
 			throw new IBORuntimeException(ile);
 		}
 	}
 
+	@Override
 	public UserBusiness getUserBiz() throws IBOLookupException {
-		return (UserBusiness) IBOLookup.getServiceInstance(
-				getIWApplicationContext(), 
+		return IBOLookup.getServiceInstance(
+				getIWApplicationContext(),
 				UserBusiness.class);
 	}
 
+	@Override
 	public Country getCountryByNationality(Object nationality) {
 		Country country = null;
 		try {
@@ -800,6 +806,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return country;
 	}
 
+	@Override
 	public Participant getParticipantByPrimaryKey(int participantID) {
 		try {
 			return getParticipantHome().findByPrimaryKey(participantID);
@@ -809,62 +816,68 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 		return null;
 	}
-	
+
+	@Override
 	public ParticipantHome getParticipantHome() {
 		try {
 			return (ParticipantHome) getIDOHome(Participant.class);
 		} catch (RemoteException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + ParticipantHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
-	
+
+	@Override
 	public RaceUserSettingsHome getRaceUserSettingsHome() {
 		try {
 			return (RaceUserSettingsHome) getIDOHome(RaceUserSettings.class);
 		} catch (RemoteException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceUserSettingsHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
 
+	@Override
 	public RaceTypeHome getRaceTypeHome() {
 		try {
 			return (RaceTypeHome) getIDOHome(RaceType.class);
 		} catch (RemoteException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
 
+	@Override
 	public RaceNumberHome getRaceNumberHome() {
 		try {
 			return (RaceNumberHome) getIDOHome(RaceNumber.class);
 		} catch (RemoteException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
-	
+
+	@Override
 	public RaceVehicleTypeHome getRaceVehicleTypeHome() {
 		try {
 			return (RaceVehicleTypeHome) getIDOHome(RaceVehicleType.class);
 		} catch (RemoteException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceVehicleTypeHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
 
+	@Override
 	public RaceUserSettings getRaceUserSettings(User user) {
 		if (user == null) {
 			return null;
@@ -877,10 +890,11 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			} catch (FinderException e) {
 			}
 		}
-		
+
 		return settings;
 	}
 
+	@Override
 	public List enableEvents(List ids) {
 		try{
 			ArrayList enabled = new ArrayList(ids.size());
@@ -902,6 +916,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return Collections.emptyList();
 	}
 
+	@Override
 	public List disableEvents(List ids) {
 		try{
 			ArrayList disabled = new ArrayList(ids.size());
@@ -923,6 +938,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 		return Collections.emptyList();
 	}
 
+	@Override
 	public Float getTransmitterPrices(String raceId, String eventId) {
 		if (StringUtil.isEmpty(raceId)) {
 			getLogger().warning("Event ID is not provided");
@@ -932,7 +948,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			getLogger().warning("Event ID is not provided");
 			return null;
 		}
-		
+
 		try {
 			Race race = ((is.idega.idegaweb.msi.data.RaceHome) IDOLookup.getHome(Race.class)).findByPrimaryKey(raceId);
 			Map raceEvents = getEventsForRace(race);
@@ -940,7 +956,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				getLogger().warning("No events found for race " + raceId);
 				return null;
 			}
-			
+
 			RaceEvent raceEvent = null;
 			for (Iterator it = raceEvents.values().iterator(); (it.hasNext() && raceEvent == null);) {
 				raceEvent = (RaceEvent) it.next();
@@ -956,14 +972,14 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				getLogger().info("Event (ID: " + eventId + ") does offer to rent transmitters for race " + raceId);
 				return null;
 			}
-			
+
 			Float price = Float.valueOf(raceEvent.getTimeTransmitterPrice());
 			getLogger().info("Got price " + price + " for event (ID: " + eventId + ") and race " + raceId);
 			return price;
 		} catch (Exception e) {
 			getLogger().log(Level.WARNING, "Error getting transmitter price for race: " + raceId + " and event: " + eventId, e);
 		}
-		
+
 		return null;
 	}
 }

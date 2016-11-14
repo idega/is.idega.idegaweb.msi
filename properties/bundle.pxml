@@ -7,11 +7,6 @@
       <value>is.idega.idegaweb.msi</value>
     </key>
     <key>
-      <name>messagebox_smtp_mailserver</name>
-      <type>java.lang.String</type>
-      <value>mail.simnet.is</value>
-    </key>
-    <key>
       <name>messagebox_from_mailaddress</name>
       <type>java.lang.String</type>
       <value>msi@msisport.is</value>
@@ -24,7 +19,7 @@
     <key>
       <name>send_emails</name>
       <type>java.lang.String</type>
-      <value>false</value>
+      <value>true</value>
     </key>
     <key>
       <name>merchant_pk</name>
@@ -46,7 +41,7 @@
     <key>
       <name>disable_payment_authorization_process</name>
       <type>java.lang.String</type>
-      <value>true</value>
+      <value>false</value>
     </key>
     <key>
       <name>iw_components</name>
