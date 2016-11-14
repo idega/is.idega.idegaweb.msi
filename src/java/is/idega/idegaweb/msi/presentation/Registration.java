@@ -9,19 +9,6 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -76,6 +63,19 @@ import com.idega.util.CoreUtil;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
+
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -1138,13 +1138,6 @@ public class Registration extends RaceBlock {
 			double amount = 0;
 			IWTimestamp paymentStamp = new IWTimestamp();
 
-			IWBundle iwb = getBundle(iwc);
-			boolean disablePaymentProcess = "true".equalsIgnoreCase(
-					iwb.getProperty("disable_payment_authorization_process","false"));
-			if (doPayment && disablePaymentProcess) {
-				doPayment = false;
-			}
-
 			if (doPayment) {
 				nameOnCard = iwc.getParameter(PARAMETER_NAME_ON_CARD);
 				cardNumber = "";
@@ -1188,8 +1181,7 @@ public class Registration extends RaceBlock {
 
 			iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 
-			showReceipt(iwc, participant, amount, hiddenCardNumber,
-					paymentStamp, doPayment);
+			showReceipt(iwc, participant, amount, hiddenCardNumber, paymentStamp, doPayment);
 		} catch (IDOCreateException ice) {
 			getParentPage()
 					.setAlertOnLoad(
