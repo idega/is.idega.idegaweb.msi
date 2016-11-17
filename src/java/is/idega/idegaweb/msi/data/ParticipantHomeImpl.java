@@ -1,8 +1,6 @@
 package is.idega.idegaweb.msi.data;
 
 
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +20,8 @@ import com.idega.user.data.Group;
 import com.idega.user.data.UserHome;
 import com.idega.util.StringUtil;
 
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 
 	private static final long serialVersionUID = -6270406277569221655L;
@@ -30,8 +30,8 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		try {
 			return (RaceUserSettingsHome) IDOLookup.getHome(RaceUserSettings.class);
 		} catch (IDOLookupException e) {
-			getLog().log(Level.WARNING, 
-					"Failed to get " + RaceUserSettingsHome.class + 
+			getLog().log(Level.WARNING,
+					"Failed to get " + RaceUserSettingsHome.class +
 					" cause of: ", e);
 		}
 
@@ -42,8 +42,8 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		try {
 			return (UserHome) IDOLookup.getHome(com.idega.user.data.User.class);
 		} catch (IDOLookupException e) {
-			getLog().log(Level.WARNING, 
-					"Failed to get " + UserHome.class + 
+			getLog().log(Level.WARNING,
+					"Failed to get " + UserHome.class +
 					" cause of: ", e);
 		}
 
@@ -54,20 +54,20 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		try {
 			return (SeasonHome) IDOLookup.getHome(Season.class);
 		} catch (IDOLookupException e) {
-			getLog().log(Level.WARNING, 
-					"Failed to get " + SeasonHome.class + 
+			getLog().log(Level.WARNING,
+					"Failed to get " + SeasonHome.class +
 					" cause of: ", e);
 		}
 
 		return null;
 	}
-	
+
 	private RaceEventHome getRaceEventHome() {
 		try {
 			return (RaceEventHome) IDOLookup.getHome(RaceEvent.class);
 		} catch (IDOLookupException e) {
-			getLog().log(Level.WARNING, 
-					"Failed to get " + RaceEventHome.class + 
+			getLog().log(Level.WARNING,
+					"Failed to get " + RaceEventHome.class +
 					" cause of: ", e);
 		}
 
@@ -78,14 +78,15 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		try {
 			return (RaceHome) IDOLookup.getHome(Race.class);
 		} catch (IDOLookupException e) {
-			getLog().log(Level.WARNING, 
-					"Failed to get " + RaceHome.class + 
+			getLog().log(Level.WARNING,
+					"Failed to get " + RaceHome.class +
 					" cause of: ", e);
 		}
 
 		return null;
 	}
 
+	@Override
 	public Class getEntityInterfaceClass() {
 		return Participant.class;
 	}
@@ -94,6 +95,7 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.data.ParticipantHome#create()
 	 */
+	@Override
 	public Participant create() {
 		try {
 			return (Participant) super.createIDO();
@@ -108,6 +110,7 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.data.ParticipantHome#findByPrimaryKey(java.lang.Object)
 	 */
+	@Override
 	public Participant findByPrimaryKey(Object pk) {
 		if (pk != null) {
 			try {
@@ -120,12 +123,14 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		return null;
 	}
 
+	@Override
 	public Collection<Participant> findAll() throws FinderException {
 		IDOEntity entity = this.idoCheckOutPooledEntity();
 		Collection<Integer> ids = ((ParticipantBMPBean) entity).ejbFindAll();
 		return this.getEntityCollectionForPrimaryKeys(ids);
 	}
 
+	@Override
 	public Collection<Participant> findAllByRace(Group race) throws FinderException {
 		IDOEntity entity = this.idoCheckOutPooledEntity();
 		Collection<Integer> ids = ((ParticipantBMPBean) entity).ejbFindAllByRace(race);
@@ -149,27 +154,40 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public Collection<Participant> findByDates(String from, String to) {
+		ParticipantBMPBean entity = (ParticipantBMPBean) idoCheckOutPooledEntity();
+		Collection<Integer> ids = entity.ejbFindByDates(from, to);
+		try {
+			return this.getEntityCollectionForPrimaryKeys(ids);
+		} catch (FinderException e) {
+			getLog().log(Level.WARNING, "Failed to get entities by primary keys: " + ids);
+		}
+
+		return Collections.emptyList();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.data.ParticipantHome#update(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.String, java.lang.String, is.idega.idegaweb.msi.data.RaceVehicleType, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Boolean, boolean)
 	 */
 	@Override
-	public Participant update(Integer id, 
-			Integer seasonId, 
+	public Participant update(Integer id,
+			Integer seasonId,
 			Integer raceId,
-			Integer raceEventId, 
-			Integer userId, 
+			Integer raceEventId,
+			Integer userId,
 			String firstPartner,
-			String secondPartner, 
-			RaceVehicleType vehicle, 
+			String secondPartner,
+			RaceVehicleType vehicle,
 			String chipNumber,
-			String raceNumber, 
-			String comment, 
+			String raceNumber,
+			String comment,
 			String sponsorName,
-			String paymentMethod, 
-			String payedAmount, 
+			String paymentMethod,
+			String payedAmount,
 			Date paymentDate,
-			Boolean isTimeTransmitterRented, 
+			Boolean isTimeTransmitterRented,
 			boolean publishEvent) {
 		Participant participant = findByPrimaryKey(id);
 		if (participant == null) {
@@ -269,7 +287,7 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 			if (raceType != null) {
 				raceTypeName = raceType.getRaceType();
 			}
-			
+
 			Season season = getSeasonHome().getSeason(race.getRaceDate());
 			if (season != null) {
 				seasonId = Integer.valueOf(season.getPrimaryKey().toString());

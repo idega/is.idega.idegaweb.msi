@@ -336,8 +336,7 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	@Override
-	public Map<String, RaceEvent> getEventsForRace(Race race) throws FinderException,
-			IBOLookupException, RemoteException {
+	public Map<String, RaceEvent> getEventsForRace(Race race) throws FinderException, IBOLookupException, RemoteException {
 		Group gRace = ConverterUtility.getInstance().convertRaceToGroup(race);
 
 		String[] types = { MSIConstants.GROUP_TYPE_RACE_EVENT };
@@ -420,7 +419,9 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			String hiddenCardNumber,
 			double amount,
 			IWTimestamp date,
-			Locale locale) throws IDOCreateException {
+			Locale locale,
+			String paymentAuthCode
+	) throws IDOCreateException {
 		Participant retParticipant = null;
 
 		UserTransaction trans = getSessionContext().getUserTransaction();
@@ -440,15 +441,13 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				participant.setRaceGroup(ConverterUtility.getInstance().convertRaceToGroup(race));
 				participant.setEventGroupID(((Integer)event.getPrimaryKey()).intValue());
 				if (raceParticipantInfo.getAmount() > 0) {
-					participant.setPayedAmount(String
-							.valueOf(raceParticipantInfo.getAmount()));
+					participant.setPayedAmount(String.valueOf(raceParticipantInfo.getAmount()));
 				}
 
 				participant.setChipNumber(raceParticipantInfo.getChipNumber());
 				participant.setRaceNumber(raceParticipantInfo.getRaceNumber());
 				participant.setRaceVehicle(raceParticipantInfo.getRaceVehicle());
 				participant.setSponsors(raceParticipantInfo.getSponsors());
-				//participant.setRentChip(raceParticipantInfo.getRentChip());
 				participant.setComment(raceParticipantInfo.getComment());
 				participant.setRentsTimeTransmitter(raceParticipantInfo.isRentTimeTransmitter());
 				if (participant.getRaceEvent().getTeamCount() > 1) {
@@ -458,30 +457,26 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 					}
 				}
 				participant.setCreatedDate(date.getTimestamp());
+				participant.setPaymentAuthCode(paymentAuthCode);
 				participant.store();
 				retParticipant = participant;
 
-				getUserBiz().updateUserHomePhone(user,
-						raceParticipantInfo.getHomePhone());
-				getUserBiz().updateUserMobilePhone(user,
-						raceParticipantInfo.getMobilePhone());
-				getUserBiz().updateUserMail(user,
-						raceParticipantInfo.getEmail());
+				getUserBiz().updateUserHomePhone(user, raceParticipantInfo.getHomePhone());
+				getUserBiz().updateUserMobilePhone(user, raceParticipantInfo.getMobilePhone());
+				getUserBiz().updateUserMail(user, raceParticipantInfo.getEmail());
 
 				if (raceParticipantInfo.getEmail() != null) {
-					IWResourceBundle iwrb = getIWApplicationContext()
-							.getIWMainApplication().getBundle(
-									MSIConstants.IW_BUNDLE_IDENTIFIER)
-							.getResourceBundle(locale);
+					IWResourceBundle iwrb = getIWApplicationContext().getIWMainApplication().getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(locale);
 					Object[] args = {
 							user.getName(),
-							race.getName(), event.getEventID() };
+							race.getName(),
+							event.getEventID()
+					};
 					String subject = iwrb.getLocalizedString(
 							"registration_received_subject_mail",
-							"Your registration has been received.");
-					String body = MessageFormat.format(iwrb.getLocalizedString(
-							"registration_received_body_mail",
-							"Your registration has been received."), args);
+							"Your registration has been received."
+					);
+					String body = MessageFormat.format(iwrb.getLocalizedString("registration_received_body_mail", "Your registration has been received."), args);
 					sendMessage(raceParticipantInfo.getEmail(), subject, body);
 				}
 			} catch (CreateException ce) {
@@ -491,21 +486,20 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			}
 
 			if (email != null) {
-				IWResourceBundle iwrb = getIWApplicationContext()
-						.getIWMainApplication().getBundle(
-								MSIConstants.IW_BUNDLE_IDENTIFIER)
-						.getResourceBundle(locale);
+				IWResourceBundle iwrb = getIWApplicationContext().getIWMainApplication().getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER).getResourceBundle(locale);
 				Object[] args = {
 						hiddenCardNumber,
 						String.valueOf(amount),
-						date.getLocaleDateAndTime(locale, IWTimestamp.SHORT,
-								IWTimestamp.SHORT) };
+						date.getLocaleDateAndTime(locale, IWTimestamp.SHORT, IWTimestamp.SHORT)
+				};
 				String subject = iwrb.getLocalizedString(
 						"receipt_subject_mail",
-						"Your receipt for registration on msisport.is");
-				String body = MessageFormat.format(iwrb.getLocalizedString(
-						"receipt_body_mail",
-						"Your registration has been received."), args);
+						"Your receipt for registration on msisport.is"
+				);
+				String body = MessageFormat.format(
+						iwrb.getLocalizedString("receipt_body_mail", "Your registration has been received."),
+						args
+				);
 				sendMessage(email, subject, body);
 			}
 			trans.commit();
@@ -523,38 +517,54 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 	}
 
 	@Override
-	public void finishPayment(String properties)
-			throws CreditCardAuthorizationException {
+	public CreditCardClient getCreditCardClient() throws Exception {
+		return getCreditCardBusiness().getCreditCardClient(getCreditCardMerchant());
+	}
+
+	@Override
+	public String finishPayment(String properties) throws CreditCardAuthorizationException {
 		try {
-			CreditCardClient client = getCreditCardBusiness()
-					.getCreditCardClient(getCreditCardMerchant());
-			client.finishTransaction(properties);
+			CreditCardClient client = getCreditCardBusiness().getCreditCardClient(getCreditCardMerchant());
+			String authCode = client.finishTransaction(properties);
+			return authCode;
 		} catch (CreditCardAuthorizationException ccae) {
+			getLogger().log(Level.WARNING, "Error finishing payment: " + properties, ccae);
 			throw ccae;
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new CreditCardAuthorizationException(
-					"Online payment failed. Unknown error.");
+			getLogger().log(Level.WARNING, "Error finishing payment: " + properties, e);
+			throw new CreditCardAuthorizationException("Online payment failed. Unknown error.");
 		}
 	}
 
 	@Override
-	public String authorizePayment(String nameOnCard, String cardNumber,
-			String monthExpires, String yearExpires, String ccVerifyNumber,
-			double amount, String currency, String referenceNumber)
-			throws CreditCardAuthorizationException {
+	public String authorizePayment(
+			String nameOnCard,
+			String cardNumber,
+			String monthExpires,
+			String yearExpires,
+			String ccVerifyNumber,
+			double amount,
+			String currency,
+			String referenceNumber
+		) throws CreditCardAuthorizationException {
 		try {
-			CreditCardClient client = getCreditCardBusiness()
-					.getCreditCardClient(getCreditCardMerchant());
-			return client.creditcardAuthorization(nameOnCard, cardNumber,
-					monthExpires, yearExpires, ccVerifyNumber, amount,
-					currency, referenceNumber);
+			CreditCardClient client = getCreditCardBusiness().getCreditCardClient(getCreditCardMerchant());
+			return client.creditcardAuthorization(
+					nameOnCard,
+					cardNumber,
+					monthExpires,
+					yearExpires,
+					ccVerifyNumber,
+					amount,
+					currency,
+					referenceNumber
+			);
 		} catch (CreditCardAuthorizationException ccae) {
+			getLogger().log(Level.WARNING, "Error authorizing payment", ccae);
 			throw ccae;
 		} catch (Exception e) {
-			e.printStackTrace(System.err);
-			throw new CreditCardAuthorizationException(
-					"Online payment failed. Unknown error.");
+			getLogger().log(Level.WARNING, "Error authorizing payment", e);
+			throw new CreditCardAuthorizationException("Online payment failed. Unknown error.");
 		}
 	}
 
@@ -951,15 +961,15 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 		try {
 			Race race = ((is.idega.idegaweb.msi.data.RaceHome) IDOLookup.getHome(Race.class)).findByPrimaryKey(raceId);
-			Map raceEvents = getEventsForRace(race);
+			Map<String, RaceEvent> raceEvents = getEventsForRace(race);
 			if (raceEvents == null || raceEvents.isEmpty()) {
 				getLogger().warning("No events found for race " + raceId);
 				return null;
 			}
 
 			RaceEvent raceEvent = null;
-			for (Iterator it = raceEvents.values().iterator(); (it.hasNext() && raceEvent == null);) {
-				raceEvent = (RaceEvent) it.next();
+			for (Iterator<RaceEvent> it = raceEvents.values().iterator(); (it.hasNext() && raceEvent == null);) {
+				raceEvent = it.next();
 				if (!eventId.equals(raceEvent.getId())) {
 					raceEvent = null;
 				}

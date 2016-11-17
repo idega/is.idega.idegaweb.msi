@@ -1,6 +1,27 @@
 package is.idega.idegaweb.msi.business;
 
 
+import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.ejb.FinderException;
+
+import com.idega.block.creditcard.business.CreditCardAuthorizationException;
+import com.idega.block.creditcard.business.CreditCardClient;
+import com.idega.business.IBOLookupException;
+import com.idega.business.IBOService;
+import com.idega.core.location.data.Country;
+import com.idega.data.IDOCreateException;
+import com.idega.idegaweb.IWResourceBundle;
+import com.idega.presentation.ui.DropdownMenu;
+import com.idega.user.business.UserBusiness;
+import com.idega.user.data.Group;
+import com.idega.user.data.User;
+import com.idega.util.IWTimestamp;
+
 import is.idega.idegaweb.msi.bean.TimeTransmitterRentProperties;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.Participant;
@@ -17,43 +38,23 @@ import is.idega.idegaweb.msi.data.RaceUserSettingsHome;
 import is.idega.idegaweb.msi.data.RaceVehicleTypeHome;
 import is.idega.idegaweb.msi.data.Season;
 
-import java.rmi.RemoteException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.ejb.FinderException;
-
-import com.idega.block.creditcard.business.CreditCardAuthorizationException;
-import com.idega.business.IBOLookupException;
-import com.idega.business.IBOService;
-import com.idega.core.location.data.Country;
-import com.idega.data.IDOCreateException;
-import com.idega.idegaweb.IWResourceBundle;
-import com.idega.presentation.ui.DropdownMenu;
-import com.idega.user.business.UserBusiness;
-import com.idega.user.data.Group;
-import com.idega.user.data.User;
-import com.idega.util.IWTimestamp;
-
 public interface RaceBusiness extends IBOService {
 
 	Race createRace(
-			String seasonID, 
-			String raceName, 
+			String seasonID,
+			String raceName,
 			String raceDate,
-			String lastRegistration, 
+			String lastRegistration,
 			String lastRegistrationPrice1,
-			String type, 
+			String type,
 			String category);
 
 	void updateRace(
-			Race race, 
-			String raceDate, 
+			Race race,
+			String raceDate,
 			String lastRegistration,
-			String lastRegistrationPrice1, 
-			String type, 
+			String lastRegistrationPrice1,
+			String type,
 			String category);
 
 	/**
@@ -63,17 +64,17 @@ public interface RaceBusiness extends IBOService {
 			throws RemoteException;
 
 	boolean addEventsToRace(
-			Race race, 
-			String[] events, 
+			Race race,
+			String[] events,
 			Map<String, String> price,
-			Map<String, String> price2, 
+			Map<String, String> price2,
 			Map<String, String> teamCount);
 
 	boolean addEventsToRace(
-			Race race, 
-			String events[], 
+			Race race,
+			String events[],
 			Map<String, String> price,
-			Map<String, String> price2, 
+			Map<String, String> price2,
 			Map<String, String> teamCount,
 			Map<String, TimeTransmitterRentProperties> timeTransmitterPrices);
 	/**
@@ -105,16 +106,20 @@ public interface RaceBusiness extends IBOService {
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#saveParticipant
 	 */
-	public Participant saveParticipant(RaceParticipantInfo raceParticipantInfo,
-			String email, String hiddenCardNumber, double amount,
-			IWTimestamp date, Locale locale) throws IDOCreateException,
-			RemoteException;
+	public Participant saveParticipant(
+			RaceParticipantInfo raceParticipantInfo,
+			String email,
+			String hiddenCardNumber,
+			double amount,
+			IWTimestamp date,
+			Locale locale,
+			String paymentAuthCode
+	) throws IDOCreateException, RemoteException;
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#finishPayment
 	 */
-	public void finishPayment(String properties)
-			throws CreditCardAuthorizationException, RemoteException;
+	public String finishPayment(String properties) throws CreditCardAuthorizationException, RemoteException;
 
 	/**
 	 * @see is.idega.idegaweb.msi.business.RaceBusinessBean#authorizePayment
@@ -192,11 +197,13 @@ public interface RaceBusiness extends IBOService {
 	 */
 	public RaceUserSettings getRaceUserSettings(User user)
 			throws RemoteException;
-	
+
 	public List enableEvents(List ids);
-	
+
 	public List disableEvents(List ids);
-	
+
 	public Float getTransmitterPrices(String raceId, String eventId);
-	
+
+	public CreditCardClient getCreditCardClient() throws Exception;
+
 }

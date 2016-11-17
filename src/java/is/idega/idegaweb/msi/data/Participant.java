@@ -8,7 +8,7 @@ import com.idega.user.data.Group;
 import com.idega.user.data.User;
 
 public interface Participant extends IDOEntity {
-	
+
 	public void setRentsTimeTransmitter(boolean rents);
 	public boolean isRentsTimeTransmitter();
 	/**
@@ -192,9 +192,15 @@ public interface Participant extends IDOEntity {
 	public void setCreatedDate(Timestamp created);
 
 	/**
-	 * 
+	 *
 	 * @param publishEvent <code>true</code> when update event should be published
 	 */
 	void setNotification(boolean publishEvent);
+
 	String getVehicle();
+
+	public String getPaymentAuthCode();
+
+	public void setPaymentAuthCode(String paymentAuthCode);
+
 }

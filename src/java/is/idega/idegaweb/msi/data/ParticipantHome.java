@@ -1,8 +1,6 @@
 package is.idega.idegaweb.msi.data;
 
 
-import is.idega.idegaweb.msi.events.ParticipantUpdatedAction;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -14,6 +12,8 @@ import com.idega.data.IDOHome;
 import com.idega.user.data.Group;
 import com.idega.user.data.bean.User;
 
+import is.idega.idegaweb.msi.events.ParticipantUpdatedAction;
+
 public interface ParticipantHome extends IDOHome {
 	public Participant create() throws CreateException;
 
@@ -24,7 +24,7 @@ public interface ParticipantHome extends IDOHome {
 	public Collection<Participant> findAllByRace(Group race) throws FinderException;
 
 	/**
-	 * 
+	 *
 	 * @param id is {@link Participant#getPrimaryKey()}
 	 * @param seasonId is {@link Season#getPrimaryKey()}
 	 * @param raceId is {@link Race#getPrimaryKey()}
@@ -41,21 +41,21 @@ public interface ParticipantHome extends IDOHome {
 	 * @param comment
 	 * @param paymentDate
 	 * @param isTimeTransmitterRented
-	 * @param publishEvent <code>true</code> if new {@link ParticipantUpdatedAction} 
+	 * @param publishEvent <code>true</code> if new {@link ParticipantUpdatedAction}
 	 * should be thrown
 	 * @return updated/created entity or <code>null</code> on failure;
 	 */
 	Participant update(
-			Integer id, 
-			Integer seasonId, 
-			Integer raceId, 
-			Integer raceEventId, 
+			Integer id,
+			Integer seasonId,
+			Integer raceId,
+			Integer raceEventId,
 			Integer userId,
 			String firstPartner,
 			String secondPartner,
 			RaceVehicleType vehicle,
-			String chipNumber, 
-			String raceNumber, 
+			String chipNumber,
+			String raceNumber,
 			String comment,
 			String sponsorName,
 			String paymentMethod,
@@ -65,20 +65,22 @@ public interface ParticipantHome extends IDOHome {
 			boolean publishEvent);
 
 	/**
-	 * 
+	 *
 	 * @param raceId is {@link Race#getPrimaryKey()}
 	 * @param userId is {@link User#getId()}, not <code>null</code>;
-	 * @param publishEvent <code>true</code> if new {@link ParticipantUpdatedAction} 
+	 * @param publishEvent <code>true</code> if new {@link ParticipantUpdatedAction}
 	 * should be thrown
 	 * @return updated/created entity or <code>null</code> on failure;
 	 */
 	Collection<Participant> update(Integer raceId, Integer userId, boolean publishEvent);
 
 	/**
-	 * 
+	 *
 	 * @param raceId is {@link Race#getPrimaryKey()}
 	 * @param userId is {@link User#getId()}, not <code>null</code>;
 	 * @return entities or {@link Collections#emptyList()} on failure;
 	 */
 	Collection<Participant> findAll(Integer raceId, Integer userId);
+
+	Collection<Participant> findByDates(String from, String to);
 }

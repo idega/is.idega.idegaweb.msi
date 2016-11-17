@@ -42,6 +42,7 @@ import com.idega.idegaweb.UnavailableIWContext;
 import com.idega.presentation.IWContext;
 import com.idega.presentation.Image;
 import com.idega.presentation.Layer;
+import com.idega.presentation.Page;
 import com.idega.presentation.Table;
 import com.idega.presentation.text.Link;
 import com.idega.presentation.text.Text;
@@ -55,10 +56,12 @@ import com.idega.presentation.ui.TextInput;
 import com.idega.servlet.filter.IWAuthenticator;
 import com.idega.user.business.NoEmailFoundException;
 import com.idega.user.business.NoPhoneFoundException;
+import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
+import com.idega.util.EmailValidator;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
@@ -89,11 +92,11 @@ public class Registration extends RaceBlock {
 	public static final String SESSION_ATTRIBUTE_CARD_NUMBER = "sa_card_number";
 	public static final String SESSION_ATTRIBUTE_PAYMENT_DATE = "sa_payment_date";
 
-	private static final String PARAMETER_ACTION = "prm_action";
-	private static final String PARAMETER_FROM_ACTION = "prm_from_action";
+	public static final String	PARAMETER_ACTION = "prm_action",
+								PARAMETER_FROM_ACTION = "prm_from_action";
 
 	public static final String PARAMETER_RACE = "prm_race";
-	private static final String PARAMETER_EVENT = "prm_event";
+	public static final String PARAMETER_EVENT = "prm_event";
 	private static final String PARAMETER_SEASON = "prm_season";
 
 	private static final String PARAMETER_EMAIL = "prm_email";
@@ -106,20 +109,20 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_EXPIRES_MONTH = "prm_expires_month";
 	private static final String PARAMETER_EXPIRES_YEAR = "prm_expires_year";
 	private static final String PARAMETER_CCV = "prm_ccv";
-	private static final String PARAMETER_AMOUNT = "prm_amount";
+	public static final String PARAMETER_AMOUNT = "prm_amount";
 	private static final String PARAMETER_CARD_HOLDER_EMAIL = "prm_card_holder_email";
-	private static final String PARAMETER_REFERENCE_NUMBER = "prm_reference_number";
+	public static final String PARAMETER_REFERENCE_NUMBER = "prm_reference_number";
 
-	private static final String PARAMETER_COMMENT = "prm_comment";
-	private static final String PARAMETER_PARTNER1 = "prm_partner1";
-	private static final String PARAMETER_PARTNER2 = "prm_partner2";
+	public static final String PARAMETER_COMMENT = "prm_comment";
+	public static final String PARAMETER_PARTNER1 = "prm_partner1";
+	public static final String PARAMETER_PARTNER2 = "prm_partner2";
 	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
-	private static final int ACTION_STEP_PERSONALDETAILS = 1;
-	private static final int ACTION_STEP_DISCLAIMER = 2;
-	private static final int ACTION_STEP_PAYMENT_INFO = 3;
-	private static final int ACTION_SAVE = 4;
-	private static final int ACTION_CANCEL = 5;
+	public static final int ACTION_STEP_PERSONALDETAILS = 1,
+							ACTION_STEP_DISCLAIMER = 2,
+							ACTION_STEP_PAYMENT_INFO = 3,
+							ACTION_SAVE = 4,
+							ACTION_CANCEL = 5;
 
 	private RaceParticipantInfo raceParticipantInfo;
 
@@ -189,7 +192,7 @@ public class Registration extends RaceBlock {
 		return null;
 	}
 
-	private String getApplicationProperty(String key, String value) {
+	protected String getApplicationProperty(String key, String value) {
 		IWMainApplicationSettings settings = getSettings();
 		if (settings != null) {
 			return settings.getProperty(key, value);
@@ -254,7 +257,7 @@ public class Registration extends RaceBlock {
 			stepPaymentInfo(iwc);
 			break;
 		case ACTION_SAVE:
-			save(iwc, true);
+			save(iwc, null, this.raceParticipantInfo, true);
 			break;
 		case ACTION_CANCEL:
 			cancel(iwc);
@@ -810,7 +813,7 @@ public class Registration extends RaceBlock {
 		add(form);
 	}
 
-	private TextInput getCCVInput() {
+	protected TextInput getCCVInput() {
 		TextInput ccv = (TextInput) getStyledInterface(new TextInput(
 				PARAMETER_CCV));
 		ccv.setLength(3);
@@ -826,7 +829,7 @@ public class Registration extends RaceBlock {
 		return ccv;
 	}
 
-	private DropdownMenu getExpirationMonthMenu() {
+	protected DropdownMenu getExpirationMonthMenu() {
 		DropdownMenu month = (DropdownMenu) getStyledInterface(new DropdownMenu(
 				PARAMETER_EXPIRES_MONTH));
 		for (int a = 1; a <= 12; a++) {
@@ -838,7 +841,7 @@ public class Registration extends RaceBlock {
 		return month;
 	}
 
-	private DropdownMenu getExpirationYearMenu() {
+	protected DropdownMenu getExpirationYearMenu() {
 		IWTimestamp stamp = new IWTimestamp();
 
 		DropdownMenu year = (DropdownMenu) getStyledInterface(new DropdownMenu(
@@ -852,7 +855,7 @@ public class Registration extends RaceBlock {
 		return year;
 	}
 
-	private TextInput getCardHolderNameInput() {
+	protected TextInput getCardHolderNameInput() {
 		TextInput nameField = (TextInput) getStyledInterface(new TextInput(
 				PARAMETER_NAME_ON_CARD));
 		nameField.setAutoComplete(false);
@@ -863,7 +866,7 @@ public class Registration extends RaceBlock {
 		return nameField;
 	}
 
-	private TextInput getCardHolderEmailInput() {
+	protected TextInput getCardHolderEmailInput() {
 		TextInput emailField = (TextInput) getStyledInterface(new TextInput(
 				PARAMETER_CARD_HOLDER_EMAIL));
 		emailField.setAsEmail(localize("race_reg.email_err_msg",
@@ -872,7 +875,7 @@ public class Registration extends RaceBlock {
 		return emailField;
 	}
 
-	private Layer getCreditCardNumberInput() {
+	protected Layer getCreditCardNumberInput() {
 		Layer layer = new Layer(Layer.DIV);
 
 		TextInput lastNumber = null;
@@ -914,7 +917,7 @@ public class Registration extends RaceBlock {
 		return layer;
 	}
 
-	private void stepPaymentInfo(IWContext iwc) throws RemoteException {
+	protected void stepPaymentInfo(IWContext iwc) throws Exception {
 		Form form = new Form();
 		form.addParameter(PARAMETER_ACTION, "-1");
 
@@ -997,7 +1000,7 @@ public class Registration extends RaceBlock {
 				this.raceParticipantInfo.getUser().getPersonalID().replaceAll("-", "")));
 
 		if (totalAmount == 0) {
-			save(iwc, false);
+			save(iwc, null, this.raceParticipantInfo, false);
 			return;
 		}
 
@@ -1120,17 +1123,17 @@ public class Registration extends RaceBlock {
 		add(form);
 	}
 
-	private String formatAmount(float amount) {
+	protected String formatAmount(float amount) {
 		return NumberFormat.getInstance().format(amount) + " ISK";
 	}
 
-	private void save(IWContext iwc, boolean doPayment) throws RemoteException {
+	protected void save(IWContext iwc, Participant participant, RaceParticipantInfo raceParticipantInfo, boolean doPayment) throws RemoteException {
 		String nameOnCard = null;
 		double amount = 0;
 		try {
 			String cardNumber = null;
 			String hiddenCardNumber = "XXXX-XXXX-XXXX-XXXX";
-			String email = this.raceParticipantInfo.getEmail();
+			String email = raceParticipantInfo.getEmail();
 			String expiresMonth = null;
 			String expiresYear = null;
 			String ccVerifyNumber = null;
@@ -1141,17 +1144,15 @@ public class Registration extends RaceBlock {
 				nameOnCard = iwc.getParameter(PARAMETER_NAME_ON_CARD);
 				cardNumber = "";
 				for (int i = 1; i <= 4; i++) {
-					cardNumber += iwc.getParameter(PARAMETER_CARD_NUMBER + "_"
-							+ i);
+					cardNumber += iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + i);
 				}
-				hiddenCardNumber = "XXXX-XXXX-XXXX-"
-						+ iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + 4);
+				hiddenCardNumber = "XXXX-XXXX-XXXX-" + iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + 4);
 				expiresMonth = iwc.getParameter(PARAMETER_EXPIRES_MONTH);
 				expiresYear = iwc.getParameter(PARAMETER_EXPIRES_YEAR);
 				ccVerifyNumber = iwc.getParameter(PARAMETER_CCV);
-				email = iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
-				amount = getRaceBusiness(iwc).getPriceForRunner(this.raceParticipantInfo);
-				amount = amount + this.raceParticipantInfo.getSeasonPrice();
+				email = EmailValidator.getInstance().isValid(email) ? email : iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
+				amount = getRaceBusiness(iwc).getPriceForRunner(raceParticipantInfo);
+				amount = amount + raceParticipantInfo.getSeasonPrice();
 				referenceNumber = iwc.getParameter(PARAMETER_REFERENCE_NUMBER);
 			}
 
@@ -1169,25 +1170,38 @@ public class Registration extends RaceBlock {
 				);
 			}
 
-			Participant participant = getRaceBusiness(iwc).saveParticipant(
-					this.raceParticipantInfo,
-					email,
-					hiddenCardNumber,
-					amount,
-					paymentStamp,
-					iwc.getCurrentLocale()
-			);
+			if (participant == null) {
+				participant = getRaceBusiness(iwc).saveParticipant(
+						raceParticipantInfo,
+						email,
+						hiddenCardNumber,
+						amount,
+						paymentStamp,
+						iwc.getCurrentLocale(),
+						null
+				);
+			}
 			if (doPayment) {
-				getRaceBusiness(iwc).finishPayment(properties);
+				String authCode = getRaceBusiness(iwc).finishPayment(properties);
 				if (!isMembershipFeePayed()) {
 					setMembershipFeePayed(Boolean.TRUE);
+				}
+				if (participant != null) {
+					participant.setPaymentAuthCode(authCode);
+					participant.store();
 				}
 			}
 
 			iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 
+			if (participant != null) {
+				User user = participant.getUser();
+				UserBusiness userBusiness = getUserBusiness(iwc);
+				userBusiness.updateUserMail(user, email);
+			}
+
 			showReceipt(iwc, participant, amount, hiddenCardNumber, paymentStamp, doPayment);
-		} catch (Exception  e) {
+		} catch (Exception e) {
 			String error = "Failed to execute payment for " + nameOnCard + ", amount: " + amount;
 			getLogger().log(Level.WARNING, error, e);
 			CoreUtil.sendExceptionNotification(error, e);
@@ -1198,8 +1212,17 @@ public class Registration extends RaceBlock {
 				message = ((CreditCardAuthorizationException) e).getLocalizedMessage(creditCardBundle);
 			}
 
-			getParentPage().setOnLoad("alert('" + message + "')");
-			stepPaymentInfo(iwc);
+			Page page = getParentPage();
+			if (page != null) {
+				page.setOnLoad("alert('" + message + "')");
+			}
+			try {
+				stepPaymentInfo(iwc);
+			} catch (Exception ee) {
+				getLogger().log(Level.WARNING, "Error showing payment info", ee);
+			}
+
+			CoreUtil.clearAllCaches();
 		}
 	}
 
@@ -1286,6 +1309,7 @@ public class Registration extends RaceBlock {
 		table.setHeight(row++, 16);
 
 		Link print = new Link(localize("print", "Print"));
+		print.setStyleClass("msi_InterfaceButton");
 		print.setPublicWindowToOpen(RegistrationReceivedPrintable.class);
 		table.add(print, 1, row);
 
@@ -1313,7 +1337,7 @@ public class Registration extends RaceBlock {
 		return null;
 	}
 
-	private String getRaceTypeKey(RaceParticipantInfo info) {
+	protected String getRaceTypeKey(RaceParticipantInfo info) {
 		RaceType raceType = getRaceType(info);
 		if (raceType != null) {
 			return raceType.getRaceType();
@@ -1322,8 +1346,7 @@ public class Registration extends RaceBlock {
 		return null;
 	}
 
-	private int parseAction(IWContext iwc) throws RemoteException,
-			NumberFormatException, FinderException {
+	private int parseAction(IWContext iwc) throws Exception {
 		int action = ACTION_STEP_PERSONALDETAILS;
 
 		if (iwc.isParameterSet(PARAMETER_ACTION)) {
