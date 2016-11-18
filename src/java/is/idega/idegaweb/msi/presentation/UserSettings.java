@@ -87,14 +87,13 @@ public class UserSettings extends RaceBlock {
 	private final static String PARAMETER_SPONSOR = "us_sponsor";
 	private final static String PARAMETER_BODY_NUMBER = "us_body_number";
 
-
 	private final static String KEY_PREFIX = "msi.";
 	private final static String KEY_NAME = KEY_PREFIX + "name";
 	private final static String KEY_SSN = KEY_PREFIX + "ssn";
 	private final static String KEY_ADDRESS = KEY_PREFIX + "address";
 	private final static String KEY_PO = KEY_PREFIX + "po";
 	private final static String KEY_CLUB = KEY_PREFIX + "club";
-	
+
 	private final static String KEY_EMAIL = KEY_PREFIX + "email";
 	private final static String KEY_UPDATE = KEY_PREFIX + "update";
 	private final static String KEY_PHONE_HOME = KEY_PREFIX + "phone_home";
@@ -102,10 +101,13 @@ public class UserSettings extends RaceBlock {
 	private final static String KEY_PHONE_WORK = KEY_PREFIX + "phone_work";
 
 	private final static String KEY_HOME_PAGE = KEY_PREFIX + "home_page";
-	private final static String KEY_RACE_NUMBER_MX = KEY_PREFIX + "race_number_mx";
-	private final static String KEY_RACE_NUMBER_SNOCROSS = KEY_PREFIX + "race_number_snocross";
+	private final static String KEY_RACE_NUMBER_MX = KEY_PREFIX
+			+ "race_number_mx";
+	private final static String KEY_RACE_NUMBER_SNOCROSS = KEY_PREFIX
+			+ "race_number_snocross";
 	private final static String KEY_VEHICLE_TYPE = KEY_PREFIX + "vehicle_type";
-	private final static String KEY_VEHICLE_SUBTYPE = KEY_PREFIX + "vehicle_subtype";
+	private final static String KEY_VEHICLE_SUBTYPE = KEY_PREFIX
+			+ "vehicle_subtype";
 	private final static String KEY_ENGINE = KEY_PREFIX + "engine";
 	private final static String KEY_ENGINE_CC = KEY_PREFIX + "cc";
 	private final static String KEY_MODEL = KEY_PREFIX + "model";
@@ -115,7 +117,8 @@ public class UserSettings extends RaceBlock {
 	private final static String KEY_SPONSOR = KEY_PREFIX + "sponsor";
 	private final static String KEY_BODY_NUMBER = KEY_PREFIX + "body_number";
 
-	private final static String KEY_PREFERENCES_SAVED = KEY_PREFIX + "preferenced_saved";
+	private final static String KEY_PREFERENCES_SAVED = KEY_PREFIX
+			+ "preferenced_saved";
 
 	private final static String DEFAULT_NAME = "Name";
 	private final static String DEFAULT_SSN = "SSN";
@@ -143,7 +146,7 @@ public class UserSettings extends RaceBlock {
 	private final static String DEFAULT_BODY_NUMBER = "Body number";
 
 	private final static String DEFAULT_PREFERENCES_SAVED = "Your preferences has been saved.";
-	
+
 	private RaceParticipantInfo info = null;
 	private boolean isSelectedUser = false;
 
@@ -154,11 +157,11 @@ public class UserSettings extends RaceBlock {
 	private ModificationPeriodTypeDAO modificationPeriodTypeDAO;
 
 	public IWBundle getBundle(FacesContext ctx, String bundleIdentifier) {
-    	IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
+		IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
 		return iwma.getBundle(bundleIdentifier);
-    }
+	}
 
-	protected static IWMainApplication getIWMainApplication(FacesContext context){
+	protected static IWMainApplication getIWMainApplication(FacesContext context) {
 		return IWMainApplication.getIWMainApplication(context);
 	}
 
@@ -182,7 +185,7 @@ public class UserSettings extends RaceBlock {
 		try {
 			return (RaceNumberHome) IDOLookup.getHome(RaceNumber.class);
 		} catch (IDOLookupException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceNumberHome.class + " cause of: ", e);
 		}
 
@@ -193,44 +196,46 @@ public class UserSettings extends RaceBlock {
 		try {
 			return (RaceTypeHome) IDOLookup.getHome(RaceType.class);
 		} catch (IDOLookupException e) {
-			getLogger().log(Level.WARNING, 
+			getLogger().log(Level.WARNING,
 					"Failed to get " + RaceTypeHome.class + " cause of: ", e);
 		}
 
 		return null;
 	}
 
-	public UserSettings() {}
+	public UserSettings() {
+	}
 
 	@Override
 	public void encodeBegin(FacesContext fc) throws IOException {
 		super.encodeBegin(fc);
-		
+
 		PresentationUtil.addJavaScriptSourceLineToHeader(
-				IWContext.getIWContext(fc), 
-				getBundle().getVirtualPathWithFileNameString("javascript/user-settings-helper.js"));
+				IWContext.getIWContext(fc),
+				getBundle().getVirtualPathWithFileNameString(
+						"javascript/user-settings-helper.js"));
 	}
 
+	@Override
 	public void main(IWContext iwc) {
 		if (!iwc.isLoggedOn()) {
 			return;
 		}
-		
+
 		info = getRaceParticipantInfo(iwc);
 		info.setUser(getUser(iwc));
-		
+
 		try {
 			int action = parseAction(iwc);
 			switch (action) {
-				case ACTION_VIEW_FORM:
-					viewForm(iwc);
-					break;
-				case ACTION_FORM_SUBMIT:
-					updatePreferences(iwc);
-					break;
+			case ACTION_VIEW_FORM:
+				viewForm(iwc);
+				break;
+			case ACTION_FORM_SUBMIT:
+				updatePreferences(iwc);
+				break;
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			super.add(new ExceptionWrapper(e, this));
 		}
 	}
@@ -247,15 +252,16 @@ public class UserSettings extends RaceBlock {
 	}
 
 	private RaceParticipantInfo getRaceParticipantInfo(IWContext iwc) {
-		RaceParticipantInfo tmp = (RaceParticipantInfo) iwc.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
+		RaceParticipantInfo tmp = (RaceParticipantInfo) iwc
+				.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 		if (tmp == null) {
 			tmp = new RaceParticipantInfo();
 			iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, tmp);
 		}
-		
+
 		return tmp;
 	}
-	
+
 	private void viewForm(IWContext iwc) throws java.rmi.RemoteException {
 		Form form = new Form();
 		form.setMultiPart();
@@ -267,7 +273,9 @@ public class UserSettings extends RaceBlock {
 		header.setStyleClass("header");
 		form.add(header);
 
-		Heading1 heading = new Heading1(this.getResourceBundle(iwc).getLocalizedString("citizen_preferences", "Citizen preferences"));
+		Heading1 heading = new Heading1(this.getResourceBundle(iwc)
+				.getLocalizedString("citizen_preferences",
+						"Citizen preferences"));
 		header.add(heading);
 
 		Layer contents = new Layer(Layer.DIV);
@@ -285,22 +293,19 @@ public class UserSettings extends RaceBlock {
 		Phone homePhone = null;
 		try {
 			homePhone = ub.getUsersHomePhone(this.info.getUser());
-		}
-		catch (NoPhoneFoundException e) {
+		} catch (NoPhoneFoundException e) {
 			e.printStackTrace();
 		}
 		Phone mobilePhone = null;
 		try {
 			mobilePhone = ub.getUsersMobilePhone(this.info.getUser());
-		}
-		catch (NoPhoneFoundException e) {
+		} catch (NoPhoneFoundException e) {
 			e.printStackTrace();
 		}
 		Phone workPhone = null;
 		try {
 			workPhone = ub.getUsersWorkPhone(this.info.getUser());
-		}
-		catch (NoPhoneFoundException e) {
+		} catch (NoPhoneFoundException e) {
 			e.printStackTrace();
 		}
 		Address address = getCoAddress(iwc);
@@ -313,17 +318,23 @@ public class UserSettings extends RaceBlock {
 			postal = address.getPostalCode();
 		}
 
-		RaceUserSettings settings = raceBusiness.getRaceUserSettings(info.getUser());
-		
+		RaceUserSettings settings = raceBusiness.getRaceUserSettings(info
+				.getUser());
+
 		String homePage = settings != null ? settings.getHomePage() : null;
-		RaceNumber raceNumberMX = settings != null ? settings.getRaceNumberMX() : null;
-		RaceNumber raceNumberSnocross = settings != null ? settings.getRaceNumberSnocross() : null;
-		RaceVehicleType vehicleType = settings != null ? settings.getVehicleType() : null;
-		RaceVehicleType vehicleSubType = settings != null ? settings.getVehicleSubType() : null;
+		RaceNumber raceNumberMX = settings != null ? settings.getRaceNumberMX()
+				: null;
+		RaceNumber raceNumberSnocross = settings != null ? settings
+				.getRaceNumberSnocross() : null;
+		RaceVehicleType vehicleType = settings != null ? settings
+				.getVehicleType() : null;
+		RaceVehicleType vehicleSubType = settings != null ? settings
+				.getVehicleSubType() : null;
 		String engine = settings != null ? settings.getEngine() : null;
 		String engineCC = settings != null ? settings.getEngineCC() : null;
 		String model = settings != null ? settings.getModel() : null;
-		String transponder = settings != null ? settings.getTransponderNumber() : null;
+		String transponder = settings != null ? settings.getTransponderNumber()
+				: null;
 		String team = settings != null ? settings.getTeam() : null;
 		String sponsor = settings != null ? settings.getSponsor() : null;
 		String bodyNumber = settings != null ? settings.getBodyNumber() : null;
@@ -334,118 +345,153 @@ public class UserSettings extends RaceBlock {
 		}
 
 		PresentationObject tiRaceNumberMX = null;
-		if ((raceNumberMX != null && !isAllowedToChangeTheNumbers()) || !isTournamentNumberSelectEnabled(iwc)) {
+		if ((raceNumberMX != null && !isAllowedToChangeTheNumbers())
+				|| !isTournamentNumberSelectEnabled(iwc)) {
 			tiRaceNumberMX = new TextInput();
-			if(raceNumberMX != null) {
-				((TextInput)tiRaceNumberMX).setContent(raceNumberMX.getRaceNumber());
+			if (raceNumberMX != null) {
+				((TextInput) tiRaceNumberMX).setContent(raceNumberMX
+						.getRaceNumber());
 			}
-			((TextInput)tiRaceNumberMX).setDisabled(true);
+			((TextInput) tiRaceNumberMX).setDisabled(true);
 		} else {
-			tiRaceNumberMX = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_MX));
-			((DropdownMenu)tiRaceNumberMX).addMenuElement("", localize("race_editor.select_race_number","Select race number"));
+			tiRaceNumberMX = getStyledInterface(new DropdownMenu(
+					PARAMETER_RACE_NUMBER_MX));
+			((DropdownMenu) tiRaceNumberMX).addMenuElement(
+					"",
+					localize("race_editor.select_race_number",
+							"Select race number"));
 
-			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc).getMXRaceNumbers();
+			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc)
+					.getMXRaceNumbers();
 			for (RaceNumber number : raceNumbers) {
-				((DropdownMenu) tiRaceNumberMX).addMenuElement(
-						number.getPrimaryKey().toString(), 
-						number.getRaceNumber());
+				((DropdownMenu) tiRaceNumberMX).addMenuElement(number
+						.getPrimaryKey().toString(), number.getRaceNumber());
 			}
 
 			if (raceNumberMX != null) {
-				((DropdownMenu) tiRaceNumberMX).addMenuElement(
-						raceNumberMX.getPrimaryKey().toString(), 
-						raceNumberMX.getRaceNumber());
-				
-				((DropdownMenu) tiRaceNumberMX).setSelectedElement(
-						raceNumberMX.getPrimaryKey().toString());
+				((DropdownMenu) tiRaceNumberMX).addMenuElement(raceNumberMX
+						.getPrimaryKey().toString(), raceNumberMX
+						.getRaceNumber());
+
+				((DropdownMenu) tiRaceNumberMX).setSelectedElement(raceNumberMX
+						.getPrimaryKey().toString());
 			}
 		}
 
-		PresentationObject tiRaceNumberSnocross = null;//new TextInput(PARAMETER_RACE_NUMBER_SNOCROSS);
-		if ((raceNumberSnocross != null && !isAllowedToChangeTheNumbers()) || !isTournamentNumberSelectEnabled(iwc)) {
+		PresentationObject tiRaceNumberSnocross = null;// new
+														// TextInput(PARAMETER_RACE_NUMBER_SNOCROSS);
+		if ((raceNumberSnocross != null && !isAllowedToChangeTheNumbers())
+				|| !isTournamentNumberSelectEnabled(iwc)) {
 			tiRaceNumberSnocross = new TextInput();
-			if(raceNumberSnocross != null) {
-				((TextInput)tiRaceNumberSnocross).setContent(raceNumberSnocross.getRaceNumber());
+			if (raceNumberSnocross != null) {
+				((TextInput) tiRaceNumberSnocross)
+						.setContent(raceNumberSnocross.getRaceNumber());
 			}
-			((TextInput)tiRaceNumberSnocross).setDisabled(true);
+			((TextInput) tiRaceNumberSnocross).setDisabled(true);
 		} else {
-			tiRaceNumberSnocross = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_RACE_NUMBER_SNOCROSS)); 
-			((DropdownMenu) tiRaceNumberSnocross).addMenuElement("", localize("race_editor.select_race_number","Select race number"));
+			tiRaceNumberSnocross = getStyledInterface(new DropdownMenu(
+					PARAMETER_RACE_NUMBER_SNOCROSS));
+			((DropdownMenu) tiRaceNumberSnocross).addMenuElement(
+					"",
+					localize("race_editor.select_race_number",
+							"Select race number"));
 
-			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc).getSnocrossRaceNumbers();			
+			Collection<RaceNumber> raceNumbers = getRaceBusiness(iwc)
+					.getSnocrossRaceNumbers();
 			for (RaceNumber number : raceNumbers) {
-				((DropdownMenu) tiRaceNumberSnocross).addMenuElement(
-						number.getPrimaryKey().toString(), 
-						number.getRaceNumber());
+				((DropdownMenu) tiRaceNumberSnocross).addMenuElement(number
+						.getPrimaryKey().toString(), number.getRaceNumber());
 			}
 
 			if (raceNumberSnocross != null) {
 				((DropdownMenu) tiRaceNumberSnocross).addMenuElement(
-						raceNumberSnocross.getPrimaryKey().toString(), 
+						raceNumberSnocross.getPrimaryKey().toString(),
 						raceNumberSnocross.getRaceNumber());
-				
-				((DropdownMenu) tiRaceNumberSnocross).setSelectedElement(
-						raceNumberSnocross.getPrimaryKey().toString());
+
+				((DropdownMenu) tiRaceNumberSnocross)
+						.setSelectedElement(raceNumberSnocross.getPrimaryKey()
+								.toString());
 			}
 		}
 
 		Collection vehicleTypes = null;
 		try {
-			vehicleTypes = getRaceBusiness(iwc).getRaceVehicleTypeHome().findAllParents();
+			vehicleTypes = getRaceBusiness(iwc).getRaceVehicleTypeHome()
+					.findAllParents();
 		} catch (FinderException e) {
 			e.printStackTrace();
-		} 
-		
+		}
+
 		DropdownMenu tiVehicleType = new DropdownMenu(PARAMETER_VEHICLE_TYPE);
-		tiVehicleType.addMenuElement("", localize("race_editor.select_vehicle_type","Select vehicle type"));
+		tiVehicleType.addMenuElement(
+				"",
+				localize("race_editor.select_vehicle_type",
+						"Select vehicle type"));
 		if (vehicleTypes != null && !vehicleTypes.isEmpty()) {
 			Iterator it = vehicleTypes.iterator();
 			while (it.hasNext()) {
 				RaceVehicleType type = (RaceVehicleType) it.next();
-				tiVehicleType.addMenuElement(type.getPrimaryKey().toString(), localize(type.getLocalizationKey(), type.getLocalizationKey()));
+				tiVehicleType.addMenuElement(
+						type.getPrimaryKey().toString(),
+						localize(type.getLocalizationKey(),
+								type.getLocalizationKey()));
 			}
-			
+
 			tiVehicleType.setToSubmit();
 		}
-		
+
 		RaceVehicleType selectedType = null;
 		if (iwc.isParameterSet(PARAMETER_VEHICLE_TYPE)) {
 			try {
-				selectedType = getRaceBusiness(iwc).getRaceVehicleTypeHome().findByPrimaryKey(new Integer(iwc.getParameter(PARAMETER_VEHICLE_TYPE)));
+				selectedType = getRaceBusiness(iwc).getRaceVehicleTypeHome()
+						.findByPrimaryKey(
+								new Integer(iwc
+										.getParameter(PARAMETER_VEHICLE_TYPE)));
 			} catch (NumberFormatException e) {
 			} catch (FinderException e) {
 			}
-		}
-		else if (vehicleType != null) {
+		} else if (vehicleType != null) {
 			selectedType = vehicleType;
 		}
 
-		DropdownMenu tiVehicleSubtype = new DropdownMenu(PARAMETER_VEHICLE_SUBTYPE);
+		DropdownMenu tiVehicleSubtype = new DropdownMenu(
+				PARAMETER_VEHICLE_SUBTYPE);
 		if (selectedType != null) {
-			tiVehicleType.setSelectedElement(selectedType.getPrimaryKey().toString());
-			
+			tiVehicleType.setSelectedElement(selectedType.getPrimaryKey()
+					.toString());
+
 			Collection subTypes = null;
 			try {
-				subTypes = getRaceBusiness(iwc).getRaceVehicleTypeHome().findSubtypeByParent(selectedType);
+				subTypes = getRaceBusiness(iwc).getRaceVehicleTypeHome()
+						.findSubtypeByParent(selectedType);
 			} catch (FinderException e) {
 			}
-			
-			tiVehicleSubtype.addMenuElement("", localize("race_editor.select_vehicle_subtype","Select vehicle subtype"));
+
+			tiVehicleSubtype.addMenuElement(
+					"",
+					localize("race_editor.select_vehicle_subtype",
+							"Select vehicle subtype"));
 			if (subTypes != null && !subTypes.isEmpty()) {
 				Iterator it = subTypes.iterator();
 				while (it.hasNext()) {
 					RaceVehicleType type = (RaceVehicleType) it.next();
-					tiVehicleSubtype.addMenuElement(type.getPrimaryKey().toString(), localize(type.getLocalizationKey(), type.getLocalizationKey()));
+					tiVehicleSubtype.addMenuElement(
+							type.getPrimaryKey().toString(),
+							localize(type.getLocalizationKey(),
+									type.getLocalizationKey()));
 				}
 			}
 		}
-		
+
 		if (vehicleSubType != null) {
-			tiVehicleSubtype.setSelectedElement(vehicleSubType.getPrimaryKey().toString());
+			tiVehicleSubtype.setSelectedElement(vehicleSubType.getPrimaryKey()
+					.toString());
 		}
 
 		DropdownMenu tiEngine = new DropdownMenu(PARAMETER_ENGINE);
-		tiEngine.addMenuElement("", localize("race_editor.select_engine_size","Select engine size"));
+		tiEngine.addMenuElement(
+				"",
+				localize("race_editor.select_engine_size", "Select engine size"));
 		tiEngine.addMenuElement("2T", "2T");
 		tiEngine.addMenuElement("4T", "4T");
 		if (engine != null) {
@@ -466,22 +512,22 @@ public class UserSettings extends RaceBlock {
 		if (transponder != null) {
 			tiTransponder.setContent(transponder);
 		}
-		
+
 		TextInput tiTeam = new TextInput(PARAMETER_TEAM);
 		if (team != null) {
 			tiTeam.setContent(team);
 		}
-		
+
 		TextInput tiSponsor = new TextInput(PARAMETER_SPONSOR);
 		if (sponsor != null) {
 			tiSponsor.setContent(sponsor);
 		}
-		
+
 		TextInput tiBodyNumber = new TextInput(PARAMETER_BODY_NUMBER);
 		if (bodyNumber != null) {
 			tiBodyNumber.setContent(bodyNumber);
 		}
-		
+
 		Layer formItem;
 		Label label;
 
@@ -492,38 +538,38 @@ public class UserSettings extends RaceBlock {
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_NAME, DEFAULT_NAME));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_NAME,
+				DEFAULT_NAME));
 		formItem.add(label);
 		if (info.getUser() != null) {
 			formItem.add(new Span(new Text(info.getUser().getName())));
-		} 
-		else {
-			formItem.add(new Span(new Text("")));			
+		} else {
+			formItem.add(new Span(new Text("")));
 		}
 		layer.add(formItem);
-		
+
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_SSN, DEFAULT_SSN));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_SSN,
+				DEFAULT_SSN));
 		formItem.add(label);
 		if (info.getUser() != null) {
 			formItem.add(new Span(new Text(info.getUser().getPersonalID())));
-		} 
-		else {
+		} else {
 			formItem.add(new Span(new Text("")));
 		}
 		layer.add(formItem);
-		
+
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_ADDRESS, DEFAULT_ADDRESS));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_ADDRESS, DEFAULT_ADDRESS));
 		formItem.add(label);
 		if (address != null) {
 			formItem.add(new Span(new Text(address.getStreetAddress())));
-		} 
-		else {
+		} else {
 			formItem.add(new Span(new Text("")));
 		}
 		layer.add(formItem);
@@ -531,12 +577,12 @@ public class UserSettings extends RaceBlock {
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_PO, DEFAULT_PO));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_PO,
+				DEFAULT_PO));
 		formItem.add(label);
 		if (postal != null) {
 			formItem.add(new Span(new Text(postal.getPostalAddress())));
-		} 
-		else {
+		} else {
 			formItem.add(new Span(new Text("")));
 		}
 		layer.add(formItem);
@@ -544,9 +590,21 @@ public class UserSettings extends RaceBlock {
 
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_CLUB, DEFAULT_CLUB));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_CLUB,
+				DEFAULT_CLUB));
 		formItem.add(label);
-		formItem.add(new Span(new Text("")));
+		//formItem.add(new Span(new Text("")));
+		//layer.add(formItem);
+		
+		UIComponent unionLabelfacelet = getIWMainApplication(iwc).createComponent(
+				FaceletComponent.COMPONENT_TYPE);
+		if (unionLabelfacelet instanceof FaceletComponent) {
+			((FaceletComponent) unionLabelfacelet).setFaceletURI(getBundle(iwc,
+					"com.idega.sport.union").getFaceletURI(
+					"club/main_union_label.xhtml"));
+		}
+
+		formItem.add(unionLabelfacelet);
 		layer.add(formItem);
 		
 		Layer clearLayer = new Layer(Layer.DIV);
@@ -559,26 +617,13 @@ public class UserSettings extends RaceBlock {
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_EMAIL, DEFAULT_EMAIL));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_EMAIL, DEFAULT_EMAIL));
 		formItem.add(label);
 		formItem.setStyleAttribute("word-wrap:break-word;");
 		if (mail != null && mail.getEmailAddress() != null) {
 			formItem.add(new Span(new Text(mail.getEmailAddress())));
-		} 
-		else {
-			formItem.add(new Span(new Text("")));
-		}		
-		layer.add(formItem);
-
-		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");
-		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_PHONE_HOME, DEFAULT_PHONE_HOME));
-		formItem.add(label);
-		if (homePhone != null && homePhone.getNumber() != null) {
-			formItem.add(new Span(new Text(homePhone.getNumber())));
-		} 
-		else {
+		} else {
 			formItem.add(new Span(new Text("")));
 		}
 		layer.add(formItem);
@@ -586,89 +631,105 @@ public class UserSettings extends RaceBlock {
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_PHONE_MOBILE, DEFAULT_PHONE_MOBILE));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_PHONE_HOME, DEFAULT_PHONE_HOME));
 		formItem.add(label);
-		if (mobilePhone != null && mobilePhone.getNumber() != null) {
-			formItem.add(new Span(new Text(mobilePhone.getNumber())));
-		} 
-		else {
+		if (homePhone != null && homePhone.getNumber() != null) {
+			formItem.add(new Span(new Text(homePhone.getNumber())));
+		} else {
 			formItem.add(new Span(new Text("")));
-		}			
+		}
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
 		label = new Label();
-		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(KEY_PHONE_WORK, DEFAULT_PHONE_WORK));
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_PHONE_MOBILE, DEFAULT_PHONE_MOBILE));
 		formItem.add(label);
-		if (workPhone != null && workPhone.getNumber() != null) {
-			formItem.add(new Span(new Text(workPhone.getNumber())));
-		} 
-		else {
+		if (mobilePhone != null && mobilePhone.getNumber() != null) {
+			formItem.add(new Span(new Text(mobilePhone.getNumber())));
+		} else {
 			formItem.add(new Span(new Text("")));
-		}			
-			
+		}
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_HOME_PAGE, DEFAULT_HOME_PAGE), tiHomePage);
+		label = new Label();
+		label.setLabel(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_PHONE_WORK, DEFAULT_PHONE_WORK));
+		formItem.add(label);
+		if (workPhone != null && workPhone.getNumber() != null) {
+			formItem.add(new Span(new Text(workPhone.getNumber())));
+		} else {
+			formItem.add(new Span(new Text("")));
+		}
+
+		layer.add(formItem);
+
+		formItem = new Layer(Layer.DIV);
+		formItem.setStyleClass("formItem");
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_HOME_PAGE, DEFAULT_HOME_PAGE), tiHomePage);
 		formItem.add(label);
 		formItem.add(tiHomePage);
 		layer.add(formItem);
 
 		section.add(clearLayer);
-		
+
 		layer = new Layer(Layer.DIV);
 		layer.setID("unionLayer");
 		section.add(layer);
-	
-		UIComponent facelet = getIWMainApplication(iwc)
-				.createComponent(FaceletComponent.COMPONENT_TYPE);		
+
+		UIComponent facelet = getIWMainApplication(iwc).createComponent(
+				FaceletComponent.COMPONENT_TYPE);
 		if (facelet instanceof FaceletComponent) {
-			((FaceletComponent) facelet).setFaceletURI(getBundle(
-					iwc, "com.idega.sport.union"
-					).getFaceletURI("club/main_union_editor.xhtml"));
+			((FaceletComponent) facelet).setFaceletURI(getBundle(iwc,
+					"com.idega.sport.union").getFaceletURI(
+					"club/main_union_editor.xhtml"));
 		}
 
 		layer.add(facelet);
-		
+
 		layer = new Layer(Layer.DIV);
 		layer.setID("raceNumber");
 		section.add(layer);
 
 		Paragraph info = new Paragraph();
 		info.setClass("race_number_info");
-		info.add(new Text(localize("msi.race_number_information_text", 
-				"Úthlutun númera frá 0-99 er háð samþykki Msí sbr. reglur um "
-				+ "keppnisnúmer - sjá nánar undir Reglur "
-				+ "(<a href=\"http://msisport.is/pages/reglur/\">http://msisport.is/pages/reglur/</a>)")));
-		
-		label = new Label(
-				localize(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX), 
+		info.add(new Text(
+				localize(
+						"msi.race_number_information_text",
+						"Úthlutun númera frá 0-99 er háð samþykki Msí sbr. reglur um "
+								+ "keppnisnúmer - sjá nánar undir Reglur "
+								+ "(<a href=\"http://msisport.is/pages/reglur/\">http://msisport.is/pages/reglur/</a>)")));
+
+		label = new Label(localize(KEY_RACE_NUMBER_MX, DEFAULT_RACE_NUBMER_MX),
 				(InterfaceObject) tiRaceNumberMX);
 
 		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");		
+		formItem.setStyleClass("formItem");
 		formItem.add(label);
 		formItem.add(tiRaceNumberMX);
 		formItem.add(info);
 		layer.add(formItem);
 
-		label = new Label(
-				localize(KEY_RACE_NUMBER_SNOCROSS, DEFAULT_RACE_NUBMER_SNOCROSS), 
-				(InterfaceObject) tiRaceNumberSnocross);			
-		
+		label = new Label(localize(KEY_RACE_NUMBER_SNOCROSS,
+				DEFAULT_RACE_NUBMER_SNOCROSS),
+				(InterfaceObject) tiRaceNumberSnocross);
+
 		formItem = new Layer(Layer.DIV);
-		formItem.setStyleClass("formItem");		
+		formItem.setStyleClass("formItem");
 		formItem.add(label);
 		formItem.add(tiRaceNumberSnocross);
 		formItem.add(info.clone());
 		layer.add(formItem);
-		
+
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItemAside");
-		label = new Label(localize(KEY_TRANSPONDER, DEFAULT_TRANSPONDER), tiTransponder);
+		label = new Label(localize(KEY_TRANSPONDER, DEFAULT_TRANSPONDER),
+				tiTransponder);
 		formItem.add(label);
 		formItem.add(tiTransponder);
 		layer.add(formItem);
@@ -676,80 +737,90 @@ public class UserSettings extends RaceBlock {
 		layer = new Layer(Layer.DIV);
 		layer.setID("vehicleInfo");
 		section.add(layer);
-				
+
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_VEHICLE_TYPE, DEFAULT_VEHICLE_TYPE), tiVehicleType);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_VEHICLE_TYPE, DEFAULT_VEHICLE_TYPE), tiVehicleType);
 		formItem.add(label);
 		formItem.add(tiVehicleType);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_VEHICLE_SUBTYPE, DEFAULT_VEHICLE_SUBTYPE), tiVehicleSubtype);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_VEHICLE_SUBTYPE, DEFAULT_VEHICLE_SUBTYPE), tiVehicleSubtype);
 		formItem.add(label);
 		formItem.add(tiVehicleSubtype);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_ENGINE_CC, DEFAULT_ENGINE_CC), tiCC);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_ENGINE_CC, DEFAULT_ENGINE_CC), tiCC);
 		formItem.add(label);
 		formItem.add(tiCC);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_ENGINE, DEFAULT_ENGINE), tiEngine);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_ENGINE, DEFAULT_ENGINE), tiEngine);
 		formItem.add(label);
 		formItem.add(tiEngine);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItemAside");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_BODY_NUMBER, DEFAULT_BODY_NUMBER), tiBodyNumber);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_BODY_NUMBER, DEFAULT_BODY_NUMBER), tiBodyNumber);
 		formItem.add(label);
 		formItem.add(tiBodyNumber);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_MODEL, DEFAULT_MODEL), tiModel);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_MODEL, DEFAULT_MODEL), tiModel);
 		formItem.add(label);
 		formItem.add(tiModel);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_TEAM, DEFAULT_TEAM), tiTeam);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_TEAM, DEFAULT_TEAM), tiTeam);
 		formItem.add(label);
 		formItem.add(tiTeam);
 		layer.add(formItem);
 
 		formItem = new Layer(Layer.DIV);
 		formItem.setStyleClass("formItem");
-		label = new Label(this.getResourceBundle(iwc).getLocalizedString(KEY_SPONSOR, DEFAULT_SPONSOR), tiSponsor);
+		label = new Label(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_SPONSOR, DEFAULT_SPONSOR), tiSponsor);
 		formItem.add(label);
 		formItem.add(tiSponsor);
 		layer.add(formItem);
 
 		section.add(clearLayer.clone());
-		
-		if(!isSelectedUser) {
+
+		if (!isSelectedUser) {
 			Layer buttonLayer = new Layer(Layer.DIV);
 			buttonLayer.setStyleClass("buttonLayer");
 			contents.add(buttonLayer);
-	
-			/*Layer span = new Layer(Layer.SPAN);
-			span.add(new Text(this.getResourceBundle(iwc).getLocalizedString(KEY_UPDATE, DEFAULT_UPDATE)));
-			Link send = new Link(span);
-			send.setToFormSubmit(form);*/
-			
-			SubmitButton submit = (SubmitButton) getButton(new SubmitButton(localize(
-					KEY_UPDATE, DEFAULT_UPDATE)));
-			submit
-					.setValueOnClick(PARAMETER_FORM_SUBMIT, Boolean.TRUE.toString());
-			
+
+			/*
+			 * Layer span = new Layer(Layer.SPAN); span.add(new
+			 * Text(this.getResourceBundle(iwc).getLocalizedString(KEY_UPDATE,
+			 * DEFAULT_UPDATE))); Link send = new Link(span);
+			 * send.setToFormSubmit(form);
+			 */
+
+			SubmitButton submit = (SubmitButton) getButton(new SubmitButton(
+					localize(KEY_UPDATE, DEFAULT_UPDATE)));
+			submit.setValueOnClick(PARAMETER_FORM_SUBMIT,
+					Boolean.TRUE.toString());
+
 			buttonLayer.add(submit);
 		}
 		add(form);
@@ -758,7 +829,8 @@ public class UserSettings extends RaceBlock {
 	private void updatePreferences(IWContext iwc) throws Exception {
 		String homePage = iwc.getParameter(PARAMETER_HOME_PAGE);
 		String raceNumberMX = iwc.getParameter(PARAMETER_RACE_NUMBER_MX);
-		String raceNumberSnocross = iwc.getParameter(PARAMETER_RACE_NUMBER_SNOCROSS);
+		String raceNumberSnocross = iwc
+				.getParameter(PARAMETER_RACE_NUMBER_SNOCROSS);
 		String vehicleType = iwc.getParameter(PARAMETER_VEHICLE_TYPE);
 		String vehicleSubType = iwc.getParameter(PARAMETER_VEHICLE_SUBTYPE);
 		String engine = iwc.getParameter(PARAMETER_ENGINE);
@@ -771,10 +843,12 @@ public class UserSettings extends RaceBlock {
 
 		RaceBusiness raceBusiness = getRaceBusiness(iwc);
 		UserBusiness ub = getUserBusiness(iwc);
-		
+
 		if (raceBusiness != null) {
-			System.out.println("Trying to find settings for user " + iwc.getCurrentUser().getName());
-			RaceUserSettings settings = raceBusiness.getRaceUserSettings(iwc.getCurrentUser());
+			System.out.println("Trying to find settings for user "
+					+ iwc.getCurrentUser().getName());
+			RaceUserSettings settings = raceBusiness.getRaceUserSettings(iwc
+					.getCurrentUser());
 			if (settings == null) {
 				System.out.println("no settings found");
 			} else {
@@ -788,18 +862,22 @@ public class UserSettings extends RaceBlock {
 
 			settings.setHomePage(homePage);
 			if (!StringUtil.isEmpty(raceNumberMX)) {
-				RaceNumber number = getRaceNumberHome().findByPrimaryKey(Integer.parseInt(raceNumberMX));
-				number = getRaceNumberHome().update(Integer.parseInt(raceNumberMX), 
-						null, 
-						new Timestamp(System.currentTimeMillis()), 
-						Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(System.currentTimeMillis()) : null, 
-						Integer.valueOf(number.getRaceNumber()) >= 100, 
-						Boolean.TRUE,
-						getRaceTypeHome().findByRaceType(MSIConstants.RACE_TYPE_MX_AND_ENDURO));
+				RaceNumber number = getRaceNumberHome().findByPrimaryKey(
+						Integer.parseInt(raceNumberMX));
+				number = getRaceNumberHome()
+						.update(Integer.parseInt(raceNumberMX),
+								null,
+								new Timestamp(System.currentTimeMillis()),
+								Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(
+										System.currentTimeMillis()) : null,
+								Integer.valueOf(number.getRaceNumber()) >= 100,
+								Boolean.TRUE,
+								getRaceTypeHome().findByRaceType(
+										MSIConstants.RACE_TYPE_MX_AND_ENDURO));
 
 				try {
 					settings.setRaceNumberMX(number);
-					
+
 					StringBuffer name = new StringBuffer("");
 					if (settings.getUser().getFirstName() != null) {
 						name.append(settings.getUser().getFirstName());
@@ -812,40 +890,51 @@ public class UserSettings extends RaceBlock {
 					if (settings.getUser().getLastName() != null) {
 						name.append(settings.getUser().getLastName());
 					}
-					
+
 					StringBuffer text = new StringBuffer();
 					text.append(name.toString());
 					text.append(", ");
 					text.append(settings.getUser().getPersonalID());
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString("mail_text_has_applied_for", "has applied for the number"));
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							"mail_text_has_applied_for",
+							"has applied for the number"));
 					text.append(" ");
 					text.append(number.getRaceNumber());
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString("mail_text_race type", "in the race type"));
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							"mail_text_race type", "in the race type"));
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString(number.getRaceType().getRaceType(), number.getRaceType().getRaceType()));
-					
-					String subject = this.getResourceBundle(iwc).getLocalizedString("mail_subject", "Application for race number");
-					
-					String to = iwc.getApplicationSettings().getProperty("mail_to", "numer@msisport.is");
-					
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							number.getRaceType().getRaceType(),
+							number.getRaceType().getRaceType()));
+
+					String subject = this.getResourceBundle(iwc)
+							.getLocalizedString("mail_subject",
+									"Application for race number");
+
+					String to = iwc.getApplicationSettings().getProperty(
+							"mail_to", "numer@msisport.is");
+
 					raceBusiness.sendMessage(to, subject, text.toString());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}				
+				}
 			}
 
 			if (!StringUtil.isEmpty(raceNumberSnocross)) {
-				RaceNumber number = getRaceNumberHome().findByPrimaryKey(Integer.parseInt(raceNumberSnocross));
-				number = getRaceNumberHome().update(Integer.parseInt(raceNumberSnocross), 
-						null, 
-						new Timestamp(System.currentTimeMillis()), 
-						Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(System.currentTimeMillis()) : null, 
-						Integer.valueOf(number.getRaceNumber()) >= 100, 
-						Boolean.TRUE, 
-						getRaceTypeHome().findByRaceType(MSIConstants.RACE_TYPE_SNOCROSS));
+				RaceNumber number = getRaceNumberHome().findByPrimaryKey(
+						Integer.parseInt(raceNumberSnocross));
+				number = getRaceNumberHome()
+						.update(Integer.parseInt(raceNumberSnocross),
+								null,
+								new Timestamp(System.currentTimeMillis()),
+								Integer.valueOf(number.getRaceNumber()) >= 100 ? new Timestamp(
+										System.currentTimeMillis()) : null,
+								Integer.valueOf(number.getRaceNumber()) >= 100,
+								Boolean.TRUE,
+								getRaceTypeHome().findByRaceType(
+										MSIConstants.RACE_TYPE_SNOCROSS));
 
 				try {
 					settings.setRaceNumberSnocross(number);
@@ -870,36 +959,46 @@ public class UserSettings extends RaceBlock {
 					text.append(", ");
 					text.append(settings.getUser().getPersonalID());
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString("mail_text_has_applied_for", "has applied for the number"));
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							"mail_text_has_applied_for",
+							"has applied for the number"));
 					text.append(" ");
 					text.append(number.getRaceNumber());
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString("mail_text_race type", "in the race type"));
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							"mail_text_race type", "in the race type"));
 					text.append(" ");
-					text.append(this.getResourceBundle(iwc).getLocalizedString(number.getRaceType().getRaceType(), number.getRaceType().getRaceType()));
-					
-					String subject = this.getResourceBundle(iwc).getLocalizedString("mail_subject", "Application for race number");
-					
-					String to = iwc.getApplicationSettings().getProperty("mail_to", "numer@msisport.is");
-					
+					text.append(this.getResourceBundle(iwc).getLocalizedString(
+							number.getRaceType().getRaceType(),
+							number.getRaceType().getRaceType()));
+
+					String subject = this.getResourceBundle(iwc)
+							.getLocalizedString("mail_subject",
+									"Application for race number");
+
+					String to = iwc.getApplicationSettings().getProperty(
+							"mail_to", "numer@msisport.is");
+
 					raceBusiness.sendMessage(to, subject, text.toString());
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-				}				
+				}
 			}
 
 			RaceVehicleType type = null;
 			try {
-				type = getRaceBusiness(iwc).getRaceVehicleTypeHome().findByPrimaryKey(new Integer(vehicleType));
-			} catch (Exception e){}
+				type = getRaceBusiness(iwc).getRaceVehicleTypeHome()
+						.findByPrimaryKey(new Integer(vehicleType));
+			} catch (Exception e) {
+			}
 
 			RaceVehicleType subtype = null;
 			try {
-				subtype = getRaceBusiness(iwc).getRaceVehicleTypeHome().findByPrimaryKey(new Integer(vehicleSubType));
-			} catch (Exception e) {}
-			
-			
+				subtype = getRaceBusiness(iwc).getRaceVehicleTypeHome()
+						.findByPrimaryKey(new Integer(vehicleSubType));
+			} catch (Exception e) {
+			}
+
 			settings.setVehicleType(type);
 			settings.setVehicleSubType(subtype);
 			settings.setEngine(engine);
@@ -911,22 +1010,27 @@ public class UserSettings extends RaceBlock {
 			settings.setBodyNumber(bodyNumber);
 			settings.store();
 		}
-		
+
 		Layer header = new Layer(Layer.DIV);
 		header.setStyleClass("header");
 		add(header);
 
-		Heading1 heading = new Heading1(this.getResourceBundle(iwc).getLocalizedString("citizen_preferences", "Citizen preferences"));
+		Heading1 heading = new Heading1(this.getResourceBundle(iwc)
+				.getLocalizedString("citizen_preferences",
+						"Citizen preferences"));
 		header.add(heading);
 
 		Layer layer = new Layer(Layer.DIV);
 		layer.setStyleClass("receipt");
 
-		heading = new Heading1(this.getResourceBundle(iwc).getLocalizedString(KEY_PREFERENCES_SAVED, DEFAULT_PREFERENCES_SAVED));
+		heading = new Heading1(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_PREFERENCES_SAVED, DEFAULT_PREFERENCES_SAVED));
 		layer.add(heading);
 
 		Paragraph paragraph = new Paragraph();
-		paragraph.add(new Text(this.getResourceBundle(iwc).getLocalizedString(KEY_PREFERENCES_SAVED + "_text", DEFAULT_PREFERENCES_SAVED + " info")));
+		paragraph.add(new Text(this.getResourceBundle(iwc).getLocalizedString(
+				KEY_PREFERENCES_SAVED + "_text",
+				DEFAULT_PREFERENCES_SAVED + " info")));
 		layer.add(paragraph);
 
 		try {
@@ -934,13 +1038,13 @@ public class UserSettings extends RaceBlock {
 			paragraph.add(new Break(2));
 
 			Layer span = new Layer(Layer.SPAN);
-			span.add(new Text(this.getResourceBundle(iwc).getLocalizedString("my_page", "My page")));
+			span.add(new Text(this.getResourceBundle(iwc).getLocalizedString(
+					"my_page", "My page")));
 			Link link = new Link(span);
 			link.setStyleClass("homeLink");
 			link.setPage(page);
 			paragraph.add(link);
-		}
-		catch (FinderException fe) {
+		} catch (FinderException fe) {
 			// No homepage found...
 		}
 
@@ -949,39 +1053,41 @@ public class UserSettings extends RaceBlock {
 
 	private Address getMainAddress(IWContext iwc) {
 		try {
-			UserBusiness ub = (UserBusiness) IBOLookup.getServiceInstance(iwc, UserBusiness.class);
-			if(info.getUser() == null) {
+			UserBusiness ub = IBOLookup.getServiceInstance(iwc,
+					UserBusiness.class);
+			if (info.getUser() == null) {
 				return null;
 			}
 			String userId = info.getUser().getPrimaryKey().toString();
 			return ub.getUsersMainAddress(Integer.parseInt(userId));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			super.add(new ExceptionWrapper(e, this));
 		}
 		return null;
 	}
-	
+
 	private Address getCoAddress(IWContext iwc) {
 		try {
-			UserBusiness ub = (UserBusiness) IBOLookup.getServiceInstance(iwc, UserBusiness.class);
-			if(info.getUser() == null) {
+			UserBusiness ub = IBOLookup.getServiceInstance(iwc,
+					UserBusiness.class);
+			if (info.getUser() == null) {
 				return null;
 			}
 			String userId = info.getUser().getPrimaryKey().toString();
 			return ub.getUsersCoAddress(Integer.parseInt(userId));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			super.add(new ExceptionWrapper(e, this));
 		}
 		return null;
 	}
 
 	private boolean isAllowedToChangeTheNumbers() {
-		ModificationPeriodTypeEntity type = getModificationPeriodTypeDAO().findBySystemName("race_numbers_type");
+		ModificationPeriodTypeEntity type = getModificationPeriodTypeDAO()
+				.findBySystemName("race_numbers_type");
 		if (type != null) {
-			List<ModificationPeriodEntity> period = getModificationPeriodDAO().findByDateAndType(
-					new Date(System.currentTimeMillis()), type.getId());
+			List<ModificationPeriodEntity> period = getModificationPeriodDAO()
+					.findByDateAndType(new Date(System.currentTimeMillis()),
+							type.getId());
 			if (period != null) {
 				return Boolean.TRUE;
 			}
@@ -989,26 +1095,28 @@ public class UserSettings extends RaceBlock {
 
 		return Boolean.FALSE;
 	}
-	
+
 	private User getUser(IWContext iwc) {
 		isSelectedUser = false;
 		String userId = (String) iwc.getSessionAttribute("member_id");
-		if(StringUtil.isEmpty(userId)) {
+		if (StringUtil.isEmpty(userId)) {
 			return iwc.getCurrentUser();
 		}
 		try {
 			isSelectedUser = true;
-			return ((UserHome) IDOLookup.getHomeLegacy(User.class)).findByPrimaryKey(userId);
+			return ((UserHome) IDOLookup.getHomeLegacy(User.class))
+					.findByPrimaryKey(userId);
 		} catch (FinderException e) {
 			isSelectedUser = false;
 			getLogger().warning("" + e);
 		}
 		return null;
 	}
-	
+
 	private boolean isTournamentNumberSelectEnabled(IWContext iwc) {
-		String enabled = iwc.getApplicationSettings().getProperty("tournament_number_select_enabled", "false");
-		if(enabled.equals("true")) {
+		String enabled = iwc.getApplicationSettings().getProperty(
+				"tournament_number_select_enabled", "false");
+		if (enabled.equals("true")) {
 			return true;
 		}
 		return false;
