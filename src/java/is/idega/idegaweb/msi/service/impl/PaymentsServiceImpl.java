@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import com.idega.block.creditcard.business.CreditCardClient;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.core.business.DefaultSpringBean;
 import com.idega.core.contact.data.Email;
 import com.idega.presentation.IWContext;
@@ -83,6 +84,23 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 		}
 
 		try {
+			Map<String, AdvancedProperty> parents = new HashMap<>();
+			parents.put("0907992589", new AdvancedProperty("Arnar Þór Ragnarsson"));
+			parents.put("0311992719", new AdvancedProperty("Angelica Cantu Davila"));
+			parents.put("0203994069", new AdvancedProperty("Heiðar Örn Sverrisson"));
+			parents.put("1706052760", new AdvancedProperty("Pétur Ingiberg Smárason"));
+			parents.put("1002002790", new AdvancedProperty("Gunnar Ólafsson"));
+			parents.put("1106033390", new AdvancedProperty("Jakob Freyr Jakobsson"));
+			parents.put("1512992619", new AdvancedProperty("Axel Hafsteinn Gíslason"));
+			parents.put("0508022480", new AdvancedProperty("Arnar Þór Ragnarsson"));
+			parents.put("1212992329", new AdvancedProperty("Hannes Þorvaldsson"));
+			parents.put("0110002740", new AdvancedProperty("Eva Ösp Arnarsdóttir"));
+			parents.put("2405003450", new AdvancedProperty("Vilhelm Henningsson", "hasteinnar@gmail.com"));
+			parents.put("2604992549", new AdvancedProperty("Vignir Oddsson"));
+			parents.put("0903002370", new AdvancedProperty("Magnús Ómar Jóhannsson"));
+			parents.put("3101032330", new AdvancedProperty("Víðir Ingi Ívarsson"));
+			parents.put("1111042630", new AdvancedProperty("Pálmar Pétursson"));
+
 			RaceBusiness raceBusiness = getServiceInstance(RaceBusiness.class);
 			Collection<Participant> participants = raceBusiness.getParticipantHome().findByDates(dateFrom, dateTo);
 			if (ListUtil.isEmpty(participants)) {
@@ -123,15 +141,18 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 //			for (User user: groupedParticipants.keySet()) {
 //				IWTimestamp dateOfBirth = new IWTimestamp(userBusiness.getUserDateOfBirthFromPersonalId(user.getPersonalID()));
 //				if (eighteeneYearAgo.isEarlierThan(dateOfBirth)) {
-//					System.out.println(user.getName() + " " + user.getPersonalID() + " " + dateOfBirth);
+//					AdvancedProperty parent = parents.get(user.getPersonalID());
+//					System.out.println(user.getName() + " " + user.getPersonalID() + " " + dateOfBirth + ", parent: " + (parent == null ? null : parent));
 //				}
 //			}
 
 			String subject = "Mistök í kortagreiðslum til MSÍ: {0}";
-			String text = "Sæll {0},\n\nÍ sumar tók MSÍ í notkun nýtt tölvukerfi fyrir m.a. skráningu í mót og greiðslu mótsgjalda (www.msisport.is). Kerfið hefur líka verið notað til að greiða fyrir miða á árshátíð MSÍ. Vegna tæknilegra mistaka var um tíma tekið við skráningu og greiðslu án þess að greiðslan væri tekin af kreditkorti viðkomandi. Þú varst með slíka skráningu sem er í raun ógreidd. Færslan/færslurnar sem um ræðir eru:\n\n{1}\nVinsamlega smelltu á hlekkinn hér að framan til að ganga frá greiðslu.\n\nVið biðjumst velvirðingar á þessum óþægindum. Ef þú óskar eftir nánari útskýringum þá er þér velkomið að hringja í okkur í síma 554 7557.\n\nKveðja,\n\nGunnar Páll Þórisson\nIOS hugbúnaður ehf.\nwww.idega.is / sími 554 7557";
+			String text = "Sæl/Sæll {0},<br><br>Í sumar tók MSÍ í notkun nýtt tölvukerfi fyrir m.a. skráningu í mót og greiðslu mótsgjalda (www.msisport.is). Kerfið hefur líka verið notað til að greiða fyrir miða á árshátíð MSÍ. Vegna tæknilegra mistaka var um tíma tekið við skráningu og greiðslu án þess að greiðslan væri tekin af kreditkorti viðkomandi. Þú varst með slíka skráningu sem er í raun ógreidd. Færslan/færslurnar sem um ræðir eru:<br><br>{1}<br>Vinsamlega smelltu á hlekkinn hér að framan til að ganga frá greiðslu.<br><br>Við biðjumst velvirðingar á þessum óþægindum. Ef þú óskar eftir nánari útskýringum þá er þér velkomið að hringja í okkur í síma 554 7557.<br><br>Kveðja,<br><br>Gunnar Páll Þórisson<br>IOS hugbúnaður ehf.<br>www.idega.is / sími 554 7557";
 			EmailValidator validator = EmailValidator.getInstance();
 			for (User user: groupedParticipants.keySet()) {
 				try {
+					AdvancedProperty parent = parents.get(user.getPersonalID());
+
 					Email email = null;
 					try {
 						email = user.getUsersEmail();
@@ -147,7 +168,7 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 					}
 					StringBuilder receiverMails = new StringBuilder();
 					for (String userEmail: emails) {
-						if (validator.isValid(emailAddress)) {
+						if (validator.isValid(userEmail)) {
 							receiverMails.append(userEmail).append(CoreConstants.COMMA);
 						} else {
 							getLogger().warning(user + " (personal ID: " + user.getPersonalID() + ") has invalid email: '" + userEmail + "'");
@@ -157,6 +178,7 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 					if (to.endsWith(CoreConstants.COMMA)) {
 						to = to.substring(0, to.length() - 1);
 					}
+					to = parent == null || StringUtil.isEmpty(parent.getValue()) ? to : parent.getValue();
 					if (StringUtil.isEmpty(to)) {
 						getLogger().warning(user + " (personal ID: " + user.getPersonalID() + ") does not have email");
 						continue;
@@ -173,11 +195,12 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 						IWTimestamp date = new IWTimestamp(participant.getCreatedDate());
 						String localizedDate = date.getLocaleDateAndTime(icelandic, DateFormat.MEDIUM, DateFormat.SHORT);
 						dates.add(localizedDate);
+						String fullLink = link.concat("?").concat(ParticipantPayment.PARAMETER_PARITICIPANT_ID).concat("=").concat(participant.getPrimaryKey().toString());
 
 						records.append(index).append(". ").append(tournament).append(", ").append(group).append(" ")
-						.append(localizedDate).append(" ")
-						.append(link).append("?").append(ParticipantPayment.PARAMETER_PARITICIPANT_ID).append("=")
-						.append(participant.getPrimaryKey().toString()).append("\n");
+						.append(localizedDate).append("<br>")
+						.append("<a href=\"").append(fullLink).append("\">Greiða fyrir keppnina</a>").append("<br>")
+						.append(fullLink).append("<br>");
 						index++;
 					}
 
@@ -191,7 +214,7 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 					Object[] subjectParams = new Object[] {subjectDates.toString()};
 
 					Object[] textParams = new Object[] {
-						user.getName(),
+						parent == null ? user.getName() : parent.getId(),
 						records.toString()
 					};
 
@@ -200,12 +223,12 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 							"gunnar@idega.is",
 							StringUtil.isEmpty(emailTo) ? to : emailTo,
 							null,
-							"valdas@idega.com",
+							"valdas@idega.com,gunnar@idega.com",
 							"gunnar@idega.is",
 							null,
 							MessageFormat.format(subject, subjectParams),
 							MessageFormat.format(text, textParams),
-							null,
+							"text/html",
 							null,
 							false,
 							false
