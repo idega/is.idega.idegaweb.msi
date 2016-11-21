@@ -9,6 +9,19 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -66,19 +79,6 @@ import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
 
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
  *
@@ -92,8 +92,8 @@ public class Registration extends RaceBlock {
 	public static final String SESSION_ATTRIBUTE_CARD_NUMBER = "sa_card_number";
 	public static final String SESSION_ATTRIBUTE_PAYMENT_DATE = "sa_payment_date";
 
-	public static final String	PARAMETER_ACTION = "prm_action",
-								PARAMETER_FROM_ACTION = "prm_from_action";
+	public static final String PARAMETER_ACTION = "prm_action",
+			PARAMETER_FROM_ACTION = "prm_from_action";
 
 	public static final String PARAMETER_RACE = "prm_race";
 	public static final String PARAMETER_EVENT = "prm_event";
@@ -119,10 +119,8 @@ public class Registration extends RaceBlock {
 	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
 	public static final int ACTION_STEP_PERSONALDETAILS = 1,
-							ACTION_STEP_DISCLAIMER = 2,
-							ACTION_STEP_PAYMENT_INFO = 3,
-							ACTION_SAVE = 4,
-							ACTION_CANCEL = 5;
+			ACTION_STEP_DISCLAIMER = 2, ACTION_STEP_PAYMENT_INFO = 3,
+			ACTION_SAVE = 4, ACTION_CANCEL = 5;
 
 	private RaceParticipantInfo raceParticipantInfo;
 
@@ -144,8 +142,7 @@ public class Registration extends RaceBlock {
 			return (SeasonHome) IDOLookup.getHome(Season.class);
 		} catch (IDOLookupException e) {
 			getLogger().log(Level.WARNING,
-					"Failed to get " + SeasonHome.class +
-					" cause of: ", e);
+					"Failed to get " + SeasonHome.class + " cause of: ", e);
 		}
 
 		return null;
@@ -153,7 +150,8 @@ public class Registration extends RaceBlock {
 
 	@Override
 	protected IWBundle getBundle() {
-		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		IWMainApplication application = IWMainApplication
+				.getDefaultIWMainApplication();
 		if (application != null) {
 			return application.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
 		}
@@ -163,7 +161,8 @@ public class Registration extends RaceBlock {
 
 	@Override
 	protected IWBundle getSportUnionBundle() {
-		IWMainApplication application = IWMainApplication.getDefaultIWMainApplication();
+		IWMainApplication application = IWMainApplication
+				.getDefaultIWMainApplication();
 		if (application != null) {
 			return application.getBundle("com.idega.sport.union");
 		}
@@ -177,14 +176,16 @@ public class Registration extends RaceBlock {
 
 	private Web2Business getWeb2Business() {
 		if (this.web2Business == null) {
-			this.web2Business = ELUtil.getInstance().getBean(Web2Business.SPRING_BEAN_IDENTIFIER);
+			this.web2Business = ELUtil.getInstance().getBean(
+					Web2Business.SPRING_BEAN_IDENTIFIER);
 		}
 
 		return this.web2Business;
 	}
 
 	private IWMainApplicationSettings getSettings() {
-		IWMainApplication iwma = IWMainApplication.getDefaultIWMainApplication();
+		IWMainApplication iwma = IWMainApplication
+				.getDefaultIWMainApplication();
 		if (iwma != null) {
 			return iwma.getSettings();
 		}
@@ -203,7 +204,10 @@ public class Registration extends RaceBlock {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.idega.presentation.Block#encodeBegin(javax.faces.context.FacesContext)
+	 * 
+	 * @see
+	 * com.idega.presentation.Block#encodeBegin(javax.faces.context.FacesContext
+	 * )
 	 */
 	@Override
 	public void encodeBegin(FacesContext fc) throws IOException {
@@ -211,94 +215,111 @@ public class Registration extends RaceBlock {
 
 		IWContext iwc = IWContext.getIWContext(fc);
 		ArrayList<String> scripts = new ArrayList<String>();
-		scripts.add(getCoreBundle().getVirtualPathWithFileNameString("iw_core.js"));
+		scripts.add(getCoreBundle().getVirtualPathWithFileNameString(
+				"iw_core.js"));
 		scripts.add(getWeb2Business().getBundleURIToJQueryLib());
 		scripts.add(CoreConstants.DWR_ENGINE_SCRIPT);
 		scripts.add("/dwr/interface/RaceBusiness.js");
-		scripts.add(getBundle().getVirtualPathWithFileNameString("javascript/race-registration.js"));
+		scripts.add(getBundle().getVirtualPathWithFileNameString(
+				"javascript/race-registration.js"));
 		PresentationUtil.addJavaScriptSourcesLinesToHeader(iwc, scripts);
 
 		ArrayList<String> styles = new ArrayList<String>();
 		if (getSportUnionBundle() != null) {
-			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/label.css"));
-			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/select.css"));
-			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/button.css"));
-			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString("style/textarea.css"));
-			styles.add(getBundle().getVirtualPathWithFileNameString("style/race-registration.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString(
+					"style/label.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString(
+					"style/select.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString(
+					"style/button.css"));
+			styles.add(getSportUnionBundle().getVirtualPathWithFileNameString(
+					"style/textarea.css"));
+			styles.add(getBundle().getVirtualPathWithFileNameString(
+					"style/race-registration.css"));
 			PresentationUtil.addStyleSheetsToHeader(iwc, styles);
 		}
 	}
 
 	@Override
 	public void main(IWContext iwc) throws Exception {
-		if(!iwc.isLoggedOn()) {
+		if (!iwc.isLoggedOn()) {
 			String registrationLink = iwc.getRequestURI();
-			if(iwc.isParameterSet(PARAMETER_RACE)) {
-				registrationLink = registrationLink + CoreConstants.QMARK + PARAMETER_RACE + CoreConstants.EQ + iwc.getParameter(PARAMETER_RACE);
+			if (iwc.isParameterSet(PARAMETER_RACE)) {
+				registrationLink = registrationLink + CoreConstants.QMARK
+						+ PARAMETER_RACE + CoreConstants.EQ
+						+ iwc.getParameter(PARAMETER_RACE);
 			}
-			String loginPageUrl = BuilderLogic.getInstance().getFullPageUrlByPageType(iwc, "msi_login", false);
+			String loginPageUrl = BuilderLogic.getInstance()
+					.getFullPageUrlByPageType(iwc, "msi_login", false);
 			try {
-				String redirectUrl = loginPageUrl + CoreConstants.QMARK + IWAuthenticator.PARAMETER_REDIRECT_URI_ONLOGON + CoreConstants.EQ + registrationLink;
+				String redirectUrl = loginPageUrl + CoreConstants.QMARK
+						+ IWAuthenticator.PARAMETER_REDIRECT_URI_ONLOGON
+						+ CoreConstants.EQ + registrationLink;
 				getResponse().sendRedirect(redirectUrl);
 			} catch (UnavailableIWContext e) {
 				getLogger().warning("" + e);
 			} catch (IOException e) {
 				getLogger().warning("" + e);
 			}
-		}
-		switch (parseAction(iwc)) {
-		case ACTION_STEP_PERSONALDETAILS:
-			stepPersonalDetails(iwc);
-			break;
-		case ACTION_STEP_DISCLAIMER:
-			stepDisclaimer(iwc);
-			break;
-		case ACTION_STEP_PAYMENT_INFO:
-			stepPaymentInfo(iwc);
-			break;
-		case ACTION_SAVE:
-			save(iwc, null, this.raceParticipantInfo, true);
-			break;
-		case ACTION_CANCEL:
-			cancel(iwc);
-			break;
+		} else {
+			switch (parseAction(iwc)) {
+			case ACTION_STEP_PERSONALDETAILS:
+				stepPersonalDetails(iwc);
+				break;
+			case ACTION_STEP_DISCLAIMER:
+				stepDisclaimer(iwc);
+				break;
+			case ACTION_STEP_PAYMENT_INFO:
+				stepPaymentInfo(iwc);
+				break;
+			case ACTION_SAVE:
+				save(iwc, null, this.raceParticipantInfo, true);
+				break;
+			case ACTION_CANCEL:
+				cancel(iwc);
+				break;
+			}
 		}
 	}
 
 	private DropdownMenu getSeasonsMenu(IWContext iwc) {
-		DropdownMenu seasonsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_SEASON));
+		DropdownMenu seasonsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(
+				PARAMETER_SEASON));
 		/*
-		seasonsDropdown.setAsNotEmpty(localize(
-				"race_editor.select_season",
-				"Select season"));
-		*/
+		 * seasonsDropdown.setAsNotEmpty(localize( "race_editor.select_season",
+		 * "Select season"));
+		 */
 		Collection<Season> seasons = getSeasonHome().findAll();
 		for (Season season : seasons) {
-			seasonsDropdown.addOption(new SelectOption(
-					season.getName(),
-					season.getPrimaryKey().toString()));
+			seasonsDropdown.addOption(new SelectOption(season.getName(), season
+					.getPrimaryKey().toString()));
 		}
 
 		Season season = getSeasonHome().getCurrentSeason();
 		if (season != null) {
-			seasonsDropdown.setSelectedElement(season.getPrimaryKey().toString());
+			seasonsDropdown.setSelectedElement(season.getPrimaryKey()
+					.toString());
 		}
 
-		seasonsDropdown.setDisabled(!iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false));
+		seasonsDropdown.setDisabled(!iwc.getIWMainApplication().getSettings()
+				.getBoolean("msi.check_membership_registration", false));
 
 		return seasonsDropdown;
 	}
 
 	private DropdownMenu getEventsMenu(IWContext iwc) {
-		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_EVENT));
-		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance", "You have to select a distance"));
-		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance","Please select distance"));
+		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(
+				PARAMETER_EVENT));
+		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance",
+				"You have to select a distance"));
+		eventsDropdown.addMenuElement(-1,
+				localize("race_reg.select_distance", "Please select distance"));
 		Map<String, RaceEvent> events = null;
 		try {
-			events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
+			events = getRaceBusiness(iwc).getEventsForRace(
+					raceParticipantInfo.getRace());
 		} catch (RemoteException | FinderException e) {
-			getLogger().log(
-					Level.WARNING,
+			getLogger().log(Level.WARNING,
 					"Failed to get events for race, cause of: ", e);
 		}
 
@@ -323,15 +344,16 @@ public class Registration extends RaceBlock {
 	}
 
 	public IWBundle getBundle(FacesContext ctx, String bundleIdentifier) {
-    	IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
+		IWMainApplication iwma = IWMainApplication.getIWMainApplication(ctx);
 		return iwma.getBundle(bundleIdentifier);
-    }
+	}
 
-	protected static IWMainApplication getIWMainApplication(FacesContext context){
+	protected static IWMainApplication getIWMainApplication(FacesContext context) {
 		return IWMainApplication.getIWMainApplication(context);
 	}
 
-	private void stepPersonalDetails(IWContext iwc) throws RemoteException, FinderException {
+	private void stepPersonalDetails(IWContext iwc) throws RemoteException,
+			FinderException {
 		Form form = new Form();
 		form.maintainParameter(PARAMETER_RACE);
 		form.addParameter(PARAMETER_ACTION, "-1");
@@ -345,16 +367,18 @@ public class Registration extends RaceBlock {
 		int row = 1;
 
 		/*
-		table.add(getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
-				"race_reg.registration", "Registration"), 1, row++);
-		*/
-		table.add(getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
-				CoreConstants.EMPTY, CoreConstants.EMPTY), 1, row++);
+		 * table.add(getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
+		 * "race_reg.registration", "Registration"), 1, row++);
+		 */
+		table.add(
+				getPhasesTable(ACTION_STEP_PERSONALDETAILS, ACTION_SAVE,
+						CoreConstants.EMPTY, CoreConstants.EMPTY), 1, row++);
 		table.setHeight(row++, 12);
 
-		table.add(getInformationTable(localize(
-				"race_reg.information_text_step_1", "Information text 1...")),
-				1, row++);
+		table.add(
+				getInformationTable(localize(
+						"race_reg.information_text_step_1",
+						"Information text 1...")), 1, row++);
 		table.setHeight(row++, 18);
 
 		Table choiceTable = new Table();
@@ -374,10 +398,13 @@ public class Registration extends RaceBlock {
 		/*
 		 * Tournament name and event name
 		 */
-		choiceTable.add(getHeader(localize("race_reg.race_name", "Race name")), 1, iRow);
+		choiceTable.add(getHeader(localize("race_reg.race_name", "Race name")),
+				1, iRow);
 		choiceTable.add(redStar, 1, iRow);
 
-		choiceTable.add(getHeader(localize("race_reg.event_name", "Event name")), 3, iRow);
+		choiceTable.add(
+				getHeader(localize("race_reg.event_name", "Event name")), 3,
+				iRow);
 		choiceTable.add(redStar, 3, iRow);
 
 		iRow++;
@@ -394,18 +421,20 @@ public class Registration extends RaceBlock {
 		choiceTable.add(redStar, 1, iRow);
 
 		if (!isMembershipFeePayed()) {
-			choiceTable.add(getHeader(localize("msi_membership_fee", "Seasons")), 3, iRow);
-			//choiceTable.add(redStar, 3, iRow);
+			choiceTable.add(
+					getHeader(localize("msi_membership_fee", "Seasons")), 3,
+					iRow);
+			// choiceTable.add(redStar, 3, iRow);
 		}
 
 		iRow++;
 
-		UIComponent facelet = getIWMainApplication(iwc)
-				.createComponent(FaceletComponent.COMPONENT_TYPE);
+		UIComponent facelet = getIWMainApplication(iwc).createComponent(
+				FaceletComponent.COMPONENT_TYPE);
 		if (facelet instanceof FaceletComponent) {
-			((FaceletComponent) facelet).setFaceletURI(getBundle(
-					iwc, "com.idega.sport.union"
-					).getFaceletURI("club/main_union_editor.xhtml"));
+			((FaceletComponent) facelet).setFaceletURI(getBundle(iwc,
+					"com.idega.sport.union").getFaceletURI(
+					"club/main_union_editor.xhtml"));
 		}
 
 		choiceTable.add(facelet, 1, iRow);
@@ -415,15 +444,18 @@ public class Registration extends RaceBlock {
 			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
 			choiceTable.add(":", 3, iRow);
 			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
-			choiceTable.add(getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000"), 3, iRow);
+			choiceTable.add(
+					getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE,
+							"5000"), 3, iRow);
 			choiceTable.add(Text.getNonBrakingSpace(), 3, iRow);
 			choiceTable.add("ISK", 3, iRow);
 			Layer explanation = new Layer("span");
 			explanation.setStyleClass("dropdownExplanationText");
-			explanation.add(new Text(
-			localize(
-					"seasons_menu_explanation",
-					"If you have not paid membership fees in your company, you can pay for the year by checking here. MSI does so up to the club.")));
+			explanation
+					.add(new Text(
+							localize(
+									"seasons_menu_explanation",
+									"If you have not paid membership fees in your company, you can pay for the year by checking here. MSI does so up to the club.")));
 			choiceTable.add(explanation, 3, iRow);
 		}
 
@@ -432,33 +464,39 @@ public class Registration extends RaceBlock {
 		choiceTable.setHeight(iRow++, 12);
 
 		Layer useTT = new Layer();
-		choiceTable.add(useTT,3, iRow++);
-//		choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
-		CheckBox isRentTimeTransmitter = new CheckBox(PARAMETER_RENT_TIMETRANSMITTER);
+		choiceTable.add(useTT, 3, iRow++);
+		// choiceTable.mergeCells(1, iRow-1, 3, iRow-1);
+		CheckBox isRentTimeTransmitter = new CheckBox(
+				PARAMETER_RENT_TIMETRANSMITTER);
 
-		Text isRentTimeTransmitterLabel = getHeader(localize("race_reg.rent_time_transmitter2", "Rent time transmitter"));
+		Text isRentTimeTransmitterLabel = getHeader(localize(
+				"race_reg.rent_time_transmitter2", "Rent time transmitter"));
 		useTT.add(isRentTimeTransmitterLabel);
 		useTT.add(isRentTimeTransmitter);
 
 		Layer priceText = new Layer("label");
 		useTT.add(priceText);
-		//priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
+		// priceText.setStyleAttribute("display:inline;display:inline-block;width:20px;overflow:visible;");
 
 		Layer priceTextContainer = new Layer();
 		priceText.add(priceTextContainer);
-		priceTextContainer.add(localize("race_reg.rent_price", "Price") + CoreConstants.SPACE);
+		priceTextContainer.add(localize("race_reg.rent_price", "Price")
+				+ CoreConstants.SPACE);
 
 		Layer priceValue = new Layer("span");
 		priceTextContainer.add(priceValue);
 		priceValue.setStyleClass("tt-price");
 		priceTextContainer.add(" kr. ");
-		priceTextContainer.add(localize("race_reg.check_if_want_rent_timetransmitter", "Check here if you want to rent a time transmitter sent from MSI"));
+		priceTextContainer
+				.add(localize("race_reg.check_if_want_rent_timetransmitter",
+						"Check here if you want to rent a time transmitter sent from MSI"));
 		priceTextContainer.setStyleAttribute("width:450px;");
 
 		Layer script = new Layer("script");
 		useTT.add(script);
-		StringBuilder actions = new StringBuilder("jQuery(document).ready(function(){")
-			.append("RaceRegistrationHelper.ttPricesActions(null);})");
+		StringBuilder actions = new StringBuilder(
+				"jQuery(document).ready(function(){")
+				.append("RaceRegistrationHelper.ttPricesActions(null);})");
 		script.add(actions.toString());
 
 		Text nameField = getText("");
@@ -471,21 +509,26 @@ public class Registration extends RaceBlock {
 		emailField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getEmail() != null) {
 			emailField.setText(this.raceParticipantInfo.getEmail());
-			choiceTable.add(new HiddenInput(PARAMETER_EMAIL, this.raceParticipantInfo.getEmail()),1,1);
+			choiceTable.add(new HiddenInput(PARAMETER_EMAIL,
+					this.raceParticipantInfo.getEmail()), 1, 1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Email mail = getUserBusiness(iwc).getUsersMainEmail(
 						this.raceParticipantInfo.getUser());
 				emailField.setText(mail.getEmailAddress());
-				choiceTable.add(new HiddenInput(PARAMETER_EMAIL, mail.getEmailAddress()),1,1);
+				choiceTable
+						.add(new HiddenInput(PARAMETER_EMAIL, mail
+								.getEmailAddress()), 1, 1);
 			} catch (NoEmailFoundException nefe) {
 			}
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.participant_name", "Name")), 1, iRow);
+		choiceTable.add(
+				getHeader(localize("race_reg.participant_name", "Name")), 1,
+				iRow);
 		choiceTable.add(redStar, 1, iRow);
 		choiceTable
-				.add(getHeader(localize("race_reg.email", "Email")), 3, iRow);
+		.add(getHeader(localize("race_reg.email", "Email")), 3, iRow);
 		choiceTable.add(redStar, 3, iRow++);
 		choiceTable.add(nameField, 1, iRow);
 		choiceTable.add(emailField, 3, iRow++);
@@ -493,20 +536,24 @@ public class Registration extends RaceBlock {
 
 		Text ssnISField = getText("");
 		if (this.raceParticipantInfo.getUser() != null) {
-			ssnISField.setText(this.raceParticipantInfo.getUser().getPersonalID());
+			ssnISField.setText(this.raceParticipantInfo.getUser()
+					.getPersonalID());
 		}
 
 		Text telField = getText("");
 		telField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getHomePhone() != null) {
 			telField.setText(this.raceParticipantInfo.getHomePhone());
-			choiceTable.add(new HiddenInput(PARAMETER_HOME_PHONE, this.raceParticipantInfo.getHomePhone()),1,1);
+			choiceTable.add(new HiddenInput(PARAMETER_HOME_PHONE,
+					this.raceParticipantInfo.getHomePhone()), 1, 1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Phone phone = getUserBusiness(iwc).getUsersHomePhone(
 						this.raceParticipantInfo.getUser());
 				telField.setText(phone.getNumber());
-				choiceTable.add(new HiddenInput(PARAMETER_HOME_PHONE, phone.getNumber()),1,1);
+				choiceTable
+						.add(new HiddenInput(PARAMETER_HOME_PHONE, phone
+								.getNumber()), 1, 1);
 			} catch (NoPhoneFoundException nefe) {
 				// No phone registered...
 			}
@@ -514,8 +561,8 @@ public class Registration extends RaceBlock {
 
 		choiceTable.add(getHeader(localize("race_reg.ssn", "SSN")), 1, iRow);
 		choiceTable.add(redStar, 1, iRow);
-		choiceTable
-				.add(getHeader(localize("race_reg.telephone", "Telephone")), 3, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.telephone", "Telephone")),
+				3, iRow++);
 		choiceTable.add(ssnISField, 1, iRow);
 		choiceTable.add(telField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
@@ -534,13 +581,16 @@ public class Registration extends RaceBlock {
 		mobileField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getMobilePhone() != null) {
 			mobileField.setText(this.raceParticipantInfo.getMobilePhone());
-			choiceTable.add(new HiddenInput(PARAMETER_MOBILE_PHONE, this.raceParticipantInfo.getMobilePhone()),1,1);
+			choiceTable.add(new HiddenInput(PARAMETER_MOBILE_PHONE,
+					this.raceParticipantInfo.getMobilePhone()), 1, 1);
 		} else if (this.raceParticipantInfo.getUser() != null) {
 			try {
 				Phone phone = getUserBusiness(iwc).getUsersMobilePhone(
 						this.raceParticipantInfo.getUser());
 				mobileField.setText(phone.getNumber());
-				choiceTable.add(new HiddenInput(PARAMETER_MOBILE_PHONE, phone.getNumber()),1,1);
+				choiceTable.add(
+						new HiddenInput(PARAMETER_MOBILE_PHONE, phone
+								.getNumber()), 1, 1);
 			} catch (NoPhoneFoundException nefe) {
 			}
 		}
@@ -548,9 +598,9 @@ public class Registration extends RaceBlock {
 		choiceTable.add(getHeader(localize("race_reg.address", "Address")), 1,
 				iRow);
 		choiceTable.add(redStar, 1, iRow);
-		choiceTable.add(getHeader(localize(MSIConstants.RR_MOBILE,
-				"Mobile Phone")),
-				3, iRow++);
+		choiceTable.add(
+				getHeader(localize(MSIConstants.RR_MOBILE, "Mobile Phone")), 3,
+				iRow++);
 		choiceTable.add(addressField, 1, iRow);
 		choiceTable.add(mobileField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
@@ -572,32 +622,37 @@ public class Registration extends RaceBlock {
 			raceNumberField.setText(this.raceParticipantInfo.getRaceNumber());
 		}
 
-		choiceTable.add(getHeader(localize(MSIConstants.RR_POSTAL,
-				"Postal Code")), 1, iRow);
+		choiceTable.add(
+				getHeader(localize(MSIConstants.RR_POSTAL, "Postal Code")), 1,
+				iRow);
 		choiceTable.add(redStar, 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.race_number",
-				"Race number")), 3, iRow);
+		choiceTable.add(
+				getHeader(localize("race_reg.race_number", "Race number")), 3,
+				iRow);
 		choiceTable.add(redStar, 3, iRow++);
 		choiceTable.add(postalField, 1, iRow);
 		choiceTable.add(raceNumberField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-
 		Text raceVehicleField = getText("");
 		if (this.raceParticipantInfo.getRaceVehicle() != null) {
-			raceVehicleField.setText(this.raceParticipantInfo.getRaceVehicle().getLocalizationKey());
+			raceVehicleField.setText(this.raceParticipantInfo.getRaceVehicle()
+					.getLocalizationKey());
 		}
 
 		Text raceVehicleSubtypeField = getText("");
 		raceVehicleSubtypeField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getRaceVehicleSubtype() != null) {
-			raceVehicleSubtypeField.setText(this.raceParticipantInfo.getRaceVehicleSubtype().getLocalizationKey());
+			raceVehicleSubtypeField.setText(this.raceParticipantInfo
+					.getRaceVehicleSubtype().getLocalizationKey());
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.race_vehicle",
-				"Race vehicle")), 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.race_vehicle_subtype",
-				"Race vehicle subtype")), 3, iRow++);
+		choiceTable.add(
+				getHeader(localize("race_reg.race_vehicle", "Race vehicle")),
+				1, iRow);
+		choiceTable.add(
+				getHeader(localize("race_reg.race_vehicle_subtype",
+						"Race vehicle subtype")), 3, iRow++);
 		choiceTable.add(raceVehicleField, 1, iRow);
 		choiceTable.add(raceVehicleSubtypeField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
@@ -613,10 +668,10 @@ public class Registration extends RaceBlock {
 			engineCCField.setText(this.raceParticipantInfo.getEngineCC());
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.engine",
-				"Engine")), 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.engineCC",
-				"Engine CC")), 3, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.engine", "Engine")), 1,
+				iRow);
+		choiceTable.add(getHeader(localize("race_reg.engineCC", "Engine CC")),
+				3, iRow++);
 		choiceTable.add(engineField, 1, iRow);
 		choiceTable.add(engineCCField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
@@ -632,23 +687,25 @@ public class Registration extends RaceBlock {
 			modelField.setText(this.raceParticipantInfo.getModel());
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.body_number",
-				"Body number")), 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.model",
-				"Model")), 3, iRow++);
+		choiceTable.add(
+				getHeader(localize("race_reg.body_number", "Body number")), 1,
+				iRow);
+		choiceTable.add(getHeader(localize("race_reg.model", "Model")), 3,
+				iRow++);
 		choiceTable.add(bodyNumberField, 1, iRow);
 		choiceTable.add(modelField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		//new
+		// new
 		Text chipField = getText("");
 		chipField.setWidth(Table.HUNDRED_PERCENT);
 		if (this.raceParticipantInfo.getChipNumber() != null) {
 			chipField.setText(this.raceParticipantInfo.getChipNumber());
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.chip_number",
-				"Chip number")), 1, iRow++);
+		choiceTable.add(
+				getHeader(localize("race_reg.chip_number", "Chip number")), 1,
+				iRow++);
 		choiceTable.add(chipField, 1, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
@@ -663,19 +720,18 @@ public class Registration extends RaceBlock {
 			sponsorsField.setText(this.raceParticipantInfo.getSponsors());
 		}
 
-		choiceTable.add(getHeader(localize("race_reg.team",
-			"Team")), 1, iRow);
-		choiceTable.add(getHeader(localize("race_reg.sponsors",
-				"Sponsors")), 3, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.team", "Team")), 1, iRow);
+		choiceTable.add(getHeader(localize("race_reg.sponsors", "Sponsors")),
+				3, iRow++);
 		choiceTable.add(teamField, 1, iRow);
 		choiceTable.add(sponsorsField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-
-		/*TextArea commentField = (TextArea) getStyledInterface(new TextArea(
-				PARAMETER_COMMENT));
-		commentField.setWidth(Table.HUNDRED_PERCENT);
-		commentField.setMaximumCharacters(1000);*/
+		/*
+		 * TextArea commentField = (TextArea) getStyledInterface(new TextArea(
+		 * PARAMETER_COMMENT)); commentField.setWidth(Table.HUNDRED_PERCENT);
+		 * commentField.setMaximumCharacters(1000);
+		 */
 		TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
 		if (this.raceParticipantInfo.getPartner1() != null) {
 			partner1Field.setContent(this.raceParticipantInfo.getPartner1());
@@ -687,16 +743,16 @@ public class Registration extends RaceBlock {
 		}
 
 		choiceTable.mergeCells(1, iRow, 4, iRow);
-		choiceTable.add(getHeader(localize("race_reg.comment",
-				"Comment")), 1, iRow++);
-		choiceTable.add(getHeader(localize("race_reg.partner1",
-				"Partner1")), 1, iRow);
+		choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1,
+				iRow++);
+		choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")),
+				1, iRow);
 		choiceTable.mergeCells(2, iRow, 4, iRow);
 		choiceTable.add(partner1Field, 1, iRow++);
 		choiceTable.setHeight(iRow++, 3);
 
-		choiceTable.add(getHeader(localize("race_reg.partner2",
-				"Partner2")), 1, iRow);
+		choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")),
+				1, iRow);
 		choiceTable.mergeCells(2, iRow, 4, iRow);
 		choiceTable.add(partner2Field, 1, iRow++);
 		choiceTable.setHeight(iRow++, 3);
@@ -704,18 +760,20 @@ public class Registration extends RaceBlock {
 		boolean canRegister = canRegister(iwc);
 
 		if (canRegister) {
-			SubmitButton next = (SubmitButton) getButton(new SubmitButton(localize(
-					"next", "Next")));
-			next.setValueOnClick(PARAMETER_ACTION, String
-					.valueOf(ACTION_STEP_DISCLAIMER));
+			SubmitButton next = (SubmitButton) getButton(new SubmitButton(
+					localize("next", "Next")));
+			next.setValueOnClick(PARAMETER_ACTION,
+					String.valueOf(ACTION_STEP_DISCLAIMER));
 
 			table.setHeight(row++, 18);
 			table.add(next, 1, row);
 			table.setAlignment(1, row, Table.HORIZONTAL_ALIGN_RIGHT);
 		} else {
 			table.setHeight(row++, 18);
-			table.add(getHeader(localize("race_reg.cant_register",
-				"Can't register in a national tournament without a valid race number")), 1, row);
+			table.add(
+					getHeader(localize("race_reg.cant_register",
+							"Can't register in a national tournament without a valid race number")),
+					1, row);
 			table.setAlignment(1, row, Table.HORIZONTAL_ALIGN_RIGHT);
 		}
 		add(form);
@@ -744,13 +802,21 @@ public class Registration extends RaceBlock {
 			return true;
 		}
 
-		if (MSIConstants.ICELANDIC_CHAMPIONSHIP.equals(getRaceCategoryKey(this.raceParticipantInfo))) {
+		if (MSIConstants.ICELANDIC_CHAMPIONSHIP
+				.equals(getRaceCategoryKey(this.raceParticipantInfo))) {
 			if (this.raceParticipantInfo.getRaceNumber() == null) {
 				return false;
 			}
 
 			try {
-				RaceNumber raceNumber = this.getRaceBusiness(iwc).getRaceNumberHome().findByRaceNumber(Integer.parseInt(this.raceParticipantInfo.getRaceNumber()), this.raceParticipantInfo.getRace().getRaceType());
+				RaceNumber raceNumber = this
+						.getRaceBusiness(iwc)
+						.getRaceNumberHome()
+						.findByRaceNumber(
+								Integer.parseInt(this.raceParticipantInfo
+										.getRaceNumber()),
+								this.raceParticipantInfo.getRace()
+										.getRaceType());
 				if (!raceNumber.getIsApproved()) {
 					return false;
 				}
@@ -774,14 +840,15 @@ public class Registration extends RaceBlock {
 		form.add(table);
 		int row = 1;
 
-		table.add(getPhasesTable(ACTION_STEP_DISCLAIMER, ACTION_SAVE,
-				"race_reg.consent", "Consent"), 1, row++);
+		table.add(
+				getPhasesTable(ACTION_STEP_DISCLAIMER, ACTION_SAVE,
+						"race_reg.consent", "Consent"), 1, row++);
 		table.setHeight(row++, 18);
 
 		SubmitButton next = (SubmitButton) getButton(new SubmitButton(localize(
 				"next", "Next")));
-		next.setValueOnClick(PARAMETER_ACTION, String
-				.valueOf(ACTION_STEP_PAYMENT_INFO));
+		next.setValueOnClick(PARAMETER_ACTION,
+				String.valueOf(ACTION_STEP_PAYMENT_INFO));
 		if (!this.raceParticipantInfo.isAgree()) {
 			next.setDisabled(true);
 		}
@@ -791,8 +858,9 @@ public class Registration extends RaceBlock {
 		agree.setToDisableWhenUnchecked(next);
 		agree.setChecked(this.raceParticipantInfo.isAgree());
 
-		table.add(getText(localize("race_reg.information_text_step_3",
-				"Information text 3...")), 1, row++);
+		table.add(
+				getText(localize("race_reg.information_text_step_3",
+						"Information text 3...")), 1, row++);
 		table.setHeight(row++, 6);
 		table.add(agree, 1, row);
 		table.add(Text.getNonBrakingSpace(), 1, row);
@@ -801,8 +869,8 @@ public class Registration extends RaceBlock {
 
 		SubmitButton previous = (SubmitButton) getButton(new SubmitButton(
 				localize("previous", "Previous")));
-		previous.setValueOnClick(PARAMETER_ACTION, String
-				.valueOf(ACTION_STEP_PERSONALDETAILS));
+		previous.setValueOnClick(PARAMETER_ACTION,
+				String.valueOf(ACTION_STEP_PERSONALDETAILS));
 
 		table.setHeight(row++, 18);
 		table.add(previous, 1, row);
@@ -818,11 +886,9 @@ public class Registration extends RaceBlock {
 				PARAMETER_CCV));
 		ccv.setLength(3);
 		ccv.setMaxlength(3);
-		ccv.setAsIntegers(localize(
-				"race_reg.not_valid_ccv",
+		ccv.setAsIntegers(localize("race_reg.not_valid_ccv",
 				"Not a valid CCV number"));
-		ccv.setAsNotEmpty(localize(
-				"race_reg.must_supply_ccv",
+		ccv.setAsNotEmpty(localize("race_reg.must_supply_ccv",
 				"You must enter the CCV number"));
 		ccv.keepStatusOnAction(true);
 		ccv.setAutoComplete(false);
@@ -837,7 +903,8 @@ public class Registration extends RaceBlock {
 					a < 10 ? "0" + a : String.valueOf(a));
 		}
 		month.keepStatusOnAction(true);
-		month.addFirstOption(new SelectOption(localize("race_reg.select_month",""), "-1"));
+		month.addFirstOption(new SelectOption(localize("race_reg.select_month",
+				""), "-1"));
 		return month;
 	}
 
@@ -847,11 +914,12 @@ public class Registration extends RaceBlock {
 		DropdownMenu year = (DropdownMenu) getStyledInterface(new DropdownMenu(
 				PARAMETER_EXPIRES_YEAR));
 		for (int a = stamp.getYear(); a <= stamp.getYear() + 8; a++) {
-			year.addMenuElement(String.valueOf(a).substring(2), String
-					.valueOf(a));
+			year.addMenuElement(String.valueOf(a).substring(2),
+					String.valueOf(a));
 		}
 		year.keepStatusOnAction(true);
-		year.addFirstOption(new SelectOption(localize("race_reg.select_year",""), "-1"));
+		year.addFirstOption(new SelectOption(localize("race_reg.select_year",
+				""), "-1"));
 		return year;
 	}
 
@@ -896,11 +964,11 @@ public class Registration extends RaceBlock {
 				lastNumber.setNextInput(cardNumber);
 			}
 
-			cardNumber.setMininumLength(4, localize(
-					"race_reg.not_valid_card_number",
-					"Not a valid card number"));
-			cardNumber.setAsIntegers(localize(
-					"race_reg.not_valid_card_number",
+			cardNumber.setMininumLength(
+					4,
+					localize("race_reg.not_valid_card_number",
+							"Not a valid card number"));
+			cardNumber.setAsIntegers(localize("race_reg.not_valid_card_number",
 					"Not a valid card number"));
 			cardNumber.setAsNotEmpty(localize(
 					"race_reg.must_supply_card_number",
@@ -929,21 +997,24 @@ public class Registration extends RaceBlock {
 		form.add(table);
 		int row = 1;
 
-		table.add(getPhasesTable(ACTION_STEP_PAYMENT_INFO, ACTION_SAVE,
-				"race_reg.payment_info", "Payment info"), 1, row++);
+		table.add(
+				getPhasesTable(ACTION_STEP_PAYMENT_INFO, ACTION_SAVE,
+						"race_reg.payment_info", "Payment info"), 1, row++);
 		table.setHeight(row++, 12);
 
-		table.add(getInformationTable(localize(
-				"race_reg.information_text_step_4",
-				"Information text 4...")),
-				1, row++);
+		table.add(
+				getInformationTable(localize(
+						"race_reg.information_text_step_4",
+						"Information text 4...")), 1, row++);
 		table.setHeight(row++, 18);
 
 		/*
 		 * Price table
 		 */
 		Table runnerTable = new Table();
-		runnerTable.add(getHeader(localize("race_reg.participant_name", "Participant name")), 1, 1);
+		runnerTable.add(
+				getHeader(localize("race_reg.participant_name",
+						"Participant name")), 1, 1);
 		runnerTable.add(getHeader(localize("race_reg.race", "Race")), 2, 1);
 		runnerTable.add(getHeader(localize("race_reg.event", "Event")), 3, 1);
 		runnerTable.add(getHeader(localize("race_reg.price", "Price")), 4, 1);
@@ -952,25 +1023,32 @@ public class Registration extends RaceBlock {
 		int runRow = 2;
 
 		if (this.raceParticipantInfo.getUser() != null) {
-			runnerTable.add(getText(this.raceParticipantInfo.getUser().getName()), 1, runRow);
+			runnerTable.add(getText(this.raceParticipantInfo.getUser()
+					.getName()), 1, runRow);
 		} else {
 			runnerTable.add(getText(""), 1, runRow);
 		}
-		runnerTable.add(getText(this.raceParticipantInfo.getRace().getName()), 2, runRow);
-		runnerTable.add(getText(this.raceParticipantInfo.getEvent().getEventID()), 3, runRow);
-		float runPrice = getRaceBusiness(iwc).getEventPriceForRunner(this.raceParticipantInfo);
+		runnerTable.add(getText(this.raceParticipantInfo.getRace().getName()),
+				2, runRow);
+		runnerTable.add(getText(this.raceParticipantInfo.getEvent()
+				.getEventID()), 3, runRow);
+		float runPrice = getRaceBusiness(iwc).getEventPriceForRunner(
+				this.raceParticipantInfo);
 
 		float totalAmount = runPrice;
 		runnerTable.add(getText(formatAmount(runPrice)), 4, runRow++);
 
-		if(this.raceParticipantInfo.isRentTimeTransmitter()){
-			float ttPrice = raceParticipantInfo.getEvent().getTimeTransmitterPrice();
-			if(ttPrice < 0){
+		if (this.raceParticipantInfo.isRentTimeTransmitter()) {
+			float ttPrice = raceParticipantInfo.getEvent()
+					.getTimeTransmitterPrice();
+			if (ttPrice < 0) {
 				ttPrice = 0;
 			}
 
-			runnerTable.add(getText(localize("race_reg.rent_time_transmitter2", "Rent time transmitter")),3,runRow);
-			runnerTable.add(getText(formatAmount(ttPrice)),4,runRow);
+			runnerTable.add(
+					getText(localize("race_reg.rent_time_transmitter2",
+							"Rent time transmitter")), 3, runRow);
+			runnerTable.add(getText(formatAmount(ttPrice)), 4, runRow);
 			runRow++;
 			totalAmount += ttPrice;
 		}
@@ -978,15 +1056,19 @@ public class Registration extends RaceBlock {
 		/*
 		 * Season
 		 */
-		if (iwc.getIWMainApplication().getSettings().getBoolean("msi.check_membership_registration", false)) {
-			if(!isMembershipFeePayed()){
-				String priceString = getApplicationProperty(MSIConstants.PROPERTY_SEASON_PRICE, "5000");
+		if (iwc.getIWMainApplication().getSettings()
+				.getBoolean("msi.check_membership_registration", false)) {
+			if (!isMembershipFeePayed()) {
+				String priceString = getApplicationProperty(
+						MSIConstants.PROPERTY_SEASON_PRICE, "5000");
 				float seasonPrice = Float.valueOf(priceString);
-				if(seasonPrice < 0) {
+				if (seasonPrice < 0) {
 					seasonPrice = 0;
 				}
 
-				runnerTable.add(getText(localize("season_editor.season", "Season")), 3, runRow);
+				runnerTable.add(
+						getText(localize("season_editor.season", "Season")), 3,
+						runRow);
 				runnerTable.add(getText(formatAmount(seasonPrice)), 4, runRow);
 				runRow++;
 				totalAmount += seasonPrice;
@@ -997,7 +1079,8 @@ public class Registration extends RaceBlock {
 		this.raceParticipantInfo.setAmount(runPrice);
 
 		runnerTable.add(new HiddenInput(PARAMETER_REFERENCE_NUMBER,
-				this.raceParticipantInfo.getUser().getPersonalID().replaceAll("-", "")));
+				this.raceParticipantInfo.getUser().getPersonalID()
+						.replaceAll("-", "")));
 
 		if (totalAmount == 0) {
 			save(iwc, null, this.raceParticipantInfo, false);
@@ -1008,9 +1091,9 @@ public class Registration extends RaceBlock {
 		 * Total amount
 		 */
 		runnerTable.setHeight(runRow++, 12);
-		runnerTable.add(getHeader(localize(
-				"race_reg.total_amount",
-				"Total amount")), 1, runRow);
+		runnerTable.add(
+				getHeader(localize("race_reg.total_amount", "Total amount")),
+				1, runRow);
 		runnerTable.add(getHeader(formatAmount(totalAmount)), 4, runRow);
 		runnerTable.setColumnAlignment(4, Table.HORIZONTAL_ALIGN_RIGHT);
 
@@ -1033,15 +1116,16 @@ public class Registration extends RaceBlock {
 		/*
 		 * Credit card header
 		 */
-		creditCardTable.add(getHeader(localize(
-				"race_reg.credit_card_information",
-				"Credit card information")), 1, creditRow);
+		creditCardTable.add(
+				getHeader(localize("race_reg.credit_card_information",
+						"Credit card information")), 1, creditRow);
 
 		/*
 		 * Credit card types
 		 */
-		creditCardTable.add(getRaceBusiness(iwc).getAvailableCardTypes(
-				this.getResourceBundle()), 3, creditRow);
+		creditCardTable.add(
+				getRaceBusiness(iwc).getAvailableCardTypes(
+						this.getResourceBundle()), 3, creditRow);
 		creditCardTable.add(Text.getNonBrakingSpace(), 3, creditRow);
 		Collection<Image> images = getRaceBusiness(iwc).getCreditCardImages();
 		if (images != null) {
@@ -1049,7 +1133,8 @@ public class Registration extends RaceBlock {
 			while (iterator.hasNext()) {
 				creditCardTable.add(iterator.next(), 3, creditRow);
 				if (iterator.hasNext()) {
-					creditCardTable.add(Text.getNonBrakingSpace(), 3, creditRow);
+					creditCardTable
+							.add(Text.getNonBrakingSpace(), 3, creditRow);
 				}
 			}
 		}
@@ -1058,12 +1143,12 @@ public class Registration extends RaceBlock {
 		/*
 		 * Card holder and card number
 		 */
-		creditCardTable.add(getHeader(localize(
-				"race_reg.card_holder",
-				"Card holder")), 1, creditRow);
-		creditCardTable.add(getHeader(localize(
-				"race_reg.card_number",
-				"Card number")), 3, creditRow++);
+		creditCardTable.add(
+				getHeader(localize("race_reg.card_holder", "Card holder")), 1,
+				creditRow);
+		creditCardTable.add(
+				getHeader(localize("race_reg.card_number", "Card number")), 3,
+				creditRow++);
 
 		creditCardTable.add(getCardHolderNameInput(), 1, creditRow);
 		creditCardTable.add(getCreditCardNumberInput(), 3, creditRow);
@@ -1074,12 +1159,12 @@ public class Registration extends RaceBlock {
 		/*
 		 * Card expiration date and card CCV
 		 */
-		creditCardTable.add(getHeader(localize(
-				"race_reg.card_expires",
-				"Card expires")), 1, creditRow);
-		creditCardTable.add(getHeader(localize(
-				"race_reg.ccv_number",
-				"CCV number")), 3, creditRow++);
+		creditCardTable.add(
+				getHeader(localize("race_reg.card_expires", "Card expires")),
+				1, creditRow);
+		creditCardTable.add(
+				getHeader(localize("race_reg.ccv_number", "CCV number")), 3,
+				creditRow++);
 		creditCardTable.add(getExpirationMonthMenu(), 1, creditRow);
 		creditCardTable.add(getText("/"), 1, creditRow);
 		creditCardTable.add(getExpirationYearMenu(), 1, creditRow);
@@ -1087,19 +1172,19 @@ public class Registration extends RaceBlock {
 
 		creditCardTable.setHeight(creditRow++, 3);
 		creditCardTable.mergeCells(3, creditRow, 3, creditRow + 1);
-		creditCardTable.add(getText(localize(
-				"race_reg.ccv_explanation_text",
-				"A CCV number is a three digit number located on the back of all major credit cards.")),
-				3, creditRow);
+		creditCardTable
+				.add(getText(localize(
+						"race_reg.ccv_explanation_text",
+						"A CCV number is a three digit number located on the back of all major credit cards.")),
+						3, creditRow);
 
 		/*
 		 * Card holder email
 		 */
-		creditCardTable.add(getHeader(localize(
-				"race_reg.card_holder_email",
-				"Cardholder email")), 1, creditRow++);
+		creditCardTable.add(
+				getHeader(localize("race_reg.card_holder_email",
+						"Cardholder email")), 1, creditRow++);
 		creditCardTable.add(getCardHolderEmailInput(), 1, creditRow++);
-
 
 		creditCardTable.add(new HiddenInput(PARAMETER_AMOUNT, String
 				.valueOf(totalAmount)));
@@ -1111,8 +1196,8 @@ public class Registration extends RaceBlock {
 
 		SubmitButton previous = (SubmitButton) getButton(new SubmitButton(
 				localize("previous", "Previous")));
-		previous.setValueOnClick(PARAMETER_ACTION, String
-				.valueOf(ACTION_STEP_DISCLAIMER));
+		previous.setValueOnClick(PARAMETER_ACTION,
+				String.valueOf(ACTION_STEP_DISCLAIMER));
 		table.setHeight(row++, 18);
 		table.add(previous, 1, row);
 		table.add(Text.getNonBrakingSpace(), 1, row);
@@ -1127,7 +1212,9 @@ public class Registration extends RaceBlock {
 		return NumberFormat.getInstance().format(amount) + " ISK";
 	}
 
-	protected void save(IWContext iwc, Participant participant, RaceParticipantInfo raceParticipantInfo, boolean doPayment) throws RemoteException {
+	protected void save(IWContext iwc, Participant participant,
+			RaceParticipantInfo raceParticipantInfo, boolean doPayment)
+			throws RemoteException {
 		String nameOnCard = null;
 		double amount = 0;
 		try {
@@ -1144,45 +1231,37 @@ public class Registration extends RaceBlock {
 				nameOnCard = iwc.getParameter(PARAMETER_NAME_ON_CARD);
 				cardNumber = "";
 				for (int i = 1; i <= 4; i++) {
-					cardNumber += iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + i);
+					cardNumber += iwc.getParameter(PARAMETER_CARD_NUMBER + "_"
+							+ i);
 				}
-				hiddenCardNumber = "XXXX-XXXX-XXXX-" + iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + 4);
+				hiddenCardNumber = "XXXX-XXXX-XXXX-"
+						+ iwc.getParameter(PARAMETER_CARD_NUMBER + "_" + 4);
 				expiresMonth = iwc.getParameter(PARAMETER_EXPIRES_MONTH);
 				expiresYear = iwc.getParameter(PARAMETER_EXPIRES_YEAR);
 				ccVerifyNumber = iwc.getParameter(PARAMETER_CCV);
-				email = EmailValidator.getInstance().isValid(email) ? email : iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
-				amount = getRaceBusiness(iwc).getPriceForRunner(raceParticipantInfo);
+				email = EmailValidator.getInstance().isValid(email) ? email
+						: iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
+				amount = getRaceBusiness(iwc).getPriceForRunner(
+						raceParticipantInfo);
 				amount = amount + raceParticipantInfo.getSeasonPrice();
 				referenceNumber = iwc.getParameter(PARAMETER_REFERENCE_NUMBER);
 			}
 
 			String properties = null;
 			if (doPayment) {
-				properties = getRaceBusiness(iwc).authorizePayment(
-						nameOnCard,
-						cardNumber,
-						expiresMonth,
-						expiresYear,
-						ccVerifyNumber,
-						amount,
-						"ISK",
-						referenceNumber
-				);
+				properties = getRaceBusiness(iwc).authorizePayment(nameOnCard,
+						cardNumber, expiresMonth, expiresYear, ccVerifyNumber,
+						amount, "ISK", referenceNumber);
 			}
 
 			if (participant == null) {
 				participant = getRaceBusiness(iwc).saveParticipant(
-						raceParticipantInfo,
-						email,
-						hiddenCardNumber,
-						amount,
-						paymentStamp,
-						iwc.getCurrentLocale(),
-						null
-				);
+						raceParticipantInfo, email, hiddenCardNumber, amount,
+						paymentStamp, iwc.getCurrentLocale(), null);
 			}
 			if (doPayment) {
-				String authCode = getRaceBusiness(iwc).finishPayment(properties);
+				String authCode = getRaceBusiness(iwc)
+						.finishPayment(properties);
 				if (!isMembershipFeePayed()) {
 					setMembershipFeePayed(Boolean.TRUE);
 				}
@@ -1200,16 +1279,23 @@ public class Registration extends RaceBlock {
 				userBusiness.updateUserMail(user, email);
 			}
 
-			showReceipt(iwc, participant, amount, hiddenCardNumber, paymentStamp, doPayment);
+			showReceipt(iwc, participant, amount, hiddenCardNumber,
+					paymentStamp, doPayment);
 		} catch (Exception e) {
-			String error = "Failed to execute payment for " + nameOnCard + ", amount: " + amount;
+			String error = "Failed to execute payment for " + nameOnCard
+					+ ", amount: " + amount;
 			getLogger().log(Level.WARNING, error, e);
 			CoreUtil.sendExceptionNotification(error, e);
 
-			String message = localize("race_reg.save_failed", "There was an error when trying to finish registration. Please contact the msisport.is office.");
+			String message = localize(
+					"race_reg.save_failed",
+					"There was an error when trying to finish registration. Please contact the msisport.is office.");
 			if (e instanceof CreditCardAuthorizationException) {
-				IWResourceBundle creditCardBundle = iwc.getIWMainApplication().getBundle("com.idega.block.creditcard").getResourceBundle(iwc.getCurrentLocale());
-				message = ((CreditCardAuthorizationException) e).getLocalizedMessage(creditCardBundle);
+				IWResourceBundle creditCardBundle = iwc.getIWMainApplication()
+						.getBundle("com.idega.block.creditcard")
+						.getResourceBundle(iwc.getCurrentLocale());
+				message = ((CreditCardAuthorizationException) e)
+						.getLocalizedMessage(creditCardBundle);
 			}
 
 			Page page = getParentPage();
@@ -1219,15 +1305,17 @@ public class Registration extends RaceBlock {
 			try {
 				stepPaymentInfo(iwc);
 			} catch (Exception ee) {
-				getLogger().log(Level.WARNING, "Error showing payment info", ee);
+				getLogger()
+						.log(Level.WARNING, "Error showing payment info", ee);
 			}
 
 			CoreUtil.clearAllCaches();
 		}
 	}
 
-	private void showReceipt(IWContext iwc, Participant participant, double amount,
-			String cardNumber, IWTimestamp paymentStamp, boolean doPayment) {
+	private void showReceipt(IWContext iwc, Participant participant,
+			double amount, String cardNumber, IWTimestamp paymentStamp,
+			boolean doPayment) {
 		Table table = new Table();
 		table.setCellpadding(0);
 		table.setCellspacing(0);
@@ -1239,48 +1327,49 @@ public class Registration extends RaceBlock {
 		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PAYMENT_DATE, paymentStamp);
 		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT, participant);
 
-		table.add(getPhasesTable(ACTION_SAVE, ACTION_SAVE, "race_reg.receipt",
-				"Receipt"), 1, row++);
+		table.add(
+				getPhasesTable(ACTION_SAVE, ACTION_SAVE, "race_reg.receipt",
+						"Receipt"), 1, row++);
 		table.setHeight(row++, 18);
 
-		table.add(getHeader(localize("race_reg.hello_participant",
-				"Hello participant(s)")), 1, row++);
+		table.add(
+				getHeader(localize("race_reg.hello_participant",
+						"Hello participant(s)")), 1, row++);
 		table.setHeight(row++, 16);
 
-		table.add(getText(localize("race_reg.payment_received",
-				"We have received payment for the following:")), 1, row++);
+		table.add(
+				getText(localize("race_reg.payment_received",
+						"We have received payment for the following:")), 1,
+				row++);
 		table.setHeight(row++, 8);
 
 		Table runnerTable = new Table(3, 4);
 		runnerTable.setWidth(Table.HUNDRED_PERCENT);
-		runnerTable.add(getHeader(localize("race_reg.runner_name",
-				"Runner name")), 1, 1);
+		runnerTable.add(
+				getHeader(localize("race_reg.runner_name", "Runner name")), 1,
+				1);
 		runnerTable.add(getHeader(localize("race_reg.race", "Race")), 2, 1);
-		runnerTable.add(getHeader(localize("race_reg.event", "Event")),
-				3, 1);
+		runnerTable.add(getHeader(localize("race_reg.event", "Event")), 3, 1);
 		table.add(runnerTable, 1, row++);
 		int runRow = 2;
 		Group race = participant.getRaceGroup();
 		RaceEvent event = participant.getRaceEvent();
 
-		runnerTable
-				.add(getText(participant.getUser().getName()), 1, runRow);
-		runnerTable.add(getText(race.getName()), 2,
-				runRow);
+		runnerTable.add(getText(participant.getUser().getName()), 1, runRow);
+		runnerTable.add(getText(race.getName()), 2, runRow);
 		runnerTable.add(getText(event.getEventID()), 3, runRow++);
 
 		if (doPayment) {
 			Table creditCardTable = new Table(2, 3);
-			creditCardTable.add(getHeader(localize(
-					"race_reg.payment_received_timestamp", "Payment received")
-					+ ":"), 1, 1);
 			creditCardTable.add(
-					getText(paymentStamp.getLocaleDateAndTime(iwc
-							.getCurrentLocale(), IWTimestamp.SHORT,
-							IWTimestamp.SHORT)), 2, 1);
-			creditCardTable.add(getHeader(localize("race_reg.card_number",
-					"Card number")
-					+ ":"), 1, 2);
+					getHeader(localize("race_reg.payment_received_timestamp",
+							"Payment received") + ":"), 1, 1);
+			creditCardTable.add(getText(paymentStamp.getLocaleDateAndTime(
+					iwc.getCurrentLocale(), IWTimestamp.SHORT,
+					IWTimestamp.SHORT)), 2, 1);
+			creditCardTable.add(
+					getHeader(localize("race_reg.card_number", "Card number")
+							+ ":"), 1, 2);
 			creditCardTable.add(getText(cardNumber), 2, 2);
 			creditCardTable.add(getHeader(localize("race_reg.amount", "Amount")
 					+ ":"), 1, 3);
@@ -1290,20 +1379,18 @@ public class Registration extends RaceBlock {
 		}
 
 		table.setHeight(row++, 16);
-		table.add(getHeader(localize("race_reg.receipt_info_headline",
-				"Receipt - Please Print It Out")), 1, row++);
-		table
-				.add(
-						getText(localize(
-								"race_reg.receipt_info_headline_body",
-								"This document is your receipt, please print this out.")),
-						1, row++);
+		table.add(
+				getHeader(localize("race_reg.receipt_info_headline",
+						"Receipt - Please Print It Out")), 1, row++);
+		table.add(
+				getText(localize("race_reg.receipt_info_headline_body",
+						"This document is your receipt, please print this out.")),
+				1, row++);
 
 		table.setHeight(row++, 16);
 		table.add(getText(localize("race_reg.best_regards", "Best regards,")),
 				1, row++);
-		table.add(getText(localize("race_reg.msi",
-				"MSI")), 1, row++);
+		table.add(getText(localize("race_reg.msi", "MSI")), 1, row++);
 		table.add(getText("www.msisport.is"), 1, row++);
 
 		table.setHeight(row++, 16);
@@ -1354,16 +1441,18 @@ public class Registration extends RaceBlock {
 		}
 
 		User user = iwc.getCurrentUser();
-		raceParticipantInfo = (RaceParticipantInfo) iwc.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
+		raceParticipantInfo = (RaceParticipantInfo) iwc
+				.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 		if (raceParticipantInfo == null) {
 			raceParticipantInfo = new RaceParticipantInfo();
 		}
 
 		if (iwc.isParameterSet(PARAMETER_RACE)) {
 			try {
-				raceParticipantInfo.setRace(ConverterUtility.getInstance().convertGroupToRace(
-						new Integer(iwc.getParameter(PARAMETER_RACE))));
-			} catch(NumberFormatException e) {
+				raceParticipantInfo.setRace(ConverterUtility.getInstance()
+						.convertGroupToRace(
+								new Integer(iwc.getParameter(PARAMETER_RACE))));
+			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			}
 
@@ -1372,40 +1461,55 @@ public class Registration extends RaceBlock {
 		this.raceParticipantInfo.setUser(user);
 
 		try {
-			RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(user);
+			RaceUserSettings settings = this.getRaceBusiness(iwc)
+					.getRaceUserSettings(user);
 			if (settings != null) {
 				if (this.raceParticipantInfo.getRace() != null) {
-					if (MSIConstants.RACE_TYPE_MX_AND_ENDURO.equals(getRaceTypeKey(this.raceParticipantInfo))) {
-						if (settings.getRaceNumberMX() != null && settings.getRaceNumberMX().getApprovedDate() != null) {
-							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberMX().getRaceNumber());
+					if (MSIConstants.RACE_TYPE_MX_AND_ENDURO
+							.equals(getRaceTypeKey(this.raceParticipantInfo))) {
+						if (settings.getRaceNumberMX() != null
+								&& settings.getRaceNumberMX().getApprovedDate() != null) {
+							this.raceParticipantInfo.setRaceNumber(settings
+									.getRaceNumberMX().getRaceNumber());
 						}
-					} else if (MSIConstants.RACE_TYPE_SNOCROSS.equals(getRaceTypeKey(this.raceParticipantInfo))) {
-						if (settings.getRaceNumberSnocross() != null && settings.getRaceNumberSnocross().getApprovedDate() != null) {
-							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());
+					} else if (MSIConstants.RACE_TYPE_SNOCROSS
+							.equals(getRaceTypeKey(this.raceParticipantInfo))) {
+						if (settings.getRaceNumberSnocross() != null
+								&& settings.getRaceNumberSnocross()
+										.getApprovedDate() != null) {
+							this.raceParticipantInfo.setRaceNumber(settings
+									.getRaceNumberSnocross().getRaceNumber());
 						}
 					}
 				}
 
-				this.raceParticipantInfo.setRaceVehicle(settings.getVehicleType());
+				this.raceParticipantInfo.setRaceVehicle(settings
+						.getVehicleType());
 				this.raceParticipantInfo.setSponsors(settings.getSponsor());
 
-				if (settings.getTransponderNumber() != null && !"".equals(settings.getTransponderNumber())) {
-					this.raceParticipantInfo.setChipNumber(settings.getTransponderNumber());
+				if (settings.getTransponderNumber() != null
+						&& !"".equals(settings.getTransponderNumber())) {
+					this.raceParticipantInfo.setChipNumber(settings
+							.getTransponderNumber());
 					this.raceParticipantInfo.setOwnChip(true);
 				}
 
-				this.raceParticipantInfo.setRaceVehicleSubtype(settings.getVehicleSubType());
+				this.raceParticipantInfo.setRaceVehicleSubtype(settings
+						.getVehicleSubType());
 				this.raceParticipantInfo.setEngine(settings.getEngine());
 				this.raceParticipantInfo.setEngineCC(settings.getEngineCC());
-				this.raceParticipantInfo.setBodyNumber(settings.getBodyNumber());
+				this.raceParticipantInfo
+						.setBodyNumber(settings.getBodyNumber());
 				this.raceParticipantInfo.setModel(settings.getModel());
 				this.raceParticipantInfo.setTeam(settings.getTeam());
 			}
-		} catch (RemoteException e) {}
+		} catch (RemoteException e) {
+		}
 
 		if (iwc.isParameterSet(PARAMETER_EVENT)) {
 			raceParticipantInfo.setEvent(ConverterUtility.getInstance()
-					.convertGroupToRaceEvent(new Integer(iwc.getParameter(PARAMETER_EVENT))));
+					.convertGroupToRaceEvent(
+							new Integer(iwc.getParameter(PARAMETER_EVENT))));
 			if (iwc.isParameterSet(PARAMETER_RENT_TIMETRANSMITTER)) {
 				raceParticipantInfo.setRentTimeTransmitter(true);
 			} else {
@@ -1418,11 +1522,13 @@ public class Registration extends RaceBlock {
 		}
 
 		if (iwc.isParameterSet(PARAMETER_HOME_PHONE)) {
-			raceParticipantInfo.setHomePhone(iwc.getParameter(PARAMETER_HOME_PHONE));
+			raceParticipantInfo.setHomePhone(iwc
+					.getParameter(PARAMETER_HOME_PHONE));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_MOBILE_PHONE)) {
-			raceParticipantInfo.setMobilePhone(iwc.getParameter(PARAMETER_MOBILE_PHONE));
+			raceParticipantInfo.setMobilePhone(iwc
+					.getParameter(PARAMETER_MOBILE_PHONE));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_AGREE)) {
@@ -1434,23 +1540,30 @@ public class Registration extends RaceBlock {
 		}
 
 		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
-			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
+			raceParticipantInfo.setPartner1(iwc
+					.getParameter(PARAMETER_PARTNER1));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
-			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
+			raceParticipantInfo.setPartner2(iwc
+					.getParameter(PARAMETER_PARTNER2));
 		}
 
-		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, raceParticipantInfo);
+		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO,
+				raceParticipantInfo);
 
 		if (action == ACTION_STEP_DISCLAIMER) {
 			if (this.raceParticipantInfo.getEvent().getTeamCount() > 1) {
-				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
+				if (this.raceParticipantInfo.getPartner1() == null
+						|| "".equals(this.raceParticipantInfo.getPartner1()
+								.trim())) {
 					action = ACTION_STEP_PERSONALDETAILS;
 				}
 
 				if (this.raceParticipantInfo.getEvent().getTeamCount() > 2) {
-					if (this.raceParticipantInfo.getPartner2() == null || "".equals(this.raceParticipantInfo.getPartner2().trim())) {
+					if (this.raceParticipantInfo.getPartner2() == null
+							|| "".equals(this.raceParticipantInfo.getPartner2()
+									.trim())) {
 						action = ACTION_STEP_PERSONALDETAILS;
 					}
 				}
