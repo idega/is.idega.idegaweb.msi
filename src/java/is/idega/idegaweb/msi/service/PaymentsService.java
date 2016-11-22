@@ -6,6 +6,6 @@ public interface PaymentsService {
 
 	public boolean refund(String cardnumber, String monthExpires, String yearExpires, String ccVerifyNumber, double amount, String currency, String parentDataPK, String extraField);
 
-	public boolean sendEmailsAboutPayments(String participantId, String emailTo, String link, String from, String to);
+	public boolean sendEmailsAboutPayments(String participantId, String emailTo, String link, String from, String to, boolean reminder);
 
 }

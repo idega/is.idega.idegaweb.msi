@@ -77,7 +77,7 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 
 	@Override
 	@RemoteMethod
-	public boolean sendEmailsAboutPayments(String participantId, String emailTo, String link, String dateFrom, String dateTo) {
+	public boolean sendEmailsAboutPayments(String participantId, String emailTo, String link, String dateFrom, String dateTo, boolean reminder) {
 		IWContext iwc = CoreUtil.getIWContext();
 		if ((iwc == null || !iwc.isLoggedOn()) && !iwc.isSuperAdmin()) {
 			return false;
@@ -146,8 +146,10 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 //				}
 //			}
 
-			String subject = "Mistök í kortagreiðslum til MSÍ: {0}";
-			String text = "Sæl/Sæll {0},<br><br>Í sumar tók MSÍ í notkun nýtt tölvukerfi fyrir m.a. skráningu í mót og greiðslu mótsgjalda (www.msisport.is). Kerfið hefur líka verið notað til að greiða fyrir miða á árshátíð MSÍ. Vegna tæknilegra mistaka var um tíma tekið við skráningu og greiðslu án þess að greiðslan væri tekin af kreditkorti viðkomandi. Þú varst með slíka skráningu sem er í raun ógreidd. Færslan/færslurnar sem um ræðir eru:<br><br>{1}<br>Vinsamlega smelltu á hlekkinn hér að framan til að ganga frá greiðslu.<br><br>Við biðjumst velvirðingar á þessum óþægindum. Ef þú óskar eftir nánari útskýringum þá er þér velkomið að hringja í okkur í síma 554 7557.<br><br>Kveðja,<br><br>Gunnar Páll Þórisson<br>IOS hugbúnaður ehf.<br>www.idega.is / sími 554 7557";
+			String subject = reminder ? "Ítrekun - Mistök í kortagreiðslum til MSÍ: {0}" : "Mistök í kortagreiðslum til MSÍ: {0}";
+			String text = reminder ?
+				"Sæl/Sæll {0},<br><br>Margir MSÍ félagsmenn hafa nú þegar gengið frá greiðslu í samræmi við fyrri tölvupóst um ógreidd mótsgjöld og/eða miða á árshátíð MSÍ. Þú ert vinsamlega beðin/nn um að ganga frá þinni greiðslu án tafar Færslan/færslurnar sem um ræðir eru:<br><br>{1}<br>Allar upplýsingar eru í fyrri tölvupóst. Ef eitthvað er óljóst eða þú óskar eftir nánari útskýringum þá er þér velkomið að hafa samband í tölvupósti eða hringja í okkur í síma 554 7557.<br><br>Kveðja,<br><br>Gunnar Páll Þórisson<br>IOS hugbúnaður ehf.<br>www.idega.is / sími 554 7557" :
+				"Sæl/Sæll {0},<br><br>Í sumar tók MSÍ í notkun nýtt tölvukerfi fyrir m.a. skráningu í mót og greiðslu mótsgjalda (www.msisport.is). Kerfið hefur líka verið notað til að greiða fyrir miða á árshátíð MSÍ. Vegna tæknilegra mistaka var um tíma tekið við skráningu og greiðslu án þess að greiðslan væri tekin af kreditkorti viðkomandi. Þú varst með slíka skráningu sem er í raun ógreidd. Færslan/færslurnar sem um ræðir eru:<br><br>{1}<br>Vinsamlega smelltu á hlekkinn hér að framan til að ganga frá greiðslu.<br><br>Við biðjumst velvirðingar á þessum óþægindum. Ef þú óskar eftir nánari útskýringum þá er þér velkomið að hringja í okkur í síma 554 7557.<br><br>Kveðja,<br><br>Gunnar Páll Þórisson<br>IOS hugbúnaður ehf.<br>www.idega.is / sími 554 7557";
 			EmailValidator validator = EmailValidator.getInstance();
 			for (User user: groupedParticipants.keySet()) {
 				try {
