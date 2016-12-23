@@ -4,12 +4,10 @@
   <parent>
   	<groupId>com.idega.block.egov</groupId>
   	<artifactId>com.idega.block.egov</artifactId>
-  	<version>5.0.0-SNAPSHOT</version>
+  	<version>6.0.0-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
-  <groupId>com.idega.block.egov</groupId>
   <artifactId>is.idega.idegaweb.msi</artifactId>
-  <version>5.0.0-SNAPSHOT</version>
   <name>idegaWeb MSI</name>
   <inceptionYear>2007</inceptionYear>
   <description>MSI bundle</description>
