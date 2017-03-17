@@ -1225,7 +1225,14 @@ public class Registration extends RaceBlock {
 		try {
 			String cardNumber = null;
 			String hiddenCardNumber = "XXXX-XXXX-XXXX-XXXX";
-			String email = raceParticipantInfo.getEmail();
+
+			String participantEmail = raceParticipantInfo.getEmail();
+			String providedEmail = iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
+			String email = providedEmail;
+			if (!EmailValidator.getInstance().isValid(email)) {
+				email = participantEmail;
+			}
+
 			String expiresMonth = null;
 			String expiresYear = null;
 			String ccVerifyNumber = null;
