@@ -9,19 +9,6 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -78,6 +65,19 @@ import com.idega.util.EmailValidator;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
 import com.idega.util.expression.ELUtil;
+
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -204,7 +204,7 @@ public class Registration extends RaceBlock {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.idega.presentation.Block#encodeBegin(javax.faces.context.FacesContext
 	 * )
@@ -350,6 +350,10 @@ public class Registration extends RaceBlock {
 
 	protected static IWMainApplication getIWMainApplication(FacesContext context) {
 		return IWMainApplication.getIWMainApplication(context);
+	}
+
+	protected boolean canShowPartners(IWContext iwc) {
+		return true;
 	}
 
 	private void stepPersonalDetails(IWContext iwc) throws RemoteException,
@@ -732,30 +736,31 @@ public class Registration extends RaceBlock {
 		 * PARAMETER_COMMENT)); commentField.setWidth(Table.HUNDRED_PERCENT);
 		 * commentField.setMaximumCharacters(1000);
 		 */
-		TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
-		if (this.raceParticipantInfo.getPartner1() != null) {
-			partner1Field.setContent(this.raceParticipantInfo.getPartner1());
+
+		boolean showPartners = canShowPartners(iwc);
+		if (showPartners) {
+			TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
+			if (this.raceParticipantInfo.getPartner1() != null) {
+				partner1Field.setContent(this.raceParticipantInfo.getPartner1());
+			}
+
+			TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
+			if (this.raceParticipantInfo.getPartner2() != null) {
+				partner2Field.setContent(this.raceParticipantInfo.getPartner2());
+			}
+
+			choiceTable.mergeCells(1, iRow, 4, iRow);
+			choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1, iRow++);
+			choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")), 1, iRow);
+			choiceTable.mergeCells(2, iRow, 4, iRow);
+			choiceTable.add(partner1Field, 1, iRow++);
+			choiceTable.setHeight(iRow++, 3);
+
+			choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")), 1, iRow);
+			choiceTable.mergeCells(2, iRow, 4, iRow);
+			choiceTable.add(partner2Field, 1, iRow++);
+			choiceTable.setHeight(iRow++, 3);
 		}
-
-		TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
-		if (this.raceParticipantInfo.getPartner2() != null) {
-			partner2Field.setContent(this.raceParticipantInfo.getPartner2());
-		}
-
-		choiceTable.mergeCells(1, iRow, 4, iRow);
-		choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1,
-				iRow++);
-		choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")),
-				1, iRow);
-		choiceTable.mergeCells(2, iRow, 4, iRow);
-		choiceTable.add(partner1Field, 1, iRow++);
-		choiceTable.setHeight(iRow++, 3);
-
-		choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")),
-				1, iRow);
-		choiceTable.mergeCells(2, iRow, 4, iRow);
-		choiceTable.add(partner2Field, 1, iRow++);
-		choiceTable.setHeight(iRow++, 3);
 
 		boolean canRegister = canRegister(iwc);
 
