@@ -463,6 +463,9 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 
 				getUserBiz().updateUserHomePhone(user, raceParticipantInfo.getHomePhone());
 				getUserBiz().updateUserMobilePhone(user, raceParticipantInfo.getMobilePhone());
+				if (!StringUtil.isEmpty(email)) {
+					raceParticipantInfo.setEmail(email);
+				}
 				getUserBiz().updateUserMail(user, raceParticipantInfo.getEmail());
 
 				if (raceParticipantInfo.getEmail() != null) {

@@ -1228,6 +1228,7 @@ public class Registration extends RaceBlock {
 
 			String participantEmail = raceParticipantInfo.getEmail();
 			String providedEmail = iwc.getParameter(PARAMETER_CARD_HOLDER_EMAIL);
+			providedEmail = providedEmail == null ? null : providedEmail.trim();
 			String email = providedEmail;
 			if (!EmailValidator.getInstance().isValid(email)) {
 				email = participantEmail;
