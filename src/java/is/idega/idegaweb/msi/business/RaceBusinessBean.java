@@ -29,6 +29,7 @@ import com.idega.block.creditcard.data.KortathjonustanMerchant;
 import com.idega.block.creditcard.data.KortathjonustanMerchantHome;
 import com.idega.block.trade.data.CreditCardInformation;
 import com.idega.block.trade.data.CreditCardInformationHome;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.business.IBOLookup;
 import com.idega.business.IBOLookupException;
 import com.idega.business.IBORuntimeException;
@@ -993,6 +994,22 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 			getLogger().log(Level.WARNING, "Error getting transmitter price for race: " + raceId + " and event: " + eventId, e);
 		}
 
+		return null;
+	}
+
+	@Override
+	public AdvancedProperty getTransmitterPricesAndTeamInfo(String raceId, String eventId) {
+		try {
+			Float price = getTransmitterPrices(raceId, eventId);
+			RaceEvent event = getRaceEventHome().findByPrimaryKey(eventId);
+			Integer teamCount = null;
+			if (event != null) {
+				teamCount = event.getTeamCount();
+			}
+			return new AdvancedProperty(price == null ? null : String.valueOf(price), teamCount == null ? null : String.valueOf(teamCount));
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting price and team info. Race ID: " + raceId + ", event ID: " + eventId, e);
+		}
 		return null;
 	}
 }

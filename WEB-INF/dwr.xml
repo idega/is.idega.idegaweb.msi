@@ -9,6 +9,7 @@
 	    	<include method="enableEvents" />
 	    	<include method="disableEvents" />
 	    	<include method="getTransmitterPrices" />
+	    	<include method="getTransmitterPricesAndTeamInfo" />
 	 </create>
 
   </allow>

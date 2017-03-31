@@ -11,6 +11,7 @@ import javax.ejb.FinderException;
 
 import com.idega.block.creditcard.business.CreditCardAuthorizationException;
 import com.idega.block.creditcard.business.CreditCardClient;
+import com.idega.builder.bean.AdvancedProperty;
 import com.idega.business.IBOLookupException;
 import com.idega.business.IBOService;
 import com.idega.core.location.data.Country;
@@ -203,6 +204,7 @@ public interface RaceBusiness extends IBOService {
 	public List disableEvents(List ids);
 
 	public Float getTransmitterPrices(String raceId, String eventId);
+	public AdvancedProperty getTransmitterPricesAndTeamInfo(String raceId, String eventId);
 
 	public CreditCardClient getCreditCardClient() throws Exception;
 

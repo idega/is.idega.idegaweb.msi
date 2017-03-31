@@ -307,20 +307,15 @@ public class Registration extends RaceBlock {
 		return seasonsDropdown;
 	}
 
-	private DropdownMenu getEventsMenu(IWContext iwc) {
-		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(
-				PARAMETER_EVENT));
-		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance",
-				"You have to select a distance"));
-		eventsDropdown.addMenuElement(-1,
-				localize("race_reg.select_distance", "Please select distance"));
+	private DropdownMenu getEventsMenu(IWContext iwc, Form form) {
+		DropdownMenu eventsDropdown = (DropdownMenu) getStyledInterface(new DropdownMenu(PARAMETER_EVENT));
+		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance", "You have to select a distance"));
+		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance", "Please select distance"));
 		Map<String, RaceEvent> events = null;
 		try {
-			events = getRaceBusiness(iwc).getEventsForRace(
-					raceParticipantInfo.getRace());
+			events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
 		} catch (RemoteException | FinderException e) {
-			getLogger().log(Level.WARNING,
-					"Failed to get events for race, cause of: ", e);
+			getLogger().log(Level.WARNING, "Failed to get events for race, cause of: ", e);
 		}
 
 		for (String key : events.keySet()) {
@@ -414,7 +409,7 @@ public class Registration extends RaceBlock {
 		iRow++;
 
 		choiceTable.add(getRaceName(), 1, iRow);
-		choiceTable.add(getEventsMenu(iwc), 3, iRow);
+		choiceTable.add(getEventsMenu(iwc, form), 3, iRow);
 
 		iRow++;
 
@@ -738,29 +733,35 @@ public class Registration extends RaceBlock {
 		 */
 
 		boolean showPartners = canShowPartners(iwc);
-		if (showPartners) {
-			TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
-			if (this.raceParticipantInfo.getPartner1() != null) {
-				partner1Field.setContent(this.raceParticipantInfo.getPartner1());
-			}
-
-			TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
-			if (this.raceParticipantInfo.getPartner2() != null) {
-				partner2Field.setContent(this.raceParticipantInfo.getPartner2());
-			}
-
-			choiceTable.mergeCells(1, iRow, 4, iRow);
-			choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1, iRow++);
-			choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")), 1, iRow);
-			choiceTable.mergeCells(2, iRow, 4, iRow);
-			choiceTable.add(partner1Field, 1, iRow++);
-			choiceTable.setHeight(iRow++, 3);
-
-			choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")), 1, iRow);
-			choiceTable.mergeCells(2, iRow, 4, iRow);
-			choiceTable.add(partner2Field, 1, iRow++);
-			choiceTable.setHeight(iRow++, 3);
+		TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
+		if (this.raceParticipantInfo.getPartner1() != null) {
+			partner1Field.setContent(this.raceParticipantInfo.getPartner1());
 		}
+		partner1Field.setStyleClass("partner-one");
+		if (!showPartners) {
+			partner1Field.setStyleAttribute("display", "none");
+		}
+
+		TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
+		if (this.raceParticipantInfo.getPartner2() != null) {
+			partner2Field.setContent(this.raceParticipantInfo.getPartner2());
+		}
+		partner2Field.setStyleClass("partner-two");
+		if (!showPartners) {
+			partner2Field.setStyleAttribute("display", "none");
+		}
+
+		choiceTable.mergeCells(1, iRow, 4, iRow);
+		choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1, iRow++);
+		choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")), 1, iRow);
+		choiceTable.mergeCells(2, iRow, 4, iRow);
+		choiceTable.add(partner1Field, 1, iRow++);
+		choiceTable.setHeight(iRow++, 3);
+
+		choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")), 1, iRow);
+		choiceTable.mergeCells(2, iRow, 4, iRow);
+		choiceTable.add(partner2Field, 1, iRow++);
+		choiceTable.setHeight(iRow++, 3);
 
 		boolean canRegister = canRegister(iwc);
 
@@ -1454,75 +1455,57 @@ public class Registration extends RaceBlock {
 		}
 
 		User user = iwc.getCurrentUser();
-		raceParticipantInfo = (RaceParticipantInfo) iwc
-				.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
+		raceParticipantInfo = (RaceParticipantInfo) iwc.getSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 		if (raceParticipantInfo == null) {
 			raceParticipantInfo = new RaceParticipantInfo();
 		}
 
 		if (iwc.isParameterSet(PARAMETER_RACE)) {
 			try {
-				raceParticipantInfo.setRace(ConverterUtility.getInstance()
-						.convertGroupToRace(
-								new Integer(iwc.getParameter(PARAMETER_RACE))));
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				raceParticipantInfo.setRace(ConverterUtility.getInstance().convertGroupToRace(new Integer(iwc.getParameter(PARAMETER_RACE))));
+			} catch (Exception e) {
+				getLogger().warning("Error converting group to race: " + iwc.getParameter(PARAMETER_RACE));
 			}
-
 		}
 
 		this.raceParticipantInfo.setUser(user);
 
 		try {
-			RaceUserSettings settings = this.getRaceBusiness(iwc)
-					.getRaceUserSettings(user);
+			RaceUserSettings settings = this.getRaceBusiness(iwc).getRaceUserSettings(user);
 			if (settings != null) {
 				if (this.raceParticipantInfo.getRace() != null) {
-					if (MSIConstants.RACE_TYPE_MX_AND_ENDURO
-							.equals(getRaceTypeKey(this.raceParticipantInfo))) {
-						if (settings.getRaceNumberMX() != null
-								&& settings.getRaceNumberMX().getApprovedDate() != null) {
-							this.raceParticipantInfo.setRaceNumber(settings
-									.getRaceNumberMX().getRaceNumber());
+					if (MSIConstants.RACE_TYPE_MX_AND_ENDURO.equals(getRaceTypeKey(this.raceParticipantInfo))) {
+						if (settings.getRaceNumberMX() != null && settings.getRaceNumberMX().getApprovedDate() != null) {
+							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberMX().getRaceNumber());
 						}
-					} else if (MSIConstants.RACE_TYPE_SNOCROSS
-							.equals(getRaceTypeKey(this.raceParticipantInfo))) {
-						if (settings.getRaceNumberSnocross() != null
-								&& settings.getRaceNumberSnocross()
-										.getApprovedDate() != null) {
-							this.raceParticipantInfo.setRaceNumber(settings
-									.getRaceNumberSnocross().getRaceNumber());
+					} else if (MSIConstants.RACE_TYPE_SNOCROSS.equals(getRaceTypeKey(this.raceParticipantInfo))) {
+						if (settings.getRaceNumberSnocross() != null && settings.getRaceNumberSnocross().getApprovedDate() != null) {
+							this.raceParticipantInfo.setRaceNumber(settings.getRaceNumberSnocross().getRaceNumber());
 						}
 					}
 				}
 
-				this.raceParticipantInfo.setRaceVehicle(settings
-						.getVehicleType());
+				this.raceParticipantInfo.setRaceVehicle(settings.getVehicleType());
 				this.raceParticipantInfo.setSponsors(settings.getSponsor());
 
-				if (settings.getTransponderNumber() != null
-						&& !"".equals(settings.getTransponderNumber())) {
-					this.raceParticipantInfo.setChipNumber(settings
-							.getTransponderNumber());
+				if (settings.getTransponderNumber() != null && !"".equals(settings.getTransponderNumber())) {
+					this.raceParticipantInfo.setChipNumber(settings.getTransponderNumber());
 					this.raceParticipantInfo.setOwnChip(true);
 				}
 
-				this.raceParticipantInfo.setRaceVehicleSubtype(settings
-						.getVehicleSubType());
+				this.raceParticipantInfo.setRaceVehicleSubtype(settings.getVehicleSubType());
 				this.raceParticipantInfo.setEngine(settings.getEngine());
 				this.raceParticipantInfo.setEngineCC(settings.getEngineCC());
-				this.raceParticipantInfo
-						.setBodyNumber(settings.getBodyNumber());
+				this.raceParticipantInfo.setBodyNumber(settings.getBodyNumber());
 				this.raceParticipantInfo.setModel(settings.getModel());
 				this.raceParticipantInfo.setTeam(settings.getTeam());
 			}
-		} catch (RemoteException e) {
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting setting for " + user, e);
 		}
 
 		if (iwc.isParameterSet(PARAMETER_EVENT)) {
-			raceParticipantInfo.setEvent(ConverterUtility.getInstance()
-					.convertGroupToRaceEvent(
-							new Integer(iwc.getParameter(PARAMETER_EVENT))));
+			raceParticipantInfo.setEvent(ConverterUtility.getInstance().convertGroupToRaceEvent(new Integer(iwc.getParameter(PARAMETER_EVENT))));
 			if (iwc.isParameterSet(PARAMETER_RENT_TIMETRANSMITTER)) {
 				raceParticipantInfo.setRentTimeTransmitter(true);
 			} else {
@@ -1535,13 +1518,11 @@ public class Registration extends RaceBlock {
 		}
 
 		if (iwc.isParameterSet(PARAMETER_HOME_PHONE)) {
-			raceParticipantInfo.setHomePhone(iwc
-					.getParameter(PARAMETER_HOME_PHONE));
+			raceParticipantInfo.setHomePhone(iwc.getParameter(PARAMETER_HOME_PHONE));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_MOBILE_PHONE)) {
-			raceParticipantInfo.setMobilePhone(iwc
-					.getParameter(PARAMETER_MOBILE_PHONE));
+			raceParticipantInfo.setMobilePhone(iwc.getParameter(PARAMETER_MOBILE_PHONE));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_AGREE)) {
@@ -1553,36 +1534,33 @@ public class Registration extends RaceBlock {
 		}
 
 		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
-			raceParticipantInfo.setPartner1(iwc
-					.getParameter(PARAMETER_PARTNER1));
+			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
 		}
 
 		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
-			raceParticipantInfo.setPartner2(iwc
-					.getParameter(PARAMETER_PARTNER2));
+			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
 		}
 
-		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO,
-				raceParticipantInfo);
+		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, raceParticipantInfo);
 
 		if (action == ACTION_STEP_DISCLAIMER) {
-			if (this.raceParticipantInfo.getEvent().getTeamCount() > 1) {
-				if (this.raceParticipantInfo.getPartner1() == null
-						|| "".equals(this.raceParticipantInfo.getPartner1()
-								.trim())) {
+			int teamCount = this.raceParticipantInfo.getEvent().getTeamCount();
+			getLogger().info("Got disclaimer's action. Team count: " + teamCount);
+
+			if (teamCount > 1 && canShowPartners(iwc)) {
+				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
 					action = ACTION_STEP_PERSONALDETAILS;
 				}
 
-				if (this.raceParticipantInfo.getEvent().getTeamCount() > 2) {
-					if (this.raceParticipantInfo.getPartner2() == null
-							|| "".equals(this.raceParticipantInfo.getPartner2()
-									.trim())) {
+				if (teamCount > 2) {
+					if (this.raceParticipantInfo.getPartner2() == null || "".equals(this.raceParticipantInfo.getPartner2().trim())) {
 						action = ACTION_STEP_PERSONALDETAILS;
 					}
 				}
 			}
 		}
 
+		getLogger().info("Got action: " + action);
 		return action;
 	}
 
