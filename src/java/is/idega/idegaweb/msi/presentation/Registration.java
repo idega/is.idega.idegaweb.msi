@@ -1545,7 +1545,6 @@ public class Registration extends RaceBlock {
 
 		if (action == ACTION_STEP_DISCLAIMER) {
 			int teamCount = this.raceParticipantInfo.getEvent().getTeamCount();
-			getLogger().info("Got disclaimer's action. Team count: " + teamCount);
 
 			if (teamCount > 1 && canShowPartners(iwc)) {
 				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
@@ -1560,7 +1559,6 @@ public class Registration extends RaceBlock {
 			}
 		}
 
-		getLogger().info("Got action: " + action);
 		return action;
 	}
 
