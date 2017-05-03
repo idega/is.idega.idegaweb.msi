@@ -7,9 +7,7 @@
   	<version>5.0.0-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
-  <groupId>com.idega.block.egov</groupId>
   <artifactId>is.idega.idegaweb.msi</artifactId>
-  <version>5.0.0-SNAPSHOT</version>
   <name>idegaWeb MSI</name>
   <inceptionYear>2007</inceptionYear>
   <description>MSI bundle</description>
@@ -64,19 +62,5 @@
       <groupId>com.idega.block.platform</groupId>
       <artifactId>org.apache.axis</artifactId>
     </dependency>
-    <!--  
-    <dependency>
-      <groupId>axis</groupId>
-      <artifactId>axis</artifactId>
-      <version>1.3</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>axis</groupId>
-      <artifactId>axis-jaxrpc</artifactId>
-      <version>1.3</version>
-      <type>jar</type>
-    </dependency>
-    -->    
   </dependencies>
 </project>
