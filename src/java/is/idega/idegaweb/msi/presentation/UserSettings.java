@@ -1,19 +1,5 @@
 package is.idega.idegaweb.msi.presentation;
 
-import is.idega.idegaweb.msi.business.RaceBusiness;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceNumberHome;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceTypeHome;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.RaceVehicleType;
-import is.idega.idegaweb.msi.data.bean.ModificationPeriodEntity;
-import is.idega.idegaweb.msi.data.bean.ModificationPeriodTypeEntity;
-import is.idega.idegaweb.msi.data.dao.ModificationPeriodDAO;
-import is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO;
-import is.idega.idegaweb.msi.util.MSIConstants;
-
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -62,6 +48,20 @@ import com.idega.user.data.UserHome;
 import com.idega.util.PresentationUtil;
 import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
+
+import is.idega.idegaweb.msi.business.RaceBusiness;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceNumberHome;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceTypeHome;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.RaceVehicleType;
+import is.idega.idegaweb.msi.data.bean.ModificationPeriodEntity;
+import is.idega.idegaweb.msi.data.bean.ModificationPeriodTypeEntity;
+import is.idega.idegaweb.msi.data.dao.ModificationPeriodDAO;
+import is.idega.idegaweb.msi.data.dao.ModificationPeriodTypeDAO;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
 /**
  * @author Pall Helgason
@@ -293,21 +293,15 @@ public class UserSettings extends RaceBlock {
 		Phone homePhone = null;
 		try {
 			homePhone = ub.getUsersHomePhone(this.info.getUser());
-		} catch (NoPhoneFoundException e) {
-			e.printStackTrace();
-		}
+		} catch (NoPhoneFoundException e) {}
 		Phone mobilePhone = null;
 		try {
 			mobilePhone = ub.getUsersMobilePhone(this.info.getUser());
-		} catch (NoPhoneFoundException e) {
-			e.printStackTrace();
-		}
+		} catch (NoPhoneFoundException e) {}
 		Phone workPhone = null;
 		try {
 			workPhone = ub.getUsersWorkPhone(this.info.getUser());
-		} catch (NoPhoneFoundException e) {
-			e.printStackTrace();
-		}
+		} catch (NoPhoneFoundException e) {}
 		Address address = getCoAddress(iwc);
 		if (address == null) {
 			address = getMainAddress(iwc);
@@ -595,7 +589,7 @@ public class UserSettings extends RaceBlock {
 		formItem.add(label);
 		//formItem.add(new Span(new Text("")));
 		//layer.add(formItem);
-		
+
 		UIComponent unionLabelfacelet = getIWMainApplication(iwc).createComponent(
 				FaceletComponent.COMPONENT_TYPE);
 		if (unionLabelfacelet instanceof FaceletComponent) {
@@ -606,7 +600,7 @@ public class UserSettings extends RaceBlock {
 
 		formItem.add(unionLabelfacelet);
 		layer.add(formItem);
-		
+
 		Layer clearLayer = new Layer(Layer.DIV);
 		clearLayer.setStyleClass("Clear");
 
@@ -845,17 +839,17 @@ public class UserSettings extends RaceBlock {
 		UserBusiness ub = getUserBusiness(iwc);
 
 		if (raceBusiness != null) {
-			System.out.println("Trying to find settings for user "
+			getLogger().info("Trying to find settings for user "
 					+ iwc.getCurrentUser().getName());
 			RaceUserSettings settings = raceBusiness.getRaceUserSettings(iwc
 					.getCurrentUser());
 			if (settings == null) {
-				System.out.println("no settings found");
+				getLogger().warning("no settings found");
 			} else {
-				System.out.println("settings found");
+				getLogger().info("settings found");
 			}
 			if (settings == null) {
-				System.out.println("creating new settings entry");
+				getLogger().info("creating new settings entry");
 				settings = raceBusiness.getRaceUserSettingsHome().create();
 				settings.setUser(iwc.getCurrentUser());
 			}
@@ -918,7 +912,7 @@ public class UserSettings extends RaceBlock {
 
 					raceBusiness.sendMessage(to, subject, text.toString());
 				} catch (Exception e) {
-					e.printStackTrace();
+					getLogger().log(Level.WARNING, "Error updating preferences for " + (iwc.isLoggedOn() ? iwc.getCurrentUser() : "unknown"), e);
 				}
 			}
 
@@ -981,7 +975,7 @@ public class UserSettings extends RaceBlock {
 
 					raceBusiness.sendMessage(to, subject, text.toString());
 				} catch (Exception e) {
-					e.printStackTrace();
+					getLogger().log(Level.WARNING, "Error updating preferences for " + (iwc.isLoggedOn() ? iwc.getCurrentUser() : "unknown"), e);
 				}
 			}
 
