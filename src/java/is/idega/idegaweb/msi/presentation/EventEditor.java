@@ -1,9 +1,9 @@
 package is.idega.idegaweb.msi.presentation;
 
 
-import is.idega.idegaweb.msi.MsiConstants;
 import is.idega.idegaweb.msi.data.Event;
 import is.idega.idegaweb.msi.data.EventHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -141,7 +141,7 @@ public class EventEditor extends RaceBlock {
 	
 	private void addFiles(IWContext iwc){
 		IWMainApplication iwma = iwc.getApplicationContext().getIWMainApplication();
-		IWBundle iwb = iwma.getBundle(MsiConstants.IW_BUNDLE_IDENTIFIER);
+		IWBundle iwb = iwma.getBundle(MSIConstants.IW_BUNDLE_IDENTIFIER);
 		List files = new ArrayList();
 		files.add(CoreConstants.DWR_ENGINE_SCRIPT);
 		files.add(CoreConstants.DWR_UTIL_SCRIPT);
