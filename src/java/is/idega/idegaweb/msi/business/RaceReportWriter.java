@@ -13,6 +13,7 @@ import is.idega.idegaweb.msi.data.RaceEvent;
 import is.idega.idegaweb.msi.data.RaceUserSettings;
 import is.idega.idegaweb.msi.presentation.RaceBlock;
 import is.idega.idegaweb.msi.util.MSIConstants;
+import is.idega.idegaweb.msi.util.MSIUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,8 +47,10 @@ import com.idega.io.MemoryOutputStream;
 import com.idega.presentation.IWContext;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 import com.idega.util.StringHandler;
+import com.idega.util.StringUtil;
 
 public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 
@@ -327,11 +330,19 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		cell = row.createCell(column++);
 		cell.setCellStyle(headerStyle);
 		cell.setCellValue(this.iwrb.getLocalizedString(
-				"race_report.partner1", "Partner 1"));
+				"race_report.partner1_personal_id", "Partner 1 Personal ID"));
 		cell = row.createCell(column++);
 		cell.setCellStyle(headerStyle);
 		cell.setCellValue(this.iwrb.getLocalizedString(
-				"race_report.partner2", "Partner 2"));
+				"race_report.partner1_name", "Partner 1 Name"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.partner2_personal_id", "Partner 2 Personal ID"));
+		cell = row.createCell(column++);
+		cell.setCellStyle(headerStyle);
+		cell.setCellValue(this.iwrb.getLocalizedString(
+				"race_report.partner2_name", "Partner 2 Name"));
 		cell = row.createCell(column++);
 		cell.setCellStyle(headerStyle);
 		cell.setCellValue(this.iwrb.getLocalizedString(
@@ -471,17 +482,52 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		cell.setCellValue(info == null || info.getComment() == null ? ""
 				: info.getComment());
 
+		String firstPartnerPersonalId = CoreConstants.EMPTY;
+		String firstPartnerName = CoreConstants.EMPTY;
+		String secondPartnerPersonalId = CoreConstants.EMPTY;
+		String secondPartnerName = CoreConstants.EMPTY;
+		
+		if (info != null && info.getFirstPartner() != null) {
+			firstPartnerPersonalId = info.getFirstPartner().getPersonalID();
+			firstPartnerName = info.getFirstPartner().getName();
+		} else if (info != null && !StringUtil.isEmpty(info.getPartner1())) {
+			if (MSIUtil.isPersonalId(iwc, info.getPartner1())) {
+				firstPartnerPersonalId = info.getPartner1();
+			} else {
+				firstPartnerName = info.getPartner1();
+			}
+		}
+		
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-		cell.setCellValue(info == null || info.getPartner1() == null ? ""
-				: info.getPartner1());
-
+		cell.setCellValue(firstPartnerPersonalId);
+		
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-		cell.setCellValue(info == null || info.getPartner2() == null ? ""
-				: info.getPartner2());
+		cell.setCellValue(firstPartnerName);
+		
+		if (info != null && info.getSecondPartner() != null) {
+			secondPartnerPersonalId = info.getSecondPartner().getPersonalID();
+			secondPartnerName = info.getSecondPartner().getName();
+		} else if (info != null && !StringUtil.isEmpty(info.getPartner2())) {
+			if (MSIUtil.isPersonalId(iwc, info.getPartner2())) {
+				secondPartnerPersonalId = info.getPartner2();
+			} else {
+				secondPartnerName = info.getPartner2();
+			}
+		}
+		
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(secondPartnerPersonalId);
+		
+		cell = row.createCell(column++);
+		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
+		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+		cell.setCellValue(secondPartnerName);
 
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
