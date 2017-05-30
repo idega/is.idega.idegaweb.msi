@@ -64,6 +64,26 @@ public interface ParticipantHome extends IDOHome {
 			Boolean isTimeTransmitterRented,
 			boolean publishEvent);
 
+	Participant update(Integer id,
+			Integer seasonId,
+			Integer raceId,
+			Integer raceEventId,
+			Integer userId,
+			String partner1,
+			String partner2,
+			RaceVehicleType vehicle,
+			String chipNumber,
+			String raceNumber,
+			String comment,
+			String sponsorName,
+			String paymentMethod,
+			String payedAmount,
+			Date paymentDate,
+			Boolean isTimeTransmitterRented,
+			boolean publishEvent,
+			com.idega.user.data.User firstPartner,
+			com.idega.user.data.User secondPartner);
+	
 	/**
 	 *
 	 * @param raceId is {@link Race#getPrimaryKey()}
@@ -83,4 +103,5 @@ public interface ParticipantHome extends IDOHome {
 	Collection<Participant> findAll(Integer raceId, Integer userId);
 
 	Collection<Participant> findByDates(String from, String to);
+	
 }

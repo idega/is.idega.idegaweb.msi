@@ -1,6 +1,8 @@
 package is.idega.idegaweb.msi.data;
 
 
+import is.idega.idegaweb.msi.util.MSIConstants;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,10 +19,9 @@ import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.data.IDOStoreException;
 import com.idega.user.data.Group;
+import com.idega.user.data.User;
 import com.idega.user.data.UserHome;
 import com.idega.util.StringUtil;
-
-import is.idega.idegaweb.msi.util.MSIConstants;
 
 public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 
@@ -189,6 +190,32 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 			Date paymentDate,
 			Boolean isTimeTransmitterRented,
 			boolean publishEvent) {
+		return update(id, seasonId, raceId, raceEventId, userId, firstPartner,
+				secondPartner, vehicle, chipNumber, raceNumber, comment,
+				sponsorName, paymentMethod, payedAmount, paymentDate,
+				isTimeTransmitterRented, publishEvent, null, null);
+	}
+	
+	@Override
+	public Participant update(Integer id,
+			Integer seasonId,
+			Integer raceId,
+			Integer raceEventId,
+			Integer userId,
+			String partner1,
+			String partner2,
+			RaceVehicleType vehicle,
+			String chipNumber,
+			String raceNumber,
+			String comment,
+			String sponsorName,
+			String paymentMethod,
+			String payedAmount,
+			Date paymentDate,
+			Boolean isTimeTransmitterRented,
+			boolean publishEvent,
+			User firstPartner,
+			User secondPartner) {
 		Participant participant = findByPrimaryKey(id);
 		if (participant == null) {
 			participant = create();
@@ -206,12 +233,12 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 			participant.setEventGroupID(raceEventId);
 			RaceEvent raceEvent = getRaceEventHome().findByPrimaryKey(raceEventId);
 			if (raceEvent != null) {
-				if (raceEvent.getTeamCount() > 1 && !StringUtil.isEmpty(firstPartner)) {
-					participant.setPartner1(firstPartner);
+				if (raceEvent.getTeamCount() > 1 && !StringUtil.isEmpty(partner1)) {
+					participant.setPartner1(partner1);
 				}
 
-				if (raceEvent.getTeamCount() > 2 && !StringUtil.isEmpty(secondPartner)) {
-					participant.setPartner2(secondPartner);
+				if (raceEvent.getTeamCount() > 2 && !StringUtil.isEmpty(partner2)) {
+					participant.setPartner2(partner2);
 				}
 			}
 		}
@@ -256,6 +283,14 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 			participant.setRentsTimeTransmitter(isTimeTransmitterRented);
 		}
 
+		if (firstPartner != null) {
+			participant.setFirstPartner(firstPartner);
+		}
+		
+		if (secondPartner != null) {
+			participant.setSecondPartner(secondPartner);
+		}
+		
 		participant.setNotification(publishEvent);
 
 		try {

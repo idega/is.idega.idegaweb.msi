@@ -100,6 +100,16 @@ public interface Participant extends IDOEntity {
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getCreatedDate
 	 */
 	public Timestamp getCreatedDate();
+	
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getFirstPartner
+	 */
+	public User getFirstPartner();
+	
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#getSecondPartner
+	 */
+	public User getSecondPartner();
 
 	/**
 	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSeasonGroupID
@@ -191,6 +201,16 @@ public interface Participant extends IDOEntity {
 	 */
 	public void setCreatedDate(Timestamp created);
 
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setFirstPartner
+	 */
+	public void setFirstPartner(User firstPartner);
+	
+	/**
+	 * @see is.idega.idegaweb.msi.data.ParticipantBMPBean#setSecondPartner
+	 */
+	public void setSecondPartner(User secondPartner);
+	
 	/**
 	 *
 	 * @param publishEvent <code>true</code> when update event should be published

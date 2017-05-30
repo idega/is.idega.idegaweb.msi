@@ -64,6 +64,9 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	public static final String COLUMN_RENTS_TIME_TRANSMITTER = "RENTS_TIME_TRANSMITTER";
 
 	private static final String COLUMN_PAYMENT_AUTH_CODE = "payment_auth_code";
+	
+	private static final String COLUMN_FIRST_PARTNER = "first_partner_id";
+	private static final String COLUMN_SECOND_PARTNER = "second_partner_id";
 
 	private boolean publishEvent = Boolean.TRUE;
 
@@ -99,6 +102,9 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 
 		addAttribute(COLUMN_CREATED, "Created date", Timestamp.class);
 		addAttribute(COLUMN_PAYMENT_AUTH_CODE, "Payment authorization code", String.class);
+		
+		addOneToOneRelationship(COLUMN_FIRST_PARTNER, User.class);
+		addOneToOneRelationship(COLUMN_SECOND_PARTNER, User.class);
 	}
 
 	@Override
@@ -279,7 +285,17 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	public Timestamp getCreatedDate() {
 		return getTimestampColumnValue(COLUMN_CREATED);
 	}
-
+	
+	@Override
+	public User getFirstPartner() {
+		return (User) getColumnValue(COLUMN_FIRST_PARTNER);
+	}
+	
+	@Override
+	public User getSecondPartner() {
+		return (User) getColumnValue(COLUMN_SECOND_PARTNER);
+	}
+	
 	//SET
 
 	@Override
@@ -393,6 +409,16 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		setColumn(COLUMN_CREATED, created);
 	}
 
+	@Override
+	public void setFirstPartner(User firstPartner) {
+		setColumn(COLUMN_FIRST_PARTNER, firstPartner);
+	}
+	
+	@Override
+	public void setSecondPartner(User secondPartner) {
+		setColumn(COLUMN_SECOND_PARTNER, secondPartner);
+	}
+	
 	public Collection<Integer> ejbFindAll() throws FinderException {
 		Table table = new Table(this);
 
@@ -510,4 +536,5 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 	public void setPaymentAuthCode(String paymentAuthCode) {
 		setValue(COLUMN_PAYMENT_AUTH_CODE, paymentAuthCode);
 	}
+	
 }
