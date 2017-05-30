@@ -31,17 +31,25 @@ var RaceRegistrationHelper = {
 							teamCount--;
 						}
 						if (teamCount == null || teamCount <= 1) {
-							jQuery('input.partner-one').attr('style', 'display: none;');
-							jQuery('input.partner-one').parent().attr('style', 'display: none;');
+							jQuery('input.partner-one-name').attr('style', 'display: none;');
+							jQuery('input.partner-one-name').parent().attr('style', 'display: none;');
+							jQuery('input.partner-one-personal-id').attr('style', 'display: none;');
+							jQuery('input.partner-one-personal-id').parent().attr('style', 'display: none;');
 							
-							jQuery('input.partner-two').attr('style', 'display: none;');
-							jQuery('input.partner-two').parent().attr('style', 'display: none;');
+							jQuery('input.partner-two-name').attr('style', 'display: none;');
+							jQuery('input.partner-two-name').parent().attr('style', 'display: none;');
+							jQuery('input.partner-two-personal-id').attr('style', 'display: none;');
+							jQuery('input.partner-two-personal-id').parent().attr('style', 'display: none;');
 						} else {
-							jQuery('input.partner-one').attr('style', 'display: block;');
-							jQuery('input.partner-one').parent().attr('style', 'display: block;');
+							jQuery('input.partner-one-name').attr('style', 'display: block;');
+							jQuery('input.partner-one-name').parent().attr('style', 'display: block;');
+							jQuery('input.partner-one-personal-id').attr('style', 'display: block;');
+							jQuery('input.partner-one-personal-id').parent().attr('style', 'display: block;');
 							
-							jQuery('input.partner-two').attr('style', 'display: block;');
-							jQuery('input.partner-two').parent().attr('style', 'display: block;');
+							jQuery('input.partner-two-name').attr('style', 'display: block;');
+							jQuery('input.partner-two-name').parent().attr('style', 'display: block;');
+							jQuery('input.partner-two-personal-id').attr('style', 'display: block;');
+							jQuery('input.partner-two-personal-id').parent().attr('style', 'display: block;');
 						}
 					}
 				});
