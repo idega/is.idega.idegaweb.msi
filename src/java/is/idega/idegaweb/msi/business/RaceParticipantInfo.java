@@ -1,8 +1,8 @@
 /*
  * $Id: RaceParticipantInfo.java,v 1.3 2008/05/21 09:04:17 palli Exp $ Created on May 16, 2005
- * 
+ *
  * Copyright (C) 2005 Idega Software hf. All Rights Reserved.
- * 
+ *
  * This software is the proprietary information of Idega hf. Use is subject to
  * license terms.
  */
@@ -17,9 +17,9 @@ import com.idega.user.data.User;
 /**
  * A holder class for information about runners and their selection when
  * registering.
- * 
+ *
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
- * 
+ *
  * @author <a href="mailto:laddi@idega.com">laddi</a>
  * @version $Revision: 1.3 $
  */
@@ -37,14 +37,14 @@ public class RaceParticipantInfo {
 	private boolean agree;
 	private float amount;
 	private float seasonPrice = 0;
-	
+
 	private boolean rentChip = false;
 	private boolean ownChip = false;
-	
+
 	private String raceNumber;
 	private RaceVehicleType raceVehicle;
 	private String sponsors;
-	
+
 	private RaceVehicleType raceVehicleSubtype;
 	private String engine;
 	private String engineCC;
@@ -53,12 +53,15 @@ public class RaceParticipantInfo {
 	private String bodyNumber;
 
 	private String comment;
-	
+
 	private String partner1;
 	private String partner2;
 
+	private User firstPartner;
+	private User secondPartner;
+
 	private boolean rentTimeTransmitter;
-	
+
 	public boolean isRentTimeTransmitter() {
 		return rentTimeTransmitter;
 	}
@@ -98,7 +101,7 @@ public class RaceParticipantInfo {
 	public void setChipNumber(String chipNumber) {
 		this.chipNumber = chipNumber;
 	}
-	
+
 	public String getEmail() {
 		return this.email;
 	}
@@ -126,61 +129,61 @@ public class RaceParticipantInfo {
 	public boolean isAgree() {
 		return this.agree;
 	}
-	
+
 	public void setAgree(boolean agree) {
 		this.agree = agree;
 	}
-	
+
 	public float getAmount() {
 		return this.amount;
 	}
-	
+
 	public void setAmount(float amount) {
 		this.amount = amount;
 	}
-	
+
 	public String getRaceNumber() {
 		return this.raceNumber;
 	}
-	
+
 	public void setRaceNumber(String raceNumber) {
 		this.raceNumber = raceNumber;
 	}
-	
+
 	public RaceVehicleType getRaceVehicle() {
 		return this.raceVehicle;
 	}
-	
+
 	public void setRaceVehicle(RaceVehicleType raceVehicle) {
 		this.raceVehicle = raceVehicle;
 	}
-	
+
 	public String getSponsors() {
 		return this.sponsors;
 	}
-	
+
 	public void setSponsors(String sponsors) {
 		this.sponsors = sponsors;
 	}
-	
+
 	public boolean getRentChip() {
 		return this.rentChip;
 	}
-	
+
 	public void setRentChip(boolean rentChip) {
 		this.rentChip = rentChip;
 		this.ownChip = !rentChip;
 	}
-	
+
 	public boolean getOwnChip() {
 		return this.ownChip;
 	}
-	
+
 	public void setOwnChip(boolean ownChip) {
 		this.ownChip = ownChip;
 		this.rentChip = !ownChip;
 	}
-		
+
 	public RaceVehicleType getRaceVehicleSubtype() {
 		return this.raceVehicleSubtype;
 	}
@@ -188,7 +191,7 @@ public class RaceParticipantInfo {
 	public void setRaceVehicleSubtype(RaceVehicleType subtype) {
 		this.raceVehicleSubtype = subtype;
 	}
-	
+
 	public String getEngine() {
 		return this.engine;
 	}
@@ -224,7 +227,7 @@ public class RaceParticipantInfo {
 	public String getBodyNumber() {
 		return this.bodyNumber;
 	}
-	
+
 	public void setBodyNumber(String bodyNumber) {
 		this.bodyNumber = bodyNumber;
 	}
@@ -260,4 +263,21 @@ public class RaceParticipantInfo {
 	public void setSeasonPrice(float seasonPrice) {
 		this.seasonPrice = seasonPrice;
 	}
+
+	public User getFirstPartner() {
+		return firstPartner;
+	}
+	
+	public void setFirstPartner(User firstPartner) {
+		this.firstPartner = firstPartner;
+	}
+
+	public User getSecondPartner() {
+		return secondPartner;
+	}
+
+	public void setSecondPartner(User secondPartner) {
+		this.secondPartner = secondPartner;
+	}
+	
 }

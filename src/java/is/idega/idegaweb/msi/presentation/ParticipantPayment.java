@@ -155,15 +155,31 @@ public class ParticipantPayment extends Registration {
 		if (iwc.isParameterSet(PARAMETER_COMMENT)) {
 			raceParticipantInfo.setComment(iwc.getParameter(PARAMETER_COMMENT));
 		}
-
-		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
-			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
+		
+		if (iwc.isParameterSet(PARAMETER_PARTNER1_PERSONAL_ID)) {
+			String personalId = iwc.getParameter(PARAMETER_PARTNER1_PERSONAL_ID);
+			User partner = getOrCreatePartner(
+					iwc,
+					personalId,
+					iwc.isParameterSet(PARAMETER_PARTNER1_NAME) ? iwc
+							.getParameter(PARAMETER_PARTNER1_NAME) : null);
+			if (partner != null) {
+				raceParticipantInfo.setFirstPartner(partner);
+			}
 		}
-
-		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
-			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
+		
+		if (iwc.isParameterSet(PARAMETER_PARTNER2_PERSONAL_ID)) {
+			String personalId = iwc.getParameter(PARAMETER_PARTNER2_PERSONAL_ID);
+			User partner = getOrCreatePartner(
+					iwc,
+					personalId,
+					iwc.isParameterSet(PARAMETER_PARTNER2_NAME) ? iwc
+							.getParameter(PARAMETER_PARTNER2_NAME) : null);
+			if (partner != null) {
+				raceParticipantInfo.setSecondPartner(partner);
+			}
 		}
-
+		
 		return raceParticipantInfo;
 	}
 

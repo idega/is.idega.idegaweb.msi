@@ -452,9 +452,53 @@ public class RaceBusinessBean extends IBOServiceBean implements RaceBusiness {
 				participant.setComment(raceParticipantInfo.getComment());
 				participant.setRentsTimeTransmitter(raceParticipantInfo.isRentTimeTransmitter());
 				if (participant.getRaceEvent().getTeamCount() > 1) {
-					participant.setPartner1(raceParticipantInfo.getPartner1());
+					
+					if (raceParticipantInfo.getFirstPartner() != null) {
+						User partner = null;
+						
+						try {
+							partner = getUserBiz().getUser(raceParticipantInfo.getFirstPartner().getPersonalID());
+						} catch (FinderException e) {
+							partner = getUserBiz().createUser(
+									raceParticipantInfo.getFirstPartner()
+											.getFirstName(),
+									raceParticipantInfo.getFirstPartner()
+											.getMiddleName(),
+									raceParticipantInfo.getFirstPartner()
+											.getLastName(),
+									raceParticipantInfo.getFirstPartner()
+											.getPersonalID());
+							getLogger().log(Level.INFO, "Creating user: " + raceParticipantInfo.getFirstPartner().getPersonalID());
+						}
+						
+						if (partner != null) {
+							participant.setFirstPartner(partner);
+						}
+					}
+					
 					if (participant.getRaceEvent().getTeamCount() > 2) {
-						participant.setPartner2(raceParticipantInfo.getPartner2());
+						if (raceParticipantInfo.getSecondPartner() != null) {
+							User partner = null;
+							
+							try {
+								partner = getUserBiz().getUser(raceParticipantInfo.getSecondPartner().getPersonalID());
+							} catch (FinderException e) {
+								partner = getUserBiz().createUser(
+										raceParticipantInfo.getSecondPartner()
+												.getFirstName(),
+										raceParticipantInfo.getSecondPartner()
+												.getMiddleName(),
+										raceParticipantInfo.getSecondPartner()
+												.getLastName(),
+										raceParticipantInfo.getSecondPartner()
+												.getPersonalID());
+								getLogger().log(Level.INFO, "Creating user: " + raceParticipantInfo.getSecondPartner().getPersonalID());
+							}
+							
+							if (partner != null) {
+								participant.setSecondPartner(partner);
+							}
+						}
 					}
 				}
 				participant.setCreatedDate(date.getTimestamp());

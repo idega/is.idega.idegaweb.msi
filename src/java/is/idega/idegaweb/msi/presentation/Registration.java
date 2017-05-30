@@ -9,6 +9,20 @@
  */
 package is.idega.idegaweb.msi.presentation;
 
+import is.idega.idegaweb.msi.business.ConverterUtility;
+import is.idega.idegaweb.msi.business.RaceParticipantInfo;
+import is.idega.idegaweb.msi.data.Participant;
+import is.idega.idegaweb.msi.data.Race;
+import is.idega.idegaweb.msi.data.RaceCategory;
+import is.idega.idegaweb.msi.data.RaceEvent;
+import is.idega.idegaweb.msi.data.RaceNumber;
+import is.idega.idegaweb.msi.data.RaceType;
+import is.idega.idegaweb.msi.data.RaceUserSettings;
+import is.idega.idegaweb.msi.data.Season;
+import is.idega.idegaweb.msi.data.SeasonHome;
+import is.idega.idegaweb.msi.util.MSIConstants;
+import is.idega.idegaweb.msi.util.MSIUtil;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
@@ -31,6 +45,7 @@ import com.idega.core.contact.data.Email;
 import com.idega.core.contact.data.Phone;
 import com.idega.core.location.data.Address;
 import com.idega.core.location.data.PostalCode;
+import com.idega.data.IDOFinderException;
 import com.idega.data.IDOLookup;
 import com.idega.data.IDOLookupException;
 import com.idega.facelets.ui.FaceletComponent;
@@ -59,25 +74,14 @@ import com.idega.user.business.NoPhoneFoundException;
 import com.idega.user.business.UserBusiness;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.user.data.UserBMPBean;
 import com.idega.util.CoreConstants;
 import com.idega.util.CoreUtil;
 import com.idega.util.EmailValidator;
 import com.idega.util.IWTimestamp;
 import com.idega.util.PresentationUtil;
+import com.idega.util.StringHandler;
 import com.idega.util.expression.ELUtil;
-
-import is.idega.idegaweb.msi.business.ConverterUtility;
-import is.idega.idegaweb.msi.business.RaceParticipantInfo;
-import is.idega.idegaweb.msi.data.Participant;
-import is.idega.idegaweb.msi.data.Race;
-import is.idega.idegaweb.msi.data.RaceCategory;
-import is.idega.idegaweb.msi.data.RaceEvent;
-import is.idega.idegaweb.msi.data.RaceNumber;
-import is.idega.idegaweb.msi.data.RaceType;
-import is.idega.idegaweb.msi.data.RaceUserSettings;
-import is.idega.idegaweb.msi.data.Season;
-import is.idega.idegaweb.msi.data.SeasonHome;
-import is.idega.idegaweb.msi.util.MSIConstants;
 
 /**
  * Last modified: $Date: 2008/05/21 09:04:17 $ by $Author: palli $
@@ -116,6 +120,10 @@ public class Registration extends RaceBlock {
 	public static final String PARAMETER_COMMENT = "prm_comment";
 	public static final String PARAMETER_PARTNER1 = "prm_partner1";
 	public static final String PARAMETER_PARTNER2 = "prm_partner2";
+	public static final String PARAMETER_PARTNER1_NAME = "prm_partner1_name";
+	public static final String PARAMETER_PARTNER2_NAME = "prm_partner2_name";
+	public static final String PARAMETER_PARTNER1_PERSONAL_ID = "prm_partner1_personal_id";
+	public static final String PARAMETER_PARTNER2_PERSONAL_ID = "prm_partner2_personal_id";
 	private static final String PARAMETER_RENT_TIMETRANSMITTER = "prm_rent_tt";
 
 	public static final int ACTION_STEP_PERSONALDETAILS = 1,
@@ -312,6 +320,7 @@ public class Registration extends RaceBlock {
 		eventsDropdown.setAsNotEmpty(localize("race_reg.must_select_distance", "You have to select a distance"));
 		eventsDropdown.addMenuElement(-1, localize("race_reg.select_distance", "Please select distance"));
 		Map<String, RaceEvent> events = null;
+		
 		try {
 			events = getRaceBusiness(iwc).getEventsForRace(raceParticipantInfo.getRace());
 		} catch (RemoteException | FinderException e) {
@@ -733,34 +742,62 @@ public class Registration extends RaceBlock {
 		 */
 
 		boolean showPartners = canShowPartners(iwc);
-		TextInput partner1Field = new TextInput(PARAMETER_PARTNER1);
-		if (this.raceParticipantInfo.getPartner1() != null) {
-			partner1Field.setContent(this.raceParticipantInfo.getPartner1());
+		
+		TextInput partner1NameField = new TextInput(PARAMETER_PARTNER1_NAME);
+		TextInput partner1PersonalIdField = new TextInput(PARAMETER_PARTNER1_PERSONAL_ID);
+		
+		partner1NameField.setStyleClass("partner-one-name");
+		partner1PersonalIdField.setStyleClass("partner-one-personal-id");
+		
+		partner1NameField.setPlaceholder(localize("race_reg.participant_name", "Name"));
+		partner1PersonalIdField.setPlaceholder(localize("race_reg.ssn", "SSN"));
+		
+		User firstPartner = this.raceParticipantInfo.getFirstPartner();
+		if (firstPartner != null) {
+			partner1NameField.setContent(firstPartner.getName());
+			partner1PersonalIdField.setContent(firstPartner.getPersonalID());
 		}
-		partner1Field.setStyleClass("partner-one");
+		
+		TextInput partner2NameField = new TextInput(PARAMETER_PARTNER2_NAME);
+		TextInput partner2PersonalIdField = new TextInput(PARAMETER_PARTNER2_PERSONAL_ID);
+		
+		partner2NameField.setStyleClass("partner-two-name");
+		partner2PersonalIdField.setStyleClass("partner-two-personal-id");
+		
+		partner2NameField.setPlaceholder(localize("race_reg.participant_name", "Name"));
+		partner2PersonalIdField.setPlaceholder(localize("race_reg.ssn", "SSN"));
+		
+		User secondPartner = this.raceParticipantInfo.getSecondPartner();
+		if (secondPartner != null) {
+			partner2NameField.setContent(secondPartner.getName());
+			partner2PersonalIdField.setContent(secondPartner.getPersonalID());
+		}
+		
 		if (!showPartners) {
-			partner1Field.setStyleAttribute("display", "none");
+			partner1NameField.setStyleAttribute("display", "none");
+			partner1PersonalIdField.setStyleAttribute("display", "none");
+			partner2NameField.setStyleAttribute("display", "none");
+			partner2PersonalIdField.setStyleAttribute("display", "none");
 		}
-
-		TextInput partner2Field = new TextInput(PARAMETER_PARTNER2);
-		if (this.raceParticipantInfo.getPartner2() != null) {
-			partner2Field.setContent(this.raceParticipantInfo.getPartner2());
-		}
-		partner2Field.setStyleClass("partner-two");
-		if (!showPartners) {
-			partner2Field.setStyleAttribute("display", "none");
-		}
-
+		
 		choiceTable.mergeCells(1, iRow, 4, iRow);
 		choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1, iRow++);
 		choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")), 1, iRow);
 		choiceTable.mergeCells(2, iRow, 4, iRow);
-		choiceTable.add(partner1Field, 1, iRow++);
+		choiceTable.add(partner1NameField, 1, iRow++);
+		choiceTable.add(partner1PersonalIdField, 2, iRow - 1);
+		if (!showPartners) {
+			choiceTable.setStyle(1, iRow - 1, "display", "none");
+		}
 		choiceTable.setHeight(iRow++, 3);
 
 		choiceTable.add(getHeader(localize("race_reg.partner2", "Partner2")), 1, iRow);
 		choiceTable.mergeCells(2, iRow, 4, iRow);
-		choiceTable.add(partner2Field, 1, iRow++);
+		choiceTable.add(partner2NameField, 1, iRow++);
+		choiceTable.add(partner2PersonalIdField, 2, iRow - 1);
+		if (!showPartners) {
+			choiceTable.setStyle(1, iRow - 1, "display", "none");
+		}
 		choiceTable.setHeight(iRow++, 3);
 
 		boolean canRegister = canRegister(iwc);
@@ -1533,26 +1570,43 @@ public class Registration extends RaceBlock {
 			raceParticipantInfo.setComment(iwc.getParameter(PARAMETER_COMMENT));
 		}
 
-		if (iwc.isParameterSet(PARAMETER_PARTNER1)) {
-			raceParticipantInfo.setPartner1(iwc.getParameter(PARAMETER_PARTNER1));
+		if (iwc.isParameterSet(PARAMETER_PARTNER1_PERSONAL_ID)) {
+			String personalId = iwc.getParameter(PARAMETER_PARTNER1_PERSONAL_ID);
+			User partner = getOrCreatePartner(
+					iwc,
+					personalId,
+					iwc.isParameterSet(PARAMETER_PARTNER1_NAME) ? iwc
+							.getParameter(PARAMETER_PARTNER1_NAME) : null);
+			if (partner != null) {
+				raceParticipantInfo.setFirstPartner(partner);
+			}
 		}
-
-		if (iwc.isParameterSet(PARAMETER_PARTNER2)) {
-			raceParticipantInfo.setPartner2(iwc.getParameter(PARAMETER_PARTNER2));
+		
+		if (iwc.isParameterSet(PARAMETER_PARTNER2_PERSONAL_ID)) {
+			String personalId = iwc.getParameter(PARAMETER_PARTNER2_PERSONAL_ID);
+			User partner = getOrCreatePartner(
+					iwc,
+					personalId,
+					iwc.isParameterSet(PARAMETER_PARTNER2_NAME) ? iwc
+							.getParameter(PARAMETER_PARTNER2_NAME) : null);
+			if (partner != null) {
+				raceParticipantInfo.setSecondPartner(partner);
+			}
 		}
-
+		
 		iwc.setSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO, raceParticipantInfo);
 
 		if (action == ACTION_STEP_DISCLAIMER) {
 			int teamCount = this.raceParticipantInfo.getEvent().getTeamCount();
 
 			if (teamCount > 1 && canShowPartners(iwc)) {
-				if (this.raceParticipantInfo.getPartner1() == null || "".equals(this.raceParticipantInfo.getPartner1().trim())) {
+				
+				if (this.raceParticipantInfo.getFirstPartner() == null) {
 					action = ACTION_STEP_PERSONALDETAILS;
 				}
 
 				if (teamCount > 2) {
-					if (this.raceParticipantInfo.getPartner2() == null || "".equals(this.raceParticipantInfo.getPartner2().trim())) {
+					if (this.raceParticipantInfo.getSecondPartner() == null) {
 						action = ACTION_STEP_PERSONALDETAILS;
 					}
 				}
@@ -1566,4 +1620,33 @@ public class Registration extends RaceBlock {
 		iwc.removeSessionAttribute(SESSION_ATTRIBUTE_PARTICIPANT_INFO);
 	}
 
+	protected User getOrCreatePartner(IWContext iwc, String partnerPersonalId, String partnerNames) {
+		String personalId = StringHandler.replace(partnerPersonalId, CoreConstants.MINUS, CoreConstants.EMPTY);
+		User partner = null;
+		
+		try {
+			partner = getUserBusiness(iwc).getUser(personalId);
+		} catch (IDOFinderException e) {
+			getLogger().log(Level.INFO, "No user found with personal ID: " + personalId);
+		} catch (RemoteException | FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get UserBusiness, cause of:", e);
+		}
+		
+		if (partner != null) {
+			return partner;
+		} else {
+			String[] names = MSIUtil.getParsedNames(partnerNames);
+			partner = new UserBMPBean();
+			partner.setPersonalID(personalId);
+			if (names != null) {
+				partner.setFirstName(names[0]);
+				partner.setMiddleName(names[1]);
+				partner.setLastName(names[2]);
+			}
+			
+			return partner;
+		}
+		
+	}
+	
 }
