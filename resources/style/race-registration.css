@@ -109,3 +109,8 @@ td div input[name="prm_rent_tt"] {
 	margin-top: 0px;
 	width: 30px;
 }
+
+td input.partner-one-personal-id,
+td input.partner-two-personal-id {
+	width: 211px;
+}
