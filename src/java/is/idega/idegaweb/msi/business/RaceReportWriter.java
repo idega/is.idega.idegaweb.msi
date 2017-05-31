@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,6 +39,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 
 import com.idega.business.IBOLookup;
+import com.idega.data.SimpleQuerier;
 import com.idega.idegaweb.IWApplicationContext;
 import com.idega.idegaweb.IWResourceBundle;
 import com.idega.io.DownloadWriter;
@@ -47,6 +50,7 @@ import com.idega.io.MemoryOutputStream;
 import com.idega.presentation.IWContext;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
+import com.idega.util.ArrayUtil;
 import com.idega.util.CoreConstants;
 import com.idega.util.IWTimestamp;
 import com.idega.util.StringHandler;
@@ -461,7 +465,7 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
 		cell.setCellType(HSSFCell.CELL_TYPE_STRING);
-		cell.setCellValue("");
+		cell.setCellValue(getMainClub(racer));
 
 		cell = row.createCell(column++);
 		cell.setCellStyle(hasTimeTransmitter ? timeTransmitterStyle : normalStyle);
@@ -612,8 +616,33 @@ public class RaceReportWriter extends DownloadWriter implements MediaWritable {
 			System.err.println("buffer is null");
 		}
 	}
-
+	
+	private String getMainClub(User user) {
+		if (user == null) {
+			return CoreConstants.EMPTY;
+		}
+		
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT u.NAME ");
+		query.append("FROM union_ u, union_member_info umi ");
+		query.append("WHERE umi.MEMBER_ID = ").append(user.getId()).append(CoreConstants.SPACE);
+		query.append("AND umi.MEMBERSHIP_TYPE = 'main' ");
+		query.append("AND u.UNION_ID = umi.UNION_ID");
+		
+		try {
+			String[] results = SimpleQuerier.executeStringQuery(query.toString());
+			if (!ArrayUtil.isEmpty(results)) {
+				return results[0];
+			}
+		} catch (Exception e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, "Failed to execute query: " + query + " cause of: ", e);
+		}
+		
+		return CoreConstants.EMPTY;
+	}
+	
 	protected RaceBusiness getRaceBusiness(IWApplicationContext iwc) throws RemoteException {
 		return (RaceBusiness) IBOLookup.getServiceInstance(iwc, RaceBusiness.class);
 	}
+	
 }
