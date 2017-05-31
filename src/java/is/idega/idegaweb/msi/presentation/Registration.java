@@ -118,8 +118,6 @@ public class Registration extends RaceBlock {
 	public static final String PARAMETER_REFERENCE_NUMBER = "prm_reference_number";
 
 	public static final String PARAMETER_COMMENT = "prm_comment";
-	public static final String PARAMETER_PARTNER1 = "prm_partner1";
-	public static final String PARAMETER_PARTNER2 = "prm_partner2";
 	public static final String PARAMETER_PARTNER1_NAME = "prm_partner1_name";
 	public static final String PARAMETER_PARTNER2_NAME = "prm_partner2_name";
 	public static final String PARAMETER_PARTNER1_PERSONAL_ID = "prm_partner1_personal_id";
