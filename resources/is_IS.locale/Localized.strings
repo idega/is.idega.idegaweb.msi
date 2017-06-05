@@ -162,6 +162,7 @@ race_reg.select_year=Veldu \u00E1r
 race_reg.sponsors=Styrktara\u00F0ilar
 race_reg.ssn=Kennitala
 race_reg.team=Li\u00F0
+race_reg.teammates=Li\u00F0sf\u00E9lagar
 race_reg.telephone=S\u00EDman\u00FAmer
 race_reg.terms_and_conditions=Skilm\u00E1lar
 race_reg.time_registration_chip=Sendir

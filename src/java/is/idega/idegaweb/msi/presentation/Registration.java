@@ -732,13 +732,10 @@ public class Registration extends RaceBlock {
 		choiceTable.add(teamField, 1, iRow);
 		choiceTable.add(sponsorsField, 3, iRow++);
 		choiceTable.setHeight(iRow++, 3);
-
-		/*
-		 * TextArea commentField = (TextArea) getStyledInterface(new TextArea(
-		 * PARAMETER_COMMENT)); commentField.setWidth(Table.HUNDRED_PERCENT);
-		 * commentField.setMaximumCharacters(1000);
-		 */
-
+		
+		TextInput commentField = (TextInput) getStyledInterface(new TextInput(PARAMETER_COMMENT));
+		commentField.setMaxlength(1000);
+		
 		boolean showPartners = canShowPartners(iwc);
 		
 		TextInput partner1NameField = new TextInput(PARAMETER_PARTNER1_NAME);
@@ -780,6 +777,10 @@ public class Registration extends RaceBlock {
 		
 		choiceTable.mergeCells(1, iRow, 4, iRow);
 		choiceTable.add(getHeader(localize("race_reg.comment", "Comment")), 1, iRow++);
+		choiceTable.add(commentField, 1, iRow++);
+		
+		choiceTable.setHeight(iRow++, 3);
+		choiceTable.add(getHeader(localize("race_reg.teammates", "Teammates")), 1, iRow++);
 		choiceTable.add(getHeader(localize("race_reg.partner1", "Partner1")), 1, iRow);
 		choiceTable.mergeCells(2, iRow, 4, iRow);
 		choiceTable.add(partner1NameField, 1, iRow++);
