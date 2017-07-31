@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import com.idega.util.SendMail;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 
+import is.idega.idegaweb.msi.business.PaymentInfo;
 import is.idega.idegaweb.msi.business.RaceBusiness;
 import is.idega.idegaweb.msi.data.Participant;
 import is.idega.idegaweb.msi.presentation.ParticipantPayment;
@@ -49,7 +51,7 @@ import is.idega.idegaweb.msi.service.PaymentsService;
 	}, name=PaymentsServiceImpl.DWR_OBJECT)
 public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsService {
 
-	static final String BEAN_NAME = "msiPaymentsService",
+	public static final String BEAN_NAME = "msiPaymentsService",
 						DWR_OBJECT = "MSIPaymentsService";
 
 	@Override
@@ -246,4 +248,77 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 		return false;
 	}
 
+	@Override
+	public List<PaymentInfo> getUnpaidEntries(String userId, String dateFrom, String dateTo) {
+		IWContext iwc = CoreUtil.getIWContext();
+		if ((iwc == null || !iwc.isLoggedOn()) && !iwc.isSuperAdmin()) {
+			return null;
+		}
+
+		String participantId = null;
+		
+		try {
+			RaceBusiness raceBusiness = getServiceInstance(RaceBusiness.class);
+			Collection<Participant> participants = raceBusiness.getParticipantHome().findByDates(dateFrom, dateTo);
+			if (ListUtil.isEmpty(participants)) {
+				return null;
+			}
+
+			Map<User, List<Participant>> groupedParticipants = new HashMap<>();
+			for (Participant participant: participants) {
+				if (participant == null || !StringUtil.isEmpty(participant.getPaymentAuthCode())) {
+					continue;
+				}
+
+				if (participantId != null && !participantId.equals(participant.getPrimaryKey().toString())) {
+					getLogger().info("Skipping " + participant);
+					continue;
+				}
+
+				User user = participant.getUser();
+				if (user == null) {
+					getLogger().warning("User unknown for " + participant);
+					continue;
+				}
+
+				List<Participant> userParticiations = groupedParticipants.get(user);
+				if (userParticiations == null) {
+					userParticiations = new ArrayList<>();
+					groupedParticipants.put(user, userParticiations);
+				}
+				userParticiations.add(participant);
+			}
+
+			Locale icelandic = LocaleUtil.getIcelandicLocale();
+			for (User user: groupedParticipants.keySet()) {
+				try {
+					if (!user.getPrimaryKey().toString().equalsIgnoreCase(userId)) {
+						continue;
+					}
+					
+					List<PaymentInfo> records = new ArrayList<PaymentInfo>();
+					List<Participant> userParticiations = groupedParticipants.get(user);
+					for (Iterator<Participant> participationsIter = userParticiations.iterator(); participationsIter.hasNext();) {
+						Participant participant = participationsIter.next();
+						String name = participant.getUser().getName();
+						String tournament = participant.getRaceGroup().getName();
+						String group = participant.getRaceEvent().getName();
+						IWTimestamp date = new IWTimestamp(participant.getCreatedDate());
+						String localizedDate = date.getLocaleDateAndTime(icelandic, DateFormat.MEDIUM, DateFormat.SHORT);
+						records.add(new PaymentInfo(name, tournament, group, localizedDate, Float.parseFloat(participant.getPayedAmount())));
+					}
+					
+					return records;
+				} catch (Exception e) {
+					getLogger().log(Level.WARNING, "Error getting unpaid entries for participant " + user, e);
+					return null;
+				}
+			}
+			return Collections.emptyList();
+		} catch (Exception e) {
+			getLogger().log(Level.WARNING, "Error getting unpaid entries from " + dateFrom + " to " + dateTo, e);
+		}
+		return null;
+	}
+	
 }
