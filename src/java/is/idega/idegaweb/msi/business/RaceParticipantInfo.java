@@ -37,6 +37,7 @@ public class RaceParticipantInfo {
 	private boolean agree;
 	private float amount;
 	private float seasonPrice = 0;
+	private float unpaidAmount = 0;
 
 	private boolean rentChip = false;
 	private boolean ownChip = false;
@@ -278,6 +279,14 @@ public class RaceParticipantInfo {
 
 	public void setSecondPartner(User secondPartner) {
 		this.secondPartner = secondPartner;
+	}
+
+	public float getUnpaidAmount() {
+		return unpaidAmount;
+	}
+
+	public void setUnpaidAmount(float unpaidAmount) {
+		this.unpaidAmount = unpaidAmount;
 	}
 	
 }

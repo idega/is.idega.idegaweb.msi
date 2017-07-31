@@ -114,3 +114,7 @@ td input.partner-one-personal-id,
 td input.partner-two-personal-id {
 	width: 211px;
 }
+
+.borderlessTable tr td {
+	border: none !important;
+}
