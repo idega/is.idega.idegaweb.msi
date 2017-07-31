@@ -254,8 +254,6 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 		if ((iwc == null || !iwc.isLoggedOn()) && !iwc.isSuperAdmin()) {
 			return null;
 		}
-
-		String participantId = null;
 		
 		try {
 			RaceBusiness raceBusiness = getServiceInstance(RaceBusiness.class);
@@ -267,11 +265,6 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 			Map<User, List<Participant>> groupedParticipants = new HashMap<>();
 			for (Participant participant: participants) {
 				if (participant == null || !StringUtil.isEmpty(participant.getPaymentAuthCode())) {
-					continue;
-				}
-
-				if (participantId != null && !participantId.equals(participant.getPrimaryKey().toString())) {
-					getLogger().info("Skipping " + participant);
 					continue;
 				}
 
