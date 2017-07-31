@@ -1068,8 +1068,13 @@ public class Registration extends RaceBlock {
 		if (this.raceParticipantInfo.getUser() != null) {
 			unpaidEntries = getPaymentsService().getUnpaidEntries(
 					this.raceParticipantInfo.getUser().getPrimaryKey()
-							.toString(), MSIConstants.UNPAID_PERIOD_START_DATE,
-					MSIConstants.UNPAID_PERIOD_END_DATE);
+							.toString(),
+					getApplicationProperty(
+							MSIConstants.PROPERTY_UNPAID_PERIOD_START_DATE,
+							MSIConstants.UNPAID_PERIOD_START_DATE),
+					getApplicationProperty(
+							MSIConstants.PROPERTY_UNPAID_PERIOD_END_DATE,
+							MSIConstants.UNPAID_PERIOD_END_DATE));
 		}
 
 		table.setHeight(row++, 18);
