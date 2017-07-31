@@ -108,5 +108,8 @@ public class MSIConstants {
 	public static final String VEHICLE_TYPES[] = {"GasGas", "Husaberg", "Kawasaki", "KTM", "Honda", "Suzuki", "TM", "Yamaha"};
 
 	public static final String ICELANDIC_CHAMPIONSHIP = "race_category.icelandic_championship";
-
+	
+	public static final String UNPAID_PERIOD_START_DATE = "2016-07-14";
+	public static final String UNPAID_PERIOD_END_DATE = "2016-11-14";
+	
 }
