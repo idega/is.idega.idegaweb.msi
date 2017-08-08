@@ -24,6 +24,7 @@ import com.idega.data.query.WildCardColumn;
 import com.idega.user.data.Group;
 import com.idega.user.data.User;
 import com.idega.util.CoreConstants;
+import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 
 import is.idega.idegaweb.msi.events.ParticipantUpdatedAction;
@@ -516,6 +517,41 @@ public class ParticipantBMPBean extends GenericEntity implements Participant {
 		}
 		if (to != null) {
 			query.append(from == null ? " where " : "and ").append("p.").append(COLUMN_CREATED).append(" < '").append(to).append("'");
+		}
+
+		try {
+			return idoFindPKsBySQL(query.toString());
+		} catch (FinderException e) {
+			getLogger().log(Level.WARNING, "Failed to get primary keys by query: " + query.toString());
+		}
+
+		return Collections.emptyList();
+	}
+	
+	public Collection<Integer> ejbFindAll(String userId, String from, String to, String authCode) {
+		if (StringUtil.isEmpty(from) && StringUtil.isEmpty(to)) {
+			return Collections.emptyList();
+		}
+
+		StringBuilder query = new StringBuilder("SELECT p.MSI_PARTICIPANT_ID ");
+		query.append("FROM MSI_PARTICIPANT p ");
+
+		if (!StringUtil.isEmpty(from)) {
+			query.append("WHERE p.").append(COLUMN_CREATED).append(" > '").append(from).append("' ");
+		}
+		
+		if (!StringUtil.isEmpty(to)) {
+			query.append(StringUtil.isEmpty(from) ? " WHERE " : "AND ").append("p.").append(COLUMN_CREATED).append(" < '").append(to).append("'");
+		}
+		
+		if (!StringUtil.isEmpty(userId)) {
+			query.append(" AND ").append("p.").append(COLUMN_USER).append(" = ").append(userId);
+		}
+		
+		if (StringUtil.isEmpty(authCode)) {
+			query.append(" AND ").append("p.").append(COLUMN_PAYMENT_AUTH_CODE).append(" IS NULL ");
+		} else {
+			query.append(" AND ").append("p.").append(COLUMN_PAYMENT_AUTH_CODE).append(" = '").append(authCode).append("'");;
 		}
 
 		try {

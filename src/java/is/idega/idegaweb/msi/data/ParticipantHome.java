@@ -104,4 +104,6 @@ public interface ParticipantHome extends IDOHome {
 
 	Collection<Participant> findByDates(String from, String to);
 	
+	Collection<Participant> findAll(String userId, String from, String to, String authCode);
+	
 }

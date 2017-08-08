@@ -168,6 +168,19 @@ public class ParticipantHomeImpl extends IDOFactory implements ParticipantHome {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public Collection<Participant> findAll(String userId, String from, String to, String authCode) {
+		ParticipantBMPBean entity = (ParticipantBMPBean) idoCheckOutPooledEntity();
+		Collection<Integer> ids = entity.ejbFindAll(userId, from, to, authCode);
+		try {
+			return this.getEntityCollectionForPrimaryKeys(ids);
+		} catch (FinderException e) {
+			getLog().log(Level.WARNING, "Failed to get entities by primary keys: " + ids);
+		}
+
+		return Collections.emptyList();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see is.idega.idegaweb.msi.data.ParticipantHome#update(java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.String, java.lang.String, is.idega.idegaweb.msi.data.RaceVehicleType, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.util.Date, java.lang.Boolean, boolean)
