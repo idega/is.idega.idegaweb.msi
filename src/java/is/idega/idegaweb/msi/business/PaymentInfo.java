@@ -2,6 +2,7 @@ package is.idega.idegaweb.msi.business;
 
 public class PaymentInfo {
 
+	private String participantId;
 	private String name;
 	private String tournament;
 	private String group;
@@ -11,13 +12,22 @@ public class PaymentInfo {
 	public PaymentInfo() {
 	}
 
-	public PaymentInfo(String name, String tournament, String group,
-			String localizedDate, float price) {
+	public PaymentInfo(String participantId, String name, String tournament,
+			String group, String localizedDate, float price) {
+		this.participantId = participantId;
 		this.name = name;
 		this.tournament = tournament;
 		this.group = group;
 		this.localizedDate = localizedDate;
 		this.price = price;
+	}
+
+	public String getParticipantId() {
+		return participantId;
+	}
+
+	public void setParticipantId(String participantId) {
+		this.participantId = participantId;
 	}
 
 	public String getName() {

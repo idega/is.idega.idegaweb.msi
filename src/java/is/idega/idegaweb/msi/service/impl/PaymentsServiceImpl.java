@@ -257,17 +257,13 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 		
 		try {
 			RaceBusiness raceBusiness = getServiceInstance(RaceBusiness.class);
-			Collection<Participant> participants = raceBusiness.getParticipantHome().findByDates(dateFrom, dateTo);
+			Collection<Participant> participants = raceBusiness.getParticipantHome().findAll(userId, dateFrom, dateTo, null);
 			if (ListUtil.isEmpty(participants)) {
-				return null;
+				return Collections.emptyList();
 			}
 
 			Map<User, List<Participant>> groupedParticipants = new HashMap<>();
 			for (Participant participant: participants) {
-				if (participant == null || !StringUtil.isEmpty(participant.getPaymentAuthCode())) {
-					continue;
-				}
-
 				User user = participant.getUser();
 				if (user == null) {
 					getLogger().warning("User unknown for " + participant);
@@ -285,20 +281,19 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 			Locale icelandic = LocaleUtil.getIcelandicLocale();
 			for (User user: groupedParticipants.keySet()) {
 				try {
-					if (!user.getPrimaryKey().toString().equalsIgnoreCase(userId)) {
-						continue;
-					}
-					
 					List<PaymentInfo> records = new ArrayList<PaymentInfo>();
 					List<Participant> userParticiations = groupedParticipants.get(user);
 					for (Iterator<Participant> participationsIter = userParticiations.iterator(); participationsIter.hasNext();) {
 						Participant participant = participationsIter.next();
+						String participantId = participant.getPrimaryKey().toString();
 						String name = participant.getUser().getName();
 						String tournament = participant.getRaceGroup().getName();
 						String group = participant.getRaceEvent().getName();
 						IWTimestamp date = new IWTimestamp(participant.getCreatedDate());
 						String localizedDate = date.getLocaleDateAndTime(icelandic, DateFormat.MEDIUM, DateFormat.SHORT);
-						records.add(new PaymentInfo(name, tournament, group, localizedDate, Float.parseFloat(participant.getPayedAmount())));
+						float amount = Float.parseFloat(participant.getPayedAmount());
+						float timeTransmitterPrice = participant.getRaceEvent().getTimeTransmitterPrice();
+						records.add(new PaymentInfo(participantId, name, tournament, group, localizedDate, amount + timeTransmitterPrice));
 					}
 					
 					return records;
@@ -313,5 +308,4 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 		}
 		return null;
 	}
-	
 }

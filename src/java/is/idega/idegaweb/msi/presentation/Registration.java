@@ -85,6 +85,7 @@ import com.idega.util.IWTimestamp;
 import com.idega.util.ListUtil;
 import com.idega.util.PresentationUtil;
 import com.idega.util.StringHandler;
+import com.idega.util.StringUtil;
 import com.idega.util.expression.ELUtil;
 
 /**
@@ -1066,31 +1067,22 @@ public class Registration extends RaceBlock {
 
 		List<PaymentInfo> unpaidEntries = null;
 		if (this.raceParticipantInfo.getUser() != null) {
-			unpaidEntries = getPaymentsService().getUnpaidEntries(
-					this.raceParticipantInfo.getUser().getPrimaryKey()
-							.toString(),
-					getApplicationProperty(
-							MSIConstants.PROPERTY_UNPAID_PERIOD_START_DATE,
-							MSIConstants.UNPAID_PERIOD_START_DATE),
-					getApplicationProperty(
-							MSIConstants.PROPERTY_UNPAID_PERIOD_END_DATE,
-							MSIConstants.UNPAID_PERIOD_END_DATE));
+			unpaidEntries = getUnpaidEntries(this.raceParticipantInfo.getUser()
+					.getPrimaryKey().toString());
 		}
 
 		table.setHeight(row++, 18);
 
+		float totalAmount = 0;
+		float unpaidAmount = 0;
+		
 		if (!ListUtil.isEmpty(unpaidEntries)) {
 			Table infoTable = getInformationTable(localize(
 					"race_reg.missing_payment_text_1",
 					"Missing payment text 1..."));
 			infoTable.setStyleClass("borderlessTable");
 			table.add(infoTable, 1, row++);
-		}
-
-		float totalAmount = 0;
-		float unpaidAmount = 0;
-		
-		if (!ListUtil.isEmpty(unpaidEntries)) {
+			
 			Table unpaidEntriesTable = new Table();
 			int entryRow = 1;
 			int index = 0;
@@ -1198,7 +1190,7 @@ public class Registration extends RaceBlock {
 		}
 
 		this.raceParticipantInfo.setUnpaidAmount(unpaidAmount);
-		this.raceParticipantInfo.setAmount(runPrice + unpaidAmount);
+		this.raceParticipantInfo.setAmount(runPrice);
 
 		runnerTable.add(new HiddenInput(PARAMETER_REFERENCE_NUMBER,
 				this.raceParticipantInfo.getUser().getPersonalID()
@@ -1357,6 +1349,8 @@ public class Registration extends RaceBlock {
 			String referenceNumber = null;
 			IWTimestamp paymentStamp = new IWTimestamp();
 
+			List<PaymentInfo> unpaidEntries = getUnpaidEntries(raceParticipantInfo.getUser().getPrimaryKey().toString());
+			
 			if (doPayment) {
 				nameOnCard = iwc.getParameter(PARAMETER_NAME_ON_CARD);
 				cardNumber = "";
@@ -1399,6 +1393,17 @@ public class Registration extends RaceBlock {
 				if (participant != null) {
 					participant.setPaymentAuthCode(authCode);
 					participant.store();
+				}
+				
+				if (!ListUtil.isEmpty(unpaidEntries)) {
+					for (PaymentInfo unpaidEntry : unpaidEntries) {
+						String participantId = unpaidEntry.getParticipantId();
+						Participant unpaidParticipant = getRaceBusiness(iwc).getParticipantHome().findByPrimaryKey(participantId);
+						if (unpaidParticipant != null && !StringUtil.isEmpty(authCode)) {
+							unpaidParticipant.setPaymentAuthCode(authCode);
+							unpaidParticipant.store();
+						}
+					}
 				}
 			}
 
@@ -1727,6 +1732,17 @@ public class Registration extends RaceBlock {
 			return partner;
 		}
 		
+	}
+	
+	private List<PaymentInfo> getUnpaidEntries(String userId) {
+		return getPaymentsService().getUnpaidEntries(
+				userId,
+				getApplicationProperty(
+						MSIConstants.PROPERTY_UNPAID_PERIOD_START_DATE,
+						MSIConstants.UNPAID_PERIOD_START_DATE),
+				getApplicationProperty(
+						MSIConstants.PROPERTY_UNPAID_PERIOD_END_DATE,
+						MSIConstants.UNPAID_PERIOD_END_DATE));
 	}
 	
 }
