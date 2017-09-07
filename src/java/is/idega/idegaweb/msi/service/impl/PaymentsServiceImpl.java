@@ -292,7 +292,10 @@ public class PaymentsServiceImpl extends DefaultSpringBean implements PaymentsSe
 						IWTimestamp date = new IWTimestamp(participant.getCreatedDate());
 						String localizedDate = date.getLocaleDateAndTime(icelandic, DateFormat.MEDIUM, DateFormat.SHORT);
 						float amount = Float.parseFloat(participant.getPayedAmount());
-						float timeTransmitterPrice = participant.getRaceEvent().getTimeTransmitterPrice();
+						float timeTransmitterPrice = 0;
+						if (participant.isRentsTimeTransmitter()) {
+							timeTransmitterPrice = participant.getRaceEvent().getTimeTransmitterPrice();
+						}
 						records.add(new PaymentInfo(participantId, name, tournament, group, localizedDate, amount + timeTransmitterPrice));
 					}
 					
